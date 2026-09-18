@@ -5,10 +5,23 @@
 ▲ Next.js 16.3.5 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://10.12.74.240:3000
-✓ Ready in 1315ms
-✓ Running next.config.ts took 99ms
+✓ Ready in 873ms
+✓ Running next.config.ts took 60ms
 
-○ Compiling /signup ...
- GET /signup 200 in 8.4s (next.js: 8.1s, application-code: 291ms)
- GET /signup 200 in 476ms (next.js: 61ms, application-code: 415ms)
-[?25h
+○ Compiling / ...
+ GET / 200 in 9.6s (next.js: 9.0s, application-code: 649ms)
+ GET / 200 in 196ms (next.js: 57ms, application-code: 139ms)
+ GET / 200 in 888ms (next.js: 220ms, application-code: 667ms)
+ GET /?mode=signup 200 in 552ms (next.js: 169ms, application-code: 383ms)
+ GET / 200 in 650ms (next.js: 309ms, application-code: 342ms)
+ GET / 200 in 238ms (next.js: 47ms, application-code: 191ms)
+✓ Compiled in 144ms
+ GET / 200 in 83ms (next.js: 24ms, application-code: 59ms)
+ GET / 200 in 424ms (next.js: 30ms, application-code: 393ms)
+✓ Compiled in 105ms
+ GET / 200 in 69ms (next.js: 24ms, application-code: 45ms)
+ GET / 200 in 123ms (next.js: 16ms, application-code: 108ms)
+✓ Compiled in 132ms
+ GET / 200 in 156ms (next.js: 31ms, application-code: 125ms)
+ GET / 200 in 72ms (next.js: 24ms, application-code: 48ms)
+ GET / 200 in 342ms (next.js: 92ms, application-code: 250ms)

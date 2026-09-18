@@ -91,19 +91,19 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
         <span className="h-px flex-1 bg-mist-300" />
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="mx-auto grid w-[min(420px,100%)] grid-cols-2 gap-5">
         <button
           type="button"
-          className="flex h-[clamp(2.4rem,5.2vh,3rem)] items-center justify-center gap-2 rounded-2xl border border-mist-300 bg-white text-[clamp(0.85rem,1.9vh,0.95rem)] font-medium text-ink-700 transition-colors hover:border-leaf-400"
+          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-mist-300 bg-white text-[clamp(0.78rem,1.7vh,0.85rem)] font-medium text-ink-700 transition-colors hover:border-leaf-400"
         >
-          <GoogleIcon className="h-5 w-5" />
+          <GoogleIcon className="h-4 w-4" />
           Google
         </button>
         <button
           type="button"
-          className="flex h-[clamp(2.4rem,5.2vh,3rem)] items-center justify-center gap-2 rounded-2xl border border-mist-300 bg-white text-[clamp(0.85rem,1.9vh,0.95rem)] font-medium text-ink-700 transition-colors hover:border-leaf-400"
+          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-mist-300 bg-white text-[clamp(0.78rem,1.7vh,0.85rem)] font-medium text-ink-700 transition-colors hover:border-leaf-400"
         >
-          <FacebookIcon className="h-5 w-5" />
+          <FacebookIcon className="h-4 w-4" />
           Facebook
         </button>
       </div>
@@ -128,7 +128,7 @@ function AuthButton({
 
 function LoginView({ onSwitch }: { onSwitch: () => void }) {
   return (
-    <div className="my-auto flex w-full flex-col items-center py-2 [animation:fade-in_450ms_ease-out_both]">
+    <div className="my-auto flex w-full max-w-[560px] flex-col items-center py-2 [animation:fade-in_450ms_ease-out_both]">
       <div className="flex items-center justify-center gap-3">
         <LeafMark className="h-[clamp(2rem,4.5vh,3rem)] w-[clamp(2rem,4.5vh,3rem)]" />
         <h1 className="text-[clamp(1.6rem,4.6vh,2.75rem)] font-semibold leading-tight text-forest-900">
@@ -191,7 +191,7 @@ function LoginView({ onSwitch }: { onSwitch: () => void }) {
 
 function SignUpView({ onSwitch }: { onSwitch: () => void }) {
   return (
-    <div className="my-auto flex w-full flex-col items-center py-2 [animation:fade-in_450ms_ease-out_both]">
+    <div className="my-auto flex w-full max-w-[560px] flex-col items-center py-2 [animation:fade-in_450ms_ease-out_both]">
       <div className="flex items-center justify-center gap-3">
         <LeafMark className="h-[clamp(2rem,4.5vh,3rem)] w-[clamp(2rem,4.5vh,3rem)]" />
         <h1 className="text-[clamp(1.6rem,4.6vh,2.75rem)] font-semibold leading-tight text-forest-900">
@@ -254,7 +254,7 @@ export function AuthForms({
 }: {
   initialMode?: "login" | "signup";
 }) {
-  const [mode, setMode] = useState<"login" | "signup",>(initialMode);
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   return mode === "login" ? (
     <LoginView onSwitch={() => setMode("signup")} />
   ) : (

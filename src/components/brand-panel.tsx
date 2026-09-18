@@ -3,7 +3,7 @@ import Image from "next/image";
 export function BrandPanel() {
   return (
     <aside
-      className="relative hidden min-h-screen w-full overflow-hidden bg-forest-950 lg:flex lg:w-[46%] xl:w-[47%]"
+      className="relative hidden min-h-screen w-full overflow-hidden bg-forest-950 lg:flex lg:w-1/2"
       aria-label="Waste2Value"
     >
       {/* Full-bleed artwork: leaves, diagonal white wedge, green stripes */}
@@ -12,7 +12,7 @@ export function BrandPanel() {
         alt=""
         fill
         priority
-        sizes="(max-width: 1024px) 100vw, 47vw"
+        sizes="(max-width: 1024px) 100vw, 50vw"
         className="object-cover object-left"
       />
 
