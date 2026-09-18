@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   CameraIcon,
   ChevronDownIcon,
@@ -12,39 +13,45 @@ import {
 import { AvatarArt } from "./dashboard-art";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: GridIcon, active: true },
-  { label: "Scanner", icon: CameraIcon, active: false },
-  { label: "Discover", icon: SearchIcon, active: false },
-  { label: "Exchange", icon: ExchangeIcon, active: false },
-  { label: "Activities", icon: ClockIcon, active: false },
+  { label: "Dashboard", icon: GridIcon, href: "/dashboard" },
+  { label: "Scanner", icon: CameraIcon, href: "/scanner" },
+  { label: "Discover", icon: SearchIcon, href: "#" },
+  { label: "Exchange", icon: ExchangeIcon, href: "#" },
+  { label: "Activities", icon: ClockIcon, href: "#" },
 ];
 
 function NavItem({
   label,
   icon: Icon,
   active,
+  href,
 }: {
   label: string;
   icon: (props: { className?: string }) => React.ReactNode;
   active: boolean;
+  href: string;
 }) {
   return (
-    <a
-      href="#"
+    <Link
+      href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex h-[46px] items-center gap-3.5 rounded-full px-5 text-[15.5px] font-medium transition-colors ${
+      className={`flex h-[46px] items-center gap-3.5 rounded-full px-4 text-[15.5px] font-medium transition-colors ${
         active
-          ? "bg-brand-700 text-white shadow-[0_10px_20px_rgba(20,92,54,0.35)]"
+          ? "bg-[#237f22] text-white shadow-[0_10px_18px_rgba(20,92,54,0.28)]"
           : "text-gray-900 hover:bg-brand-50"
       }`}
     >
       <Icon className="h-[22px] w-[22px]" />
       {label}
-    </a>
+    </Link>
   );
 }
 
-export function DashboardSidebar() {
+export function DashboardSidebar({
+  activeItem = "Dashboard",
+}: {
+  activeItem?: string;
+}) {
   return (
     <aside className="sticky top-0 hidden h-dvh w-[234px] shrink-0 flex-col rounded-r-[42px] bg-white shadow-[5px_0_22px_rgba(17,24,39,0.025)] md:flex">
       <div className="flex flex-col items-center px-6 pb-6 pt-9">
@@ -63,15 +70,19 @@ export function DashboardSidebar() {
 
       <nav aria-label="Main" className="mt-1 space-y-1.5 px-[18px]">
         {NAV_ITEMS.map((item) => (
-          <NavItem key={item.label} {...item} />
+          <NavItem
+            key={item.label}
+            {...item}
+            active={item.label === activeItem}
+          />
         ))}
       </nav>
 
       <div className="mx-8 my-5 h-px bg-gray-200" />
 
       <nav aria-label="Secondary" className="space-y-1.5 px-[18px]">
-        <NavItem label="Settings" icon={GearIcon} active={false} />
-        <NavItem label="Logout" icon={LogoutIcon} active={false} />
+        <NavItem label="Settings" icon={GearIcon} href="#" active={false} />
+        <NavItem label="Logout" icon={LogoutIcon} href="#" active={false} />
       </nav>
 
       <div className="mt-auto px-[18px] pb-5">

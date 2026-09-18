@@ -576,3 +576,19 @@ export function CheckIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function UploadIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M12 15V4m0 0L8 8m4-4 4 4M5 15v3.25A1.75 1.75 0 0 0 6.75 20h10.5A1.75 1.75 0 0 0 19 18.25V15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function BrainIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M9.3 5.1A3.4 3.4 0 0 0 4.6 8.2a3.5 3.5 0 0 0 .2 5.7 3.4 3.4 0 0 0 4.8 4.7M14.7 5.1a3.4 3.4 0 0 1 4.7 3.1 3.5 3.5 0 0 1-.2 5.7 3.4 3.4 0 0 1-4.8 4.7M9.5 4.4c2.4 1.2 2.4 4.2 2.4 6.2v8.9M14.5 4.4c-2.4 1.2-2.4 4.2-2.4 6.2M7.2 9.2c1.7.1 2.6.9 2.8 2.1M16.8 9.2c-1.7.1-2.6.9-2.8 2.1M7.3 15.5c1.6-.1 2.4-.8 2.7-1.8M16.7 15.5c-1.6-.1-2.4-.8-2.7-1.8" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
