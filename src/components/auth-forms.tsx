@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRightIcon,
   EyeIcon,
@@ -162,10 +163,12 @@ function AuthButton({
 function LoginView({
   onSwitch,
   onForgot,
+  onSubmit,
   state,
 }: {
   onSwitch: () => void;
   onForgot: () => void;
+  onSubmit: () => void;
   state: ViewState;
 }) {
   return (
@@ -182,8 +185,12 @@ function LoginView({
 
       <form
         className="mt-[clamp(0.9rem,2.8vh,2.25rem)] flex w-full flex-col gap-[clamp(0.7rem,1.9vh,1.25rem)]"
-        action="#"
+        action="/dashboard"
         method="post"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit();
+        }}
       >
         <Field
           label="Email address"
@@ -237,9 +244,11 @@ function LoginView({
 
 function SignUpView({
   onSwitch,
+  onSubmit,
   state,
 }: {
   onSwitch: () => void;
+  onSubmit: () => void;
   state: ViewState;
 }) {
   return (
@@ -257,8 +266,12 @@ function SignUpView({
 
       <form
         className="mt-[clamp(0.9rem,2.8vh,2.25rem)] flex w-full flex-col gap-[clamp(0.7rem,1.9vh,1.25rem)]"
-        action="#"
+        action="/dashboard"
         method="post"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit();
+        }}
       >
         <Field
           label="First name"
@@ -392,13 +405,21 @@ function AuthView({
   mode,
   state,
   onSwitch,
+  onSubmit,
 }: {
   mode: AuthMode;
   state: ViewState;
   onSwitch: (mode: AuthMode) => void;
+  onSubmit: () => void;
 }) {
   if (mode === "signup") {
-    return <SignUpView state={state} onSwitch={() => onSwitch("login")} />;
+    return (
+      <SignUpView
+        state={state}
+        onSwitch={() => onSwitch("login")}
+        onSubmit={onSubmit}
+      />
+    );
   }
   if (mode === "forgot") {
     return (
@@ -410,6 +431,7 @@ function AuthView({
       state={state}
       onSwitch={() => onSwitch("signup")}
       onForgot={() => onSwitch("forgot")}
+      onSubmit={onSubmit}
     />
   );
 }
@@ -419,6 +441,7 @@ export function AuthForms({
 }: {
   initialMode?: AuthMode;
 }) {
+  const router = useRouter();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [leavingMode, setLeavingMode] = useState<AuthMode | null>(null);
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -428,6 +451,8 @@ export function AuthForms({
       if (fadeTimer.current) clearTimeout(fadeTimer.current);
     };
   }, []);
+
+  const goToDashboard = useCallback(() => router.push("/dashboard"), [router]);
 
   const switchTo = (next: AuthMode) => {
     if (next === mode) return;
@@ -454,6 +479,7 @@ export function AuthForms({
                 : "hidden"
           }
           onSwitch={switchTo}
+          onSubmit={goToDashboard}
         />
       ))}
     </div>
