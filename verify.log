@@ -1,0 +1,24 @@
+
+> w2v@0.1.0 lint
+> eslint
+
+
+> w2v@0.1.0 typecheck
+> tsc --noEmit
+
+.next/types/validator.ts(51,39): error TS2307: Cannot find module '../../src/app/signup/page.js' or its corresponding type declarations.
+src/components/auth-forms.tsx(257,54): error TS1009: Trailing comma not allowed.
+
+> w2v@0.1.0 build
+> next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 170ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.2s
+  Running TypeScript ...
+src/components/auth-forms.tsx(257,54): error TS1009: Trailing comma not allowed.
+Failed to type check.
+
+VERIFY_DONE

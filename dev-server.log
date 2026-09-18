@@ -1,0 +1,14 @@
+
+> w2v@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.5 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.12.74.240:3000
+✓ Ready in 1315ms
+✓ Running next.config.ts took 99ms
+
+○ Compiling /signup ...
+ GET /signup 200 in 8.4s (next.js: 8.1s, application-code: 291ms)
+ GET /signup 200 in 476ms (next.js: 61ms, application-code: 415ms)
+[?25h

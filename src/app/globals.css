@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+
+  /* Deep forest greens (button, headings, dark panel) */
+  --color-forest-950: #082013;
+  --color-forest-900: #0e331f;
+  --color-forest-800: #1e4b33;
+  --color-forest-700: #26593d;
+
+  /* Bright leaf greens (accents, logo gradient) */
+  --color-leaf-600: #359146;
+  --color-leaf-500: #3fa14c;
+  --color-leaf-400: #5cbb63;
+  --color-leaf-300: #8ed08f;
+  --color-leaf-200: #bfe3bd;
+
+  /* Neutrals (form side) */
+  --color-mist-50: #f6f9f6;
+  --color-mist-100: #eef4ee;
+  --color-mist-300: #dde5dd;
+  --color-ink-700: #3d4c43;
+  --color-ink-500: #4e5f55;
+  --color-ink-400: #8a9990;
+
+  /* Exact white of the artwork's angled wedge — page bg must match it */
+  --color-wedge: #fcfdfd;
+}
+
+body {
+  background: var(--color-wedge);
+  color: var(--color-ink-700);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
