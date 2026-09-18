@@ -3,34 +3,37 @@
 @theme {
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 
-  /* Deep forest greens (button, headings, dark panel) */
-  --color-forest-950: #082013;
-  --color-forest-900: #0e331f;
-  --color-forest-800: #1e4b33;
-  --color-forest-700: #26593d;
+  /* Official W2V palette */
+  /* W2V Green #399318 — main accent, active states, links */
+  --color-brand-500: #399318;
+  /* Dark Green #145C36 — primary buttons, strong text, CTA areas */
+  --color-brand-700: #145c36;
+  --color-brand-800: #104b2c;
+  --color-brand-900: #0c3d24;
+  /* Light Green #EAF5EA — soft backgrounds, status pills, highlighted cards */
+  --color-brand-50: #eaf5ea;
+  --color-brand-100: #ddf0dd;
+  --color-brand-200: #b9dfba;
+  --color-brand-300: #7dbd80;
+  --color-brand-400: #4fa84f;
 
-  /* Bright leaf greens (accents, logo gradient) */
-  --color-leaf-600: #359146;
-  --color-leaf-500: #3fa14c;
-  --color-leaf-400: #5cbb63;
-  --color-leaf-300: #8ed08f;
-  --color-leaf-200: #bfe3bd;
+  /* White #FFFFFF — cards, sidebar, main surfaces */
+  --color-surface: #ffffff;
+  /* Light Gray #F5F6F7 — main page background */
+  --color-page: #f5f6f7;
+  /* Very Pale Green #F0F8F1 — profile cards, impact cards, subtle sections */
+  --color-pale-green: #f0f8f1;
 
-  /* Neutrals (form side) */
-  --color-mist-50: #f6f9f6;
-  --color-mist-100: #eef4ee;
-  --color-mist-300: #dde5dd;
-  --color-ink-700: #3d4c43;
-  --color-ink-500: #4e5f55;
-  --color-ink-400: #8a9990;
-
-  /* Exact white of the artwork's angled wedge — page bg must match it */
-  --color-wedge: #fcfdfd;
+  /* Dark Text #111827 — headings and primary text */
+  --color-text-strong: #111827;
+  /* Muted Gray #6B7280 — subtitles, metadata, secondary text */
+  --color-text-muted: #6b7280;
+  --color-text-soft: #9aa2ad;
 }
 
 body {
-  background: var(--color-wedge);
-  color: var(--color-ink-700);
+  background: var(--color-page);
+  color: var(--color-text-strong);
 }
 
 @keyframes fade-in {
@@ -41,5 +44,16 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }

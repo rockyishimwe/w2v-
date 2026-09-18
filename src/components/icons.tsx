@@ -4,21 +4,33 @@ type IconProps = {
 
 export function LeafMark({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 48 48"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
       <path
         d="M24 6C16 10 12 17 13 25c7 1 14-3 17-11-2 9-7 15-15 17 3 3 8 4 12 2 6-3 9-10 8-19-3-4-7-7-11-8Z"
         fill="url(#leafGrad)"
       />
-      <path d="M12 27c-2 3-3 6-3 9 3 0 6-1 9-3-2-2-4-4-6-6Z" fill="#2e7d3a" />
+      <path d="M12 27c-2 3-3 6-3 9 3 0 6-1 9-3-2-2-4-4-6-6Z" fill="#145c36" />
       <path
         d="M13 25c5-1 11-5 14-13-8 3-13 8-14 13Z"
-        fill="#d7efd2"
+        fill="#ddf0dd"
         opacity="0.7"
       />
       <defs>
-        <linearGradient id="leafGrad" x1="13" y1="6" x2="35" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5cbb63" />
-          <stop offset="1" stopColor="#2e7d3a" />
+        <linearGradient
+          id="leafGrad"
+          x1="13"
+          y1="6"
+          x2="35"
+          y2="36"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#399318" />
+          <stop offset="1" stopColor="#145c36" />
         </linearGradient>
       </defs>
     </svg>
@@ -27,7 +39,12 @@ export function LeafMark({ className }: IconProps) {
 
 export function UserIcon({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
       <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.6" />
       <path
         d="M5.5 19c.8-3 3.4-4.75 6.5-4.75s5.7 1.75 6.5 4.75"
@@ -41,25 +58,67 @@ export function UserIcon({ className }: IconProps) {
 
 export function MailIcon({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="m4.5 7 7.5 6 7.5-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect
+        x="3.5"
+        y="5.5"
+        width="17"
+        height="13"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="m4.5 7 7.5 6 7.5-6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
 export function LockIcon({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect
+        x="5"
+        y="10.5"
+        width="14"
+        height="9.5"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 export function EyeIcon({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
       <path
         d="M2.5 12S6 5.75 12 5.75 21.5 12 21.5 12 18 18.25 12 18.25 2.5 12 2.5 12Z"
         stroke="currentColor"
@@ -73,7 +132,12 @@ export function EyeIcon({ className }: IconProps) {
 
 export function EyeOffIcon({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
       <path
         d="M4 4l16 16"
         stroke="currentColor"
@@ -87,14 +151,24 @@ export function EyeOffIcon({ className }: IconProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M9.5 9.6a3 3 0 0 0 4.2 4.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M9.5 9.6a3 3 0 0 0 4.2 4.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 export function ArrowRightIcon({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
       <path
         d="M4.5 12h14m0 0-5.5-5.5M18.5 12 13 17.5"
         stroke="currentColor"

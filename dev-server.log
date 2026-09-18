@@ -25,3 +25,18 @@
  GET / 200 in 156ms (next.js: 31ms, application-code: 125ms)
  GET / 200 in 72ms (next.js: 24ms, application-code: 48ms)
  GET / 200 in 342ms (next.js: 92ms, application-code: 250ms)
+✓ Compiled in 644ms
+✓ Compiled in 216ms
+ GET / 200 in 241ms (next.js: 75ms, application-code: 166ms)
+✓ Compiled in 116ms
+ GET / 200 in 154ms (next.js: 55ms, application-code: 99ms)
+✓ Compiled in 300ms
+ GET / 200 in 150ms (next.js: 31ms, application-code: 119ms)
+✓ Compiled in 137ms
+ GET / 200 in 301ms (next.js: 35ms, application-code: 267ms)
+✓ Compiled in 331ms
+ GET / 200 in 167ms (next.js: 35ms, application-code: 132ms)
+✓ Compiled in 372ms
+✓ Compiled in 1168ms
+✓ Compiled in 235ms
+ GET / 200 in 266ms (next.js: 35ms, application-code: 231ms)

@@ -11,12 +11,12 @@ export default async function AuthPage({
   searchParams: Promise<{ mode?: string }>;
 }) {
   const { mode } = await searchParams;
-  const initialMode = mode === "signup" ? "signup" : "login";
+  const initialMode = mode === "signup" || mode === "forgot" ? mode : "login";
 
   return (
-    <div className="flex h-dvh min-h-[560px] overflow-hidden bg-wedge">
+    <div className="flex h-dvh min-h-[560px] overflow-hidden bg-page">
       <BrandPanel />
-      <main className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto bg-wedge px-6 py-6 sm:px-10">
+      <main className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto bg-page px-6 py-6 sm:px-10">
         <AuthForms initialMode={initialMode} />
       </main>
     </div>
