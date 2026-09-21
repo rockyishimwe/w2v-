@@ -12,7 +12,7 @@ import {
 const QUICK_ACTIONS = [
   { icon: EyeIcon, label: "View Recommendation", href: "/scanner/diy" },
   { icon: BookIcon, label: "View DIY Instructions", href: "/scanner/diy" },
-  { icon: ExchangeIcon, label: "Find Exchange Opportunities", href: "/dashboard" },
+  { icon: ExchangeIcon, label: "Find Exchange Opportunities", href: "/exchange" },
   { icon: BookmarkIcon, label: "Save", href: "#" },
 ];
 

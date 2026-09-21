@@ -10,7 +10,7 @@ const TABS = [
   { label: "Home", icon: GridIcon, href: "/dashboard" },
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
   { label: "Discover", icon: SearchIcon, href: "/scanner#examples" },
-  { label: "Exchange", icon: ExchangeIcon, href: "/dashboard" },
+  { label: "Exchange", icon: ExchangeIcon, href: "/exchange" },
   { label: "Activity", icon: ClockIcon, href: "/dashboard" },
 ];
 

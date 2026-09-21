@@ -26,7 +26,7 @@ const RECOMMENDATIONS = [
     icon: PeopleIcon,
     title: "Exchange",
     sub: "Give or find someone who needs it",
-    href: "/dashboard",
+    href: "/exchange",
   },
   {
     icon: RecycleIcon,

@@ -267,6 +267,15 @@ export function NearbyExchangeCard() {
           <br />
           Opportunities
         </h2>
+        <Link
+          href="/exchange"
+          className="flex shrink-0 items-center gap-1.5 text-right text-[12.5px] font-semibold leading-snug text-brand-500 transition-colors hover:text-brand-700"
+        >
+          View
+          <br />
+          map
+          <ArrowRightIcon className="h-3.5 w-3.5" />
+        </Link>
       </div>
       <ul className="mt-4 grid grid-cols-3 gap-3">
         {OPPORTUNITIES.map(({ art: Art, title, meta, tag }) => (

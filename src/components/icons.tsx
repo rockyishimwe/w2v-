@@ -1257,3 +1257,181 @@ export function ClipboardIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function HeartIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function PlusIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 5.5v13M5.5 12h13"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function MapIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="m9 5.5-5 2v11l5-2 6 2 5-2v-11l-5 2-6-2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M9 5.5v11m6-9.5v11" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+export function LayersIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="m12 3.5 8.5 4.5L12 12.5 3.5 8 12 3.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m4.5 12.5 7.5 4 7.5-4M4.5 16.5l7.5 4 7.5-4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function PersonIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M5.5 19c.8-3 3.4-4.75 6.5-4.75s5.7 1.75 6.5 4.75"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function UsersIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="8.4" r="3.1" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M3.6 19.2c.7-3.1 2.9-4.7 5.4-4.7s4.7 1.6 5.4 4.7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15.4 5.8a3.1 3.1 0 0 1 0 5.2M17.2 14.8c1.7.75 2.85 2.2 3.3 4.4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function InfinityIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M9.5 9.5c-3.5-2.8-6.5-.6-6.5 2.5s3 5.3 6.5 2.5c1-.8 1.7-1.7 2.5-2.5.8-.8 1.5-1.7 2.5-2.5 3.5-2.8 6.5-.6 6.5 2.5s-3 5.3-6.5 2.5c-1-.8-1.7-1.7-2.5-2.5-.8-.8-1.5-1.7-2.5-2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TagIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M4.5 5.5A1 1 0 0 1 5.5 4.5h5.6a1.5 1.5 0 0 1 1.06.44l7.4 7.4a1.5 1.5 0 0 1 0 2.12l-5.1 5.1a1.5 1.5 0 0 1-2.12 0l-7.4-7.4a1.5 1.5 0 0 1-.44-1.06V5.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.75" cy="8.75" r="1.1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function FilterIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M4.5 6h15l-6 7v5.5l-3-1.5V13l-6-7Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

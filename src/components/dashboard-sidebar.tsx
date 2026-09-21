@@ -15,10 +15,10 @@ import { AvatarArt } from "./dashboard-art";
 const NAV_ITEMS = [
   { label: "Dashboard", icon: GridIcon, href: "/dashboard" },
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
-  // Placeholder destinations until dedicated pages exist: Discover maps to the
-  // scanner's examples, Exchange/Activities to their dashboard cards.
+  // Discover maps to the scanner's examples until its page exists;
+  // Activities maps to the dashboard feed until its page exists.
   { label: "Discover", icon: SearchIcon, href: "/scanner" },
-  { label: "Exchange", icon: ExchangeIcon, href: "/dashboard" },
+  { label: "Exchange", icon: ExchangeIcon, href: "/exchange" },
   { label: "Activities", icon: ClockIcon, href: "/dashboard" },
 ];
 

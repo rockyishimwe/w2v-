@@ -141,7 +141,7 @@ const QUICK_ACTIONS = [
     icon: SearchIcon,
     title: "Find Exchange Items",
     sub: "Give or get materials",
-    href: "/dashboard",
+    href: "/exchange",
   },
 ];
 
