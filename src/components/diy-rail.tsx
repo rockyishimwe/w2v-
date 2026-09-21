@@ -67,8 +67,8 @@ export function DiySimilarIdeasCard() {
           const TagIcon = IDEA_ICONS[tag];
           return (
             <li key={title}>
-              <div className="flex items-center gap-3.5 rounded-2xl border border-gray-100 p-3 transition-colors">
-                <Art className="h-[58px] w-[58px] shrink-0 rounded-xl object-cover" />
+              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 p-2.5 transition-colors">
+                <Art className="h-[52px] w-[52px] shrink-0 rounded-xl object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2 text-[14px] font-bold text-gray-900">
                     {title}
