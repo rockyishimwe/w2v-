@@ -23,21 +23,23 @@ const IDEA_ICONS = { DIY: LightbulbIcon, Reuse: RecycleIcon } as const;
 export function DiyImpactNote() {
   return (
     <section className="relative overflow-hidden rounded-[28px] bg-pale-green p-5">
-      <div className="flex items-start gap-3.5">
+      {/* Watermark sits behind the content, tucked into the corner. */}
+      <LeafIcon className="pointer-events-none absolute -bottom-3 -right-1 h-12 w-12 rotate-[20deg] text-brand-200/50" />
+
+      <div className="relative z-10 flex items-start gap-3.5">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
           <LeafIcon className="h-5 w-5" />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 pr-8">
           <p className="font-display text-[14.5px] font-bold text-gray-900">
             Small change. Big impact.
           </p>
           <p className="mt-1 text-[12.5px] leading-relaxed text-gray-600">
-            By reusing this glass jar, you&rsquo;re reducing waste and giving the
-            material a second life!
+            By reusing this glass jar, you&rsquo;re reducing waste and giving
+            the material a second life!
           </p>
         </div>
       </div>
-      <LeafIcon className="pointer-events-none absolute -bottom-2 right-2 h-14 w-14 rotate-[20deg] text-brand-200/60" />
     </section>
   );
 }
