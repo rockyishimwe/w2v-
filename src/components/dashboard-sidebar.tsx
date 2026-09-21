@@ -55,7 +55,7 @@ export function DashboardSidebar({
   activeItem?: string;
 }) {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[234px] shrink-0 flex-col rounded-r-[42px] bg-white shadow-[5px_0_22px_rgba(17,24,39,0.025)] md:flex">
+    <aside className="sticky top-0 hidden h-dvh w-[234px] shrink-0 self-start flex-col rounded-r-[42px] bg-white shadow-[5px_0_22px_rgba(17,24,39,0.025)] md:flex">
       <div className="flex flex-col items-center px-6 pb-6 pt-9">
         <Image
           src="/images/logo-small.png"

@@ -30,8 +30,10 @@ export default function DiyGuidePage() {
             <DiyStepsCard />
           </div>
 
-          {/* Right rail: impact note, similar ideas, share */}
-          <div className="flex min-w-0 flex-col gap-6">
+          {/* Right rail: impact note, similar ideas, share. Pinned while the
+              guide column scrolls; scrolls internally when taller than the
+              viewport (HIG: keep secondary navigation/content reachable). */}
+          <div className="flex min-w-0 flex-col gap-6 xl:sticky xl:top-9 xl:max-h-[calc(100dvh-4.5rem)] xl:self-start xl:overflow-y-auto xl:pb-2 [scrollbar-width:thin]">
             <DiyImpactNote />
             <DiySimilarIdeasCard />
             <DiyShareCard />
