@@ -14,11 +14,11 @@ export function ScannerTopBar() {
           >
             <ArrowLeftIcon className="h-8 w-8" />
           </Link>
-          <h1 className="text-[38px] font-bold leading-none text-gray-900">
+          <h1 className="font-display text-[28px] font-bold leading-none text-gray-900">
             Scanner
           </h1>
         </div>
-        <p className="mt-2 text-[15.5px] text-gray-500">
+        <p className="mt-2 text-[14px] text-gray-500">
           Identify waste and discover what to do with it
         </p>
       </div>

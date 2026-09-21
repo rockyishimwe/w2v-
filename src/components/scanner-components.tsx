@@ -20,16 +20,20 @@ import {
   FoodScrapArt,
   GlassJarsArt,
 } from "./dashboard-art";
+import { UploadImageButton } from "./upload-image-button";
 
 function ScannerPanel({
   children,
   className = "",
+  id,
 }: {
   children: React.ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
     <section
+      id={id}
       className={`rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.045)] ${className}`}
     >
       {children}
@@ -41,10 +45,10 @@ export function ScannerHeader() {
   return (
     <header className="flex flex-wrap items-start justify-between gap-5">
       <div>
-        <h1 className="text-[40px] font-bold leading-none text-black">
+        <h1 className="font-display text-[30px] font-bold leading-none text-black">
           Scanner
         </h1>
-        <p className="mt-3 text-[16px] text-[#607493]">
+        <p className="mt-3 text-[14.5px] text-[#607493]">
           Identify waste and discover what to do with it
         </p>
       </div>
@@ -82,7 +86,7 @@ export function ScannerHeader() {
 export function UploadPanel() {
   return (
     <ScannerPanel className="p-5">
-      <div className="relative flex min-h-[488px] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-dashed border-[#75d99a] bg-[#f5fbf7] px-6 text-center">
+      <div className="relative flex min-h-[420px] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-dashed border-[#75d99a] bg-[#f5fbf7] px-6 text-center sm:min-h-[488px]">
         <LeafIcon className="absolute -right-2 top-5 h-16 w-16 rotate-[25deg] text-brand-700 opacity-10" />
         <LeafIcon className="absolute -bottom-2 -left-1 h-16 w-16 rotate-[210deg] text-brand-700 opacity-10" />
         <span className="flex h-[114px] w-[114px] items-center justify-center rounded-full bg-[#dcf3e3]">
@@ -90,27 +94,23 @@ export function UploadPanel() {
             <CameraIcon className="h-9 w-9" />
           </span>
         </span>
-        <h2 className="mt-8 max-w-[500px] text-[27px] font-semibold leading-[1.35] text-[#153a2a]">
+          <h2 className="font-display mt-8 max-w-[500px] text-[22px] font-semibold leading-[1.35] text-[#153a2a]">
           Scan something you&apos;re about
           <br className="hidden xl:block" /> to throw away.
         </h2>
-        <p className="mt-7 max-w-[480px] text-[17px] leading-[1.75] text-[#5d786d]">
+        <p className="mt-6 max-w-[480px] text-[15px] leading-[1.7] text-[#5d786d]">
           Take a photo or upload an image, and our AI will identify the item and
           suggest the best next steps.
         </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-10">
+        <div className="mt-6 flex flex-wrap justify-center gap-6 sm:mt-7 sm:gap-10">
           <Link
             href="/scanner/take-photo"
-            className="flex h-[61px] min-w-[213px] items-center justify-center gap-3 rounded-2xl bg-brand-700 px-7 text-[16px] font-medium text-white shadow-[0_8px_16px_rgba(20,92,54,0.14)]"
+            className="flex h-[56px] min-w-[190px] items-center justify-center gap-3 rounded-2xl bg-brand-700 px-6 text-[14.5px] font-medium text-white shadow-[0_8px_16px_rgba(20,92,54,0.14)]"
           >
             <CameraIcon className="h-6 w-6" />
             Take Photo
           </Link>
-          <label className="flex h-[61px] min-w-[213px] cursor-pointer items-center justify-center gap-3 rounded-2xl border border-brand-500 bg-white px-7 text-[16px] font-medium text-brand-500">
-            <UploadIcon className="h-5 w-5" />
-            Upload Image
-            <input className="sr-only" type="file" accept="image/*" />
-          </label>
+          <UploadImageButton className="flex h-[56px] min-w-[190px] items-center justify-center gap-3 rounded-2xl border border-brand-500 bg-white px-6 text-[14.5px] font-medium text-brand-500" />
         </div>
       </div>
     </ScannerPanel>
@@ -128,20 +128,31 @@ const BENEFITS = [
 export function ScannerBenefits() {
   return (
     <section className="rounded-[25px] bg-[#f2faf5] px-5 py-5">
-      <div className="flex items-center gap-3 text-[15px] font-semibold text-[#153a2a]">
+      <div className="flex items-center gap-3 text-[14px] font-semibold text-[#153a2a]">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9f2e2] text-brand-700">
           <LightbulbIcon className="h-5 w-5" />
         </span>
         What you can get:
       </div>
-      <div className="mt-2 grid grid-cols-5">
+      <div className="mt-2 hidden grid-cols-3 sm:grid sm:grid-cols-5">
         {BENEFITS.map(({ label, icon: Icon }, index) => (
           <div
             key={label}
             className={`flex min-w-0 flex-col items-center px-2 pt-2 text-center ${index ? "border-l border-[#e1eee5]" : ""}`}
           >
             <Icon className="h-6 w-6 text-brand-500" />
-            <span className="mt-2 text-[16px] font-semibold leading-tight text-[#153a2a]">
+            <span className="mt-2 text-[14px] font-semibold leading-tight text-[#153a2a]">
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
+      {/* Two-row fallback so the five outcomes stay readable on phones. */}
+      <div className="mt-3 grid grid-cols-3 gap-x-2 gap-y-3 sm:hidden">
+        {BENEFITS.map(({ label, icon: Icon }) => (
+          <div key={label} className="flex flex-col items-center text-center">
+            <Icon className="h-6 w-6 text-brand-500" />
+            <span className="mt-1 text-[12.5px] font-semibold leading-tight text-[#153a2a]">
               {label}
             </span>
           </div>
@@ -158,8 +169,8 @@ export function QuickTip() {
         <LightbulbIcon className="h-7 w-7" />
       </span>
       <div>
-        <h2 className="text-[22px] font-semibold text-[#153a2a]">Quick Tip</h2>
-        <p className="mt-1 text-[18px] leading-snug text-[#5d786d]">
+        <h2 className="font-display text-[19px] font-semibold text-[#153a2a]">Quick Tip</h2>
+        <p className="mt-1 text-[15px] leading-snug text-[#5d786d]">
           Make sure the image is clear and well-lit for better results.
         </p>
       </div>
@@ -190,7 +201,7 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <ScannerPanel className="p-8">
-      <h2 className="flex items-center gap-4 text-[27px] font-semibold text-[#153a2a]">
+      <h2 className="font-display flex items-center gap-4 text-[23px] font-semibold text-[#153a2a]">
         <SparkleIcon className="h-6 w-6 text-brand-700" />
         How it works
       </h2>
@@ -210,10 +221,10 @@ export function HowItWorks() {
               <Icon className="h-8 w-8" />
             </span>
             <div className="pt-1">
-              <h3 className="text-[21px] font-semibold text-[#153a2a]">
+              <h3 className="text-[18px] font-semibold text-[#153a2a]">
                 {title}
               </h3>
-              <p className="mt-2 max-w-[285px] text-[18px] leading-[1.5] text-[#667d73]">
+              <p className="mt-2 max-w-[285px] text-[15px] leading-[1.5] text-[#667d73]">
                 {description}
               </p>
             </div>
@@ -233,8 +244,8 @@ const EXAMPLES = [
 
 export function ExamplesCard() {
   return (
-    <ScannerPanel className="p-5">
-      <h2 className="flex items-center gap-3 text-[19px] font-semibold text-[#153a2a]">
+    <ScannerPanel className="p-5" id="examples">
+      <h2 className="font-display flex items-center gap-3 text-[16px] font-semibold text-[#153a2a]">
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#dcf3e3] text-brand-700">
           <LeafIcon className="h-6 w-6" />
         </span>
@@ -250,7 +261,7 @@ export function ExamplesCard() {
           </div>
         ))}
       </div>
-      <p className="mt-7 text-[13px] text-[#607493]">
+      <p className="mt-7 text-[12px] text-[#607493]">
         Almost anything can have a second life!
       </p>
     </ScannerPanel>
@@ -261,7 +272,7 @@ export function ChatButton() {
   return (
     <button
       type="button"
-      className="fixed bottom-4 right-9 z-10 flex h-[50px] items-center gap-3 rounded-full bg-brand-700 px-6 text-[16px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)]"
+      className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-5 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] md:bottom-6 md:right-9"
     >
       <BotIcon className="h-6 w-6" />
       Chat

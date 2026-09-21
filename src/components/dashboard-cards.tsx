@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ArrowRightIcon,
   ArrowUpIcon,
@@ -42,27 +43,16 @@ export function Card({
 export function CardHeader({
   title,
   icon: Icon,
-  action,
-  actionLabel = "View all",
 }: {
   title: string;
   icon: (props: { className?: string }) => React.ReactNode;
-  action?: string;
-  actionLabel?: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2.5 text-[19px] font-semibold text-gray-900">
+      <h2 className="font-display flex items-center gap-2.5 text-[16px] font-semibold text-gray-900">
         <Icon className="h-5 w-5 text-gray-900" />
         {title}
       </h2>
-      <a
-        href="#"
-        className="flex items-center gap-1.5 text-[13.5px] font-semibold text-brand-500 transition-colors hover:text-brand-700"
-      >
-        {action ?? actionLabel}
-        <ArrowRightIcon className="h-3.5 w-3.5" />
-      </a>
     </div>
   );
 }
@@ -83,20 +73,20 @@ export function ScanWasteCard() {
           <CameraIcon className="h-9 w-9" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-[22px] font-semibold leading-tight">
+          <h2 className="font-display text-[19px] font-semibold leading-tight">
             Scan Waste
           </h2>
-          <p className="mt-1 text-[13.5px] leading-snug text-white/85">
+          <p className="mt-1 text-[12.5px] leading-snug text-white/85">
             Identify what you have and discover the best next steps.
           </p>
         </div>
-        <a
-          href="#"
+        <Link
+          href="/scanner"
           aria-label="Open scanner"
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-md transition-transform hover:scale-105"
         >
           <ChevronRightIcon className="h-5 w-5" />
-        </a>
+        </Link>
       </div>
     </section>
   );
@@ -133,13 +123,13 @@ export function StatsCard() {
             className="rounded-xl border border-gray-100 px-2.5 py-3"
           >
             <Icon className="h-6 w-6 text-brand-500" />
-            <p className="mt-1.5 text-[18px] font-bold leading-none text-gray-900">
+            <p className="mt-1.5 text-[16px] font-bold leading-none text-gray-900">
               {value}
             </p>
-            <p className="mt-1 text-[9px] leading-tight text-gray-500">
+            <p className="mt-1 text-[10.5px] leading-tight text-gray-500">
               {label}
             </p>
-            <p className="mt-1.5 flex items-center gap-1 text-[9px] font-semibold text-brand-500">
+            <p className="mt-1.5 flex items-center gap-1 text-[10.5px] font-semibold text-brand-500">
               <ArrowUpIcon className="h-3 w-3" />
               {delta}
             </p>
@@ -180,12 +170,12 @@ export function RecentActivityCard() {
           <li key={item} className="flex items-center gap-3.5 py-4">
             <Art className="h-[62px] w-[62px] shrink-0 rounded-2xl object-cover" />
             <div className="min-w-0 flex-1">
-              <p className="flex flex-wrap items-center gap-x-1.5 text-[15.5px] font-semibold text-gray-900">
+              <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] font-semibold text-gray-900">
                 {item}
                 <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
                 {outcome}
               </p>
-              <p className="mt-0.5 text-[13px] text-gray-500">{meta}</p>
+              <p className="mt-0.5 text-[12px] text-gray-500">{meta}</p>
             </div>
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
               <CheckIcon className="h-4 w-4" />
@@ -222,36 +212,23 @@ export function RecommendedCard() {
   return (
     <Card>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2.5 text-[19px] font-semibold text-gray-900">
+        <h2 className="font-display flex items-center gap-2.5 text-[16px] font-semibold text-gray-900">
           <SparkleIcon className="h-5 w-5 text-gray-900" />
           Recommended for you
         </h2>
-        <a
-          href="#"
-          className="flex items-center gap-1.5 text-[13.5px] font-semibold text-brand-500 transition-colors hover:text-brand-700"
-        >
-          View all
-          <ArrowRightIcon className="h-3.5 w-3.5" />
-        </a>
       </div>
       <ul className="mt-2 divide-y divide-gray-100">
         {RECOMMENDATIONS.map(({ art: Art, item, outcome, meta }) => (
-          <li key={outcome}>
-            <a
-              href="#"
-              className="flex items-center gap-4 py-4 transition-colors hover:bg-gray-50"
-            >
-              <Art className="h-[72px] w-[72px] shrink-0 rounded-2xl object-cover" />
-              <div className="min-w-0 flex-1">
-                <p className="flex flex-wrap items-center gap-x-1.5 text-[15.5px] font-semibold text-gray-900">
-                  {item}
-                  <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
-                  {outcome}
-                </p>
-                <p className="mt-0.5 text-[13px] text-gray-500">{meta}</p>
-              </div>
-              <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-900" />
-            </a>
+          <li key={outcome} className="flex items-center gap-4 py-4">
+            <Art className="h-[72px] w-[72px] shrink-0 rounded-2xl object-cover" />
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] font-semibold text-gray-900">
+                {item}
+                <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
+                {outcome}
+              </p>
+              <p className="mt-0.5 text-[12px] text-gray-500">{meta}</p>
+            </div>
           </li>
         ))}
       </ul>
@@ -284,35 +261,26 @@ export function NearbyExchangeCard() {
   return (
     <Card>
       <div className="flex items-start justify-between gap-3">
-        <h2 className="flex items-center gap-2.5 text-[17px] font-semibold leading-snug text-gray-900">
+        <h2 className="font-display flex items-center gap-2.5 text-[15px] font-semibold leading-snug text-gray-900">
           <MapPinIcon className="h-5 w-5 shrink-0 text-gray-900" />
           Nearby Exchange
           <br />
           Opportunities
         </h2>
-        <a
-          href="#"
-          className="flex shrink-0 items-center gap-1.5 text-right text-[13.5px] font-semibold leading-snug text-brand-500 transition-colors hover:text-brand-700"
-        >
-          View
-          <br />
-          map
-          <ArrowRightIcon className="h-3.5 w-3.5" />
-        </a>
       </div>
       <ul className="mt-4 grid grid-cols-3 gap-3">
         {OPPORTUNITIES.map(({ art: Art, title, meta, tag }) => (
           <li key={title}>
-            <a href="#" className="group block">
+            <div className="block">
               <Art className="h-[74px] w-full rounded-xl object-cover" />
-              <p className="mt-2 text-[13px] font-semibold text-gray-900 group-hover:text-brand-700">
+              <p className="mt-2 text-[12px] font-semibold text-gray-900">
                 {title}
               </p>
-              <p className="mt-0.5 text-[11.5px] text-gray-500">{meta}</p>
-              <span className="mt-2 inline-block rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
+              <p className="mt-0.5 text-[11px] text-gray-500">{meta}</p>
+              <span className="mt-2 inline-block rounded-full bg-brand-50 px-2.5 py-1 text-[10.5px] font-semibold text-brand-700">
                 {tag}
               </span>
-            </a>
+            </div>
           </li>
         ))}
       </ul>
@@ -324,23 +292,23 @@ export function RecentChatCard() {
   return (
     <Card>
       <CardHeader title="Recent Chat" icon={ChatIcon} />
-      <a href="#" className="mt-4 flex items-center gap-3.5">
+      <div className="mt-4 flex items-center gap-3.5">
         <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
           <BotIcon className="h-7 w-7" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-2 text-[15px] font-semibold text-gray-900">
+          <p className="flex items-center gap-2 text-[13.5px] font-semibold text-gray-900">
             Waste Assistant
-            <span className="text-[11.5px] font-normal text-gray-500">
+            <span className="text-[10.5px] font-normal text-gray-500">
               2h ago
             </span>
           </p>
-          <p className="mt-0.5 truncate text-[13px] text-gray-500">
+          <p className="mt-0.5 truncate text-[12px] text-gray-500">
             Here are some options for your glass jars. Would you like to see...
           </p>
         </div>
         <ArrowRightIcon className="h-4 w-4 shrink-0 text-gray-900" />
-      </a>
+      </div>
     </Card>
   );
 }

@@ -4,8 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CameraIcon, LightbulbIcon } from "./icons";
-
-const PHOTO_KEY = "w2v-scanner-capture";
+import { storeVideoFrame } from "@/lib/photo";
 
 export function CameraViewfinder() {
   const router = useRouter();
@@ -55,29 +54,23 @@ export function CameraViewfinder() {
 
   function capturePhoto() {
     const video = videoRef.current;
-    if (!video || !cameraReady || !video.videoWidth) return;
+    if (!video || !cameraReady) return;
 
-    const maximumWidth = 1200;
-    const scale = Math.min(1, maximumWidth / video.videoWidth);
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(video.videoWidth * scale);
-    canvas.height = Math.round(video.videoHeight * scale);
-    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const captured = storeVideoFrame(video);
+    if (!captured) return;
 
-    const capturedPhoto = canvas.toDataURL("image/jpeg", 0.86);
-    sessionStorage.setItem(PHOTO_KEY, capturedPhoto);
     streamRef.current?.getTracks().forEach((track) => track.stop());
-    router.push("/scanner/result");
+    router.push("/scanner/review");
   }
 
   return (
     <section className="rounded-[42px] bg-white p-8 shadow-[0_14px_30px_rgba(17,24,39,0.08)]">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="flex items-center gap-6 text-[25px] font-semibold text-[#132f42]">
+        <h2 className="font-display flex items-center gap-6 text-[21px] font-semibold text-[#132f42]">
           <span aria-hidden="true" className="text-3xl leading-none">←</span>
           Take Photo
         </h2>
-        <span className="flex items-center gap-2 rounded-full border border-[#c9e9d1] bg-[#effaf1] px-5 py-2 text-[16px] font-semibold text-brand-700">
+        <span className="flex items-center gap-2 rounded-full border border-[#c9e9d1] bg-[#effaf1] px-5 py-2 text-[14.5px] font-semibold text-brand-700">
           <CameraIcon className="h-5 w-5" />
           Camera
         </span>
@@ -112,7 +105,7 @@ export function CameraViewfinder() {
 
       <section className="mt-7 flex items-center gap-5 rounded-[25px] border border-[#c9ead0] bg-[#effaf1] px-7 py-4">
         <span className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#dcf3e3] text-brand-700"><LightbulbIcon className="h-7 w-7" /></span>
-        <div><h3 className="text-[19px] font-semibold text-brand-700">Tip</h3><p className="mt-1 text-[17px] leading-snug text-[#56766a]">Make sure the item is well lit and clearly<br className="hidden sm:block" /> visible.</p></div>
+        <div><h3 className="font-display text-[16px] font-semibold text-brand-700">Tip</h3><p className="mt-1 text-[14.5px] leading-snug text-[#56766a]">Make sure the item is well lit and clearly<br className="hidden sm:block" /> visible.</p></div>
       </section>
     </section>
   );
@@ -121,5 +114,3 @@ export function CameraViewfinder() {
 function FrameCorner({ className }: { className: string }) {
   return <span aria-hidden="true" className={`absolute h-14 w-14 border-white ${className}`} />;
 }
-
-export { PHOTO_KEY };

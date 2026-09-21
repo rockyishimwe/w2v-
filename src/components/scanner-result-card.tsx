@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getMockScanResult } from "@/services/scanner-service";
+import type { ScanResult } from "@/types";
 import {
   ArrowDownCircleIcon,
   BoxIcon,
@@ -14,29 +16,23 @@ import {
   TrashIcon,
 } from "./icons";
 import { GlassJarsPhotoArt, LeafWatermarkArt } from "./scanner-art";
-import { PHOTO_KEY } from "./camera-viewfinder";
+import { loadPhoto } from "@/lib/photo";
+
 
 /**
- * Placeholder analysis data — swap for the real API response later.
+ * Mock analysis via the service layer — the UI is already shaped for the
+ * real ScanResult API payload (see types/index.ts).
  */
-const RESULT = {
-  title: "Glass jar",
-  material: "Glass",
-  category: "Container",
-  confidence: 92,
-  detectedSummary: "1 glass jar (approx. 500 ml)",
-  details: [
-    { icon: DatabaseIcon, label: "Material", value: "Glass" },
-    { icon: ShieldIcon, label: "Condition", value: "Good" },
-    { icon: BoxIcon, label: "Category", value: "Container" },
-    { icon: TrashIcon, label: "Detected items", value: "1 glass jar" },
-    { icon: GaugeIcon, label: "Estimated size", value: "500 ml" },
-  ],
-  tip: {
-    title: "Great find!",
-    body: "Glass is valuable and can be reused many times.",
-  },
-};
+const RESULT: ScanResult = getMockScanResult();
+
+/** View-model: pairs ScanResult fields with the icons that render them. */
+const DETAILS = [
+  { icon: DatabaseIcon, label: "Material", value: RESULT.material },
+  { icon: ShieldIcon, label: "Condition", value: RESULT.condition },
+  { icon: BoxIcon, label: "Category", value: RESULT.category },
+  { icon: TrashIcon, label: "Detected items", value: RESULT.detectedSummary },
+  { icon: GaugeIcon, label: "Estimated size", value: RESULT.estimatedSize },
+];
 
 function MetaBlock({
   icon: Icon,
@@ -51,8 +47,8 @@ function MetaBlock({
     <div className="flex items-center gap-2.5">
       <Icon className="h-5 w-5 shrink-0 text-gray-800" />
       <div>
-        <p className="text-[13px] leading-tight text-gray-500">{label}</p>
-        <p className="mt-0.5 text-[15px] font-semibold leading-tight text-gray-900">
+        <p className="text-[12px] leading-tight text-gray-500">{label}</p>
+        <p className="mt-0.5 text-[13.5px] font-semibold leading-tight text-gray-900">
           {value}
         </p>
       </div>
@@ -87,10 +83,10 @@ function ConfidenceRing({ percent }: { percent: number }) {
           strokeDasharray={`${filled} ${circumference - filled}`}
         />
       </svg>
-      <p className="mt-1.5 text-[12.5px] leading-tight text-gray-500">
+      <p className="mt-1.5 text-[11.5px] leading-tight text-gray-500">
         Confidence
       </p>
-      <p className="text-[15px] font-bold leading-tight text-brand-700">
+      <p className="text-[13.5px] font-bold leading-tight text-brand-700">
         {percent}%
       </p>
     </div>
@@ -103,7 +99,7 @@ export function ScannerResultCard() {
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      setPhoto(sessionStorage.getItem(PHOTO_KEY));
+      setPhoto(loadPhoto());
     });
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -111,7 +107,7 @@ export function ScannerResultCard() {
   return (
     <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-8">
       {/* Photo + identification */}
-      <div className="grid gap-8 md:grid-cols-[minmax(0,328px)_minmax(0,1fr)]">
+      <div className="grid gap-6 sm:gap-8 md:grid-cols-[minmax(0,328px)_minmax(0,1fr)]">
         <div className="relative aspect-square overflow-hidden rounded-[24px] bg-[#f2f7f3]">
           {photo ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -123,7 +119,7 @@ export function ScannerResultCard() {
           ) : (
             <GlassJarsPhotoArt className="absolute inset-0 h-full w-full" />
           )}
-          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[12.5px] font-semibold text-gray-900 shadow-sm">
+          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-semibold text-gray-900 shadow-sm">
             <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-700 text-white">
               <CheckIcon className="h-2.5 w-2.5" />
             </span>
@@ -132,12 +128,12 @@ export function ScannerResultCard() {
         </div>
 
         <div className="flex flex-col items-start py-1">
-          <span className="flex items-center gap-1.5 rounded-full bg-brand-50 px-3.5 py-2 text-[13px] font-semibold text-gray-900">
+          <span className="flex items-center gap-1.5 rounded-full bg-brand-50 px-3.5 py-2 text-[12px] font-semibold text-gray-900">
             <SparkleIcon className="h-4 w-4 text-brand-700" />
             AI Identified
           </span>
 
-          <h2 className="mt-3 text-[36px] font-bold leading-tight text-gray-900 sm:text-[40px]">
+          <h2 className="font-display mt-3 text-[26px] font-bold leading-tight text-gray-900 sm:text-[30px]">
             {RESULT.title}
           </h2>
 
@@ -166,10 +162,10 @@ export function ScannerResultCard() {
             <NodesIcon className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-[16.5px] font-bold text-gray-900">
+            <p className="font-display text-[15px] font-bold text-gray-900">
               Detected items
             </p>
-            <p className="mt-0.5 text-[14.5px] text-gray-600">
+            <p className="mt-0.5 text-[13.5px] text-gray-600">
               {RESULT.detectedSummary}
             </p>
           </div>
@@ -185,7 +181,7 @@ export function ScannerResultCard() {
           aria-controls="scan-details"
           className="flex w-full items-center justify-between gap-3 px-6 pt-6 text-left sm:px-7"
         >
-          <span className="text-[17px] font-bold text-brand-900">
+          <span className="font-display text-[15px] font-bold text-brand-900">
             More details
           </span>
           <ChevronUpIcon
@@ -200,14 +196,14 @@ export function ScannerResultCard() {
             id="scan-details"
             className="grid gap-x-10 gap-y-5 px-6 pb-7 pt-5 sm:grid-cols-2 sm:px-7"
           >
-            {RESULT.details.map(({ icon: Icon, label, value }) => (
+            {DETAILS.map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3.5">
                 <Icon className="h-5 w-5 shrink-0 text-gray-800" />
                 <div>
-                  <p className="text-[13px] leading-tight text-gray-500">
+                  <p className="text-[12px] leading-tight text-gray-500">
                     {label}
                   </p>
-                  <p className="mt-0.5 text-[15px] font-semibold leading-tight text-gray-900">
+                  <p className="mt-0.5 text-[13.5px] font-semibold leading-tight text-gray-900">
                     {value}
                   </p>
                 </div>
@@ -226,10 +222,10 @@ export function ScannerResultCard() {
             <ArrowDownCircleIcon className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-[16px] font-bold text-gray-900">
+            <p className="font-display text-[14.5px] font-bold text-gray-900">
               {RESULT.tip.title}
             </p>
-            <p className="mt-0.5 text-[14.5px] text-gray-600">
+            <p className="mt-0.5 text-[13.5px] text-gray-600">
               {RESULT.tip.body}
             </p>
           </div>

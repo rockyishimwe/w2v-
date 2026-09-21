@@ -14,6 +14,7 @@ import {
   QuoteCard,
   TopBar,
 } from "@/components/dashboard-rail";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
 
 export const metadata = {
   title: "Waste2Value — Dashboard",
@@ -21,13 +22,13 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-dvh bg-page">
+    <div className="flex min-h-dvh bg-page pb-20 md:pb-0">
       <DashboardSidebar />
 
       <main className="min-w-0 flex-1 px-4 py-7 sm:px-5 lg:px-5 lg:py-12">
         <TopBar />
 
-        <div className="mt-7 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.08fr)_minmax(340px,.94fr)] xl:gap-[18px]">
+        <div className="mt-7 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.08fr)_minmax(340px,.94fr)] xl:gap-[18px]">
           {/* Left column: scan banner, recent activity, nearby exchange */}
           <div className="flex min-w-0 flex-col gap-6">
             <ScanWasteCard />
@@ -51,6 +52,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      <MobileTabBar activeItem="Dashboard" />
     </div>
   );
 }

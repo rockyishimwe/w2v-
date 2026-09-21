@@ -37,7 +37,7 @@ const viewClassName = (state: ViewState) =>
   }`;
 
 function inputBase(className: string) {
-  return `h-[clamp(2.75rem,6.2vh,3.5rem)] w-full rounded-2xl border border-gray-200 bg-white/60 pl-12 pr-4 text-[clamp(0.85rem,1.9vh,0.95rem)] text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 ${className}`;
+  return `h-[clamp(2.6rem,5.8vh,3.25rem)] w-full rounded-2xl border border-gray-200 bg-white/60 pl-12 pr-4 text-[clamp(0.8rem,1.8vh,0.9rem)] text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 ${className}`;
 }
 
 function Field({
@@ -116,7 +116,7 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
     <>
       <div className="flex items-center gap-4">
         <span className="h-px flex-1 bg-gray-200" />
-        <span className="text-[clamp(0.75rem,1.7vh,0.875rem)] text-gray-500">
+        <span className="text-[clamp(0.7rem,1.6vh,0.8125rem)] text-gray-500">
           {dividerText}
         </span>
         <span className="h-px flex-1 bg-gray-200" />
@@ -125,14 +125,14 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
       <div className="mx-auto grid w-[min(420px,100%)] grid-cols-2 gap-5">
         <button
           type="button"
-          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.78rem,1.7vh,0.85rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
+          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
         >
           <GoogleIcon className="h-4 w-4" />
           Google
         </button>
         <button
           type="button"
-          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.78rem,1.7vh,0.85rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
+          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
         >
           <FacebookIcon className="h-4 w-4" />
           Facebook
@@ -153,7 +153,7 @@ function AuthButton({
     <button
       type="submit"
       onClick={onClick}
-      className="mx-auto flex h-[clamp(2.75rem,6.2vh,3.5rem)] w-[min(420px,100%)] items-center justify-center gap-2 rounded-full bg-brand-700 text-[clamp(0.85rem,1.9vh,0.95rem)] font-medium text-white shadow-[0_14px_28px_rgba(20,92,54,0.35)] transition-colors hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+      className="mx-auto flex h-[clamp(2.75rem,6.2vh,3.5rem)] w-[min(420px,100%)] items-center justify-center gap-2 rounded-full bg-brand-700 text-[clamp(0.8rem,1.8vh,0.9rem)] font-medium text-white shadow-[0_14px_28px_rgba(20,92,54,0.35)] transition-colors hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
     >
       {children}
     </button>
@@ -174,12 +174,12 @@ function LoginView({
   return (
     <div className={viewClassName(state)} aria-hidden={state !== "active"}>
       <div className="flex items-center justify-center gap-3">
-        <LeafMark className="h-[clamp(2rem,4.5vh,3rem)] w-[clamp(2rem,4.5vh,3rem)]" />
-        <h1 className="text-[clamp(1.6rem,4.6vh,2.75rem)] font-semibold leading-tight text-brand-700">
+        <LeafMark className="h-[clamp(1.75rem,4vh,2.5rem)] w-[clamp(1.75rem,4vh,2.5rem)]" />
+        <h1 className="font-display text-[clamp(1.3rem,3.8vh,2.2rem)] font-semibold leading-tight text-brand-700">
           Welcome back
         </h1>
       </div>
-      <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.85rem,2vh,1.0625rem)] leading-relaxed text-gray-500">
+      <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.8rem,1.8vh,1rem)] leading-relaxed text-gray-500">
         Log in to your Waste2Value account and continue making an impact.
       </p>
 
@@ -201,7 +201,7 @@ function LoginView({
         <PasswordField label="Password" />
 
         <div className="mt-[clamp(0.1rem,0.6vh,0.4rem)] flex w-full items-center justify-between px-1">
-          <label className="flex cursor-pointer items-center gap-2 text-[clamp(0.8rem,1.8vh,0.9375rem)] text-gray-500">
+          <label className="flex cursor-pointer items-center gap-2 text-[clamp(0.75rem,1.7vh,0.875rem)] text-gray-500">
             <input
               type="checkbox"
               name="remember"
@@ -228,7 +228,7 @@ function LoginView({
         </div>
       </form>
 
-      <p className="mt-[clamp(0.8rem,2.4vh,2rem)] text-center text-[clamp(0.8rem,1.8vh,0.9375rem)] text-gray-500">
+      <p className="mt-[clamp(0.8rem,2.4vh,2rem)] text-center text-[clamp(0.75rem,1.7vh,0.875rem)] text-gray-500">
         Don&apos;t have an account?{" "}
         <button
           type="button"
@@ -254,12 +254,12 @@ function SignUpView({
   return (
     <div className={viewClassName(state)} aria-hidden={state !== "active"}>
       <div className="flex items-center justify-center gap-3">
-        <LeafMark className="h-[clamp(2rem,4.5vh,3rem)] w-[clamp(2rem,4.5vh,3rem)]" />
-        <h1 className="text-[clamp(1.6rem,4.6vh,2.75rem)] font-semibold leading-tight text-brand-700">
+        <LeafMark className="h-[clamp(1.75rem,4vh,2.5rem)] w-[clamp(1.75rem,4vh,2.5rem)]" />
+        <h1 className="font-display text-[clamp(1.3rem,3.8vh,2.2rem)] font-semibold leading-tight text-brand-700">
           Create your account
         </h1>
       </div>
-      <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.85rem,2vh,1.0625rem)] leading-relaxed text-gray-500">
+      <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.8rem,1.8vh,1rem)] leading-relaxed text-gray-500">
         Join Waste2Value and be part of a community that turns waste into
         opportunity
       </p>
@@ -304,7 +304,7 @@ function SignUpView({
         </div>
       </form>
 
-      <p className="mt-[clamp(0.8rem,2.4vh,2rem)] text-center text-[clamp(0.8rem,1.8vh,0.9375rem)] text-gray-500">
+      <p className="mt-[clamp(0.8rem,2.4vh,2rem)] text-center text-[clamp(0.75rem,1.7vh,0.875rem)] text-gray-500">
         Already have an account?{" "}
         <button
           type="button"
@@ -331,20 +331,20 @@ function ForgotPasswordView({
   return (
     <div className={viewClassName(state)} aria-hidden={state !== "active"}>
       <div className="flex items-center justify-center gap-3">
-        <LeafMark className="h-[clamp(2rem,4.5vh,3rem)] w-[clamp(2rem,4.5vh,3rem)]" />
-        <h1 className="text-[clamp(1.6rem,4.6vh,2.75rem)] font-semibold leading-tight text-brand-700">
+        <LeafMark className="h-[clamp(1.75rem,4vh,2.5rem)] w-[clamp(1.75rem,4vh,2.5rem)]" />
+        <h1 className="font-display text-[clamp(1.3rem,3.8vh,2.2rem)] font-semibold leading-tight text-brand-700">
           Reset your password
         </h1>
       </div>
 
       {sent ? (
         <>
-          <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.85rem,2vh,1.0625rem)] leading-relaxed text-gray-500">
+          <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.8rem,1.8vh,1rem)] leading-relaxed text-gray-500">
             If an account exists for{" "}
             <span className="font-semibold text-gray-900">{email}</span>,
             we&apos;ve sent you a link to reset your password.
           </p>
-          <p className="mt-[clamp(0.3rem,1vh,0.6rem)] text-center text-[clamp(0.75rem,1.6vh,0.85rem)] text-gray-400">
+          <p className="mt-[clamp(0.3rem,1vh,0.6rem)] text-center text-[clamp(0.7rem,1.5vh,0.8125rem)] text-gray-400">
             Didn&apos;t get it? Check your spam folder.
           </p>
 
@@ -354,7 +354,7 @@ function ForgotPasswordView({
         </>
       ) : (
         <>
-          <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.85rem,2vh,1.0625rem)] leading-relaxed text-gray-500">
+          <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.8rem,1.8vh,1rem)] leading-relaxed text-gray-500">
             Enter the email address linked to your account and we&apos;ll send
             you a link to reset your password.
           </p>
@@ -385,7 +385,7 @@ function ForgotPasswordView({
             </div>
           </form>
 
-          <p className="mt-[clamp(0.8rem,2.4vh,2rem)] text-center text-[clamp(0.8rem,1.8vh,0.9375rem)] text-gray-500">
+          <p className="mt-[clamp(0.8rem,2.4vh,2rem)] text-center text-[clamp(0.75rem,1.7vh,0.875rem)] text-gray-500">
             Remember your password?{" "}
             <button
               type="button"

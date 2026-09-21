@@ -15,9 +15,11 @@ import { AvatarArt } from "./dashboard-art";
 const NAV_ITEMS = [
   { label: "Dashboard", icon: GridIcon, href: "/dashboard" },
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
-  { label: "Discover", icon: SearchIcon, href: "#" },
-  { label: "Exchange", icon: ExchangeIcon, href: "#" },
-  { label: "Activities", icon: ClockIcon, href: "#" },
+  // Placeholder destinations until dedicated pages exist: Discover maps to the
+  // scanner's examples, Exchange/Activities to their dashboard cards.
+  { label: "Discover", icon: SearchIcon, href: "/scanner" },
+  { label: "Exchange", icon: ExchangeIcon, href: "/dashboard" },
+  { label: "Activities", icon: ClockIcon, href: "/dashboard" },
 ];
 
 function NavItem({
@@ -35,7 +37,7 @@ function NavItem({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex h-[46px] items-center gap-3.5 rounded-full px-4 text-[15.5px] font-medium transition-colors ${
+      className={`flex h-[46px] items-center gap-3.5 rounded-full px-4 text-[14px] font-medium transition-colors ${
         active
           ? "bg-[#237f22] text-white shadow-[0_10px_18px_rgba(20,92,54,0.28)]"
           : "text-gray-900 hover:bg-brand-50"
@@ -63,7 +65,7 @@ export function DashboardSidebar({
           priority
           className="h-auto w-[88px]"
         />
-        <p className="mt-2 text-[19px] font-semibold text-gray-900">
+        <p className="font-display mt-2 text-[16px] font-semibold text-gray-900">
           Waste<span className="text-brand-500">2</span>Value
         </p>
       </div>
@@ -81,8 +83,21 @@ export function DashboardSidebar({
       <div className="mx-8 my-5 h-px bg-gray-200" />
 
       <nav aria-label="Secondary" className="space-y-1.5 px-[18px]">
-        <NavItem label="Settings" icon={GearIcon} href="#" active={false} />
-        <NavItem label="Logout" icon={LogoutIcon} href="#" active={false} />
+        {/* No settings/logout pages yet — render as inert buttons, not fake links. */}
+        <button
+          type="button"
+          className="flex h-[46px] w-full items-center gap-3.5 rounded-full px-4 text-left text-[14px] font-medium text-gray-900 transition-colors hover:bg-brand-50"
+        >
+          <GearIcon className="h-[22px] w-[22px]" />
+          Settings
+        </button>
+        <button
+          type="button"
+          className="flex h-[46px] w-full items-center gap-3.5 rounded-full px-4 text-left text-[14px] font-medium text-gray-900 transition-colors hover:bg-brand-50"
+        >
+          <LogoutIcon className="h-[22px] w-[22px]" />
+          Logout
+        </button>
       </nav>
 
       <div className="mt-auto px-[18px] pb-5">
@@ -91,10 +106,10 @@ export function DashboardSidebar({
             <AvatarArt className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-500 ring-offset-2 ring-offset-pale-green" />
             <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-brand-500" />
           </span>
-          <p className="mt-3 text-[15px] font-semibold text-gray-900">
+          <p className="mt-3 text-[13.5px] font-semibold text-gray-900">
             Vanessa Mwiza
           </p>
-          <p className="mt-0.5 text-[12.5px] text-gray-500">
+          <p className="mt-0.5 text-[11.5px] text-gray-500">
             vanessa@gmail.com
           </p>
           <button

@@ -1,5 +1,5 @@
+import Link from "next/link";
 import {
-  ArrowRightIcon,
   BellIcon,
   BotIcon,
   CameraIcon,
@@ -21,9 +21,9 @@ const MONTHLY_GOAL = {
 export function TopBar() {
   return (
     <div className="flex flex-wrap items-start justify-between gap-5">
-      <h1 className="text-[40px] font-bold leading-[1.08] text-gray-900 sm:text-[44px]">
+      <h1 className="font-display text-[26px] font-bold leading-[1.1] text-gray-900 sm:text-[34px]">
         Good Morning
-        <span className="block text-[44px] text-brand-500">Vanessa!</span>
+        <span className="block text-[34px] text-brand-500">Vanessa!</span>
       </h1>
 
       <div className="flex flex-1 items-center justify-end gap-4 pt-1">
@@ -58,9 +58,7 @@ export function TopBar() {
       </div>
     </div>
   );
-}
-
-export function ImpactCard() {
+}export function ImpactCard() {
   const radius = 44;
   const circumference = 2 * Math.PI * radius;
   const filled = (MONTHLY_GOAL.percent / 100) * circumference;
@@ -68,14 +66,7 @@ export function ImpactCard() {
   return (
     <Card>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[19px] font-semibold text-gray-900">Your Impact</h2>
-        <a
-          href="#"
-          className="flex items-center gap-1.5 text-[13.5px] font-semibold text-brand-500 transition-colors hover:text-brand-700"
-        >
-          View activity
-          <ArrowRightIcon className="h-3.5 w-3.5" />
-        </a>
+        <h2 className="font-display text-[16px] font-semibold text-gray-900">Your Impact</h2>
       </div>
 
       <div className="mt-5 flex items-center gap-5">
@@ -100,14 +91,14 @@ export function ImpactCard() {
               strokeDasharray={`${filled} ${circumference - filled}`}
             />
           </svg>
-          <p className="absolute inset-0 flex items-center justify-center text-[22px] font-bold text-gray-900">
+          <p className="absolute inset-0 flex items-center justify-center text-[19px] font-bold text-gray-900">
             {MONTHLY_GOAL.percent}%
           </p>
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[13.5px] text-gray-500">Monthly goal</p>
-          <p className="mt-1 text-[17px] font-bold text-gray-900">
+          <p className="text-[12px] text-gray-500">Monthly goal</p>
+          <p className="mt-1 text-[15px] font-bold text-gray-900">
             {MONTHLY_GOAL.current}
             <span className="font-medium text-gray-500">
               {" "}
@@ -138,43 +129,46 @@ const QUICK_ACTIONS = [
     icon: CameraIcon,
     title: "Scan Waste",
     sub: "Identify and get options",
+    href: "/scanner",
   },
   {
     icon: LightbulbIcon,
     title: "Explore Ideas",
     sub: "DIY, reuse and more",
+    href: "/scanner#examples",
   },
   {
     icon: SearchIcon,
     title: "Find Exchange Items",
     sub: "Give or get materials",
+    href: "/dashboard",
   },
 ];
 
 export function QuickActionsCard() {
   return (
     <Card>
-      <h2 className="text-[19px] font-semibold text-gray-900">Quick Actions</h2>
+      <h2 className="font-display text-[16px] font-semibold text-gray-900">Quick Actions</h2>
       <ul className="mt-4 space-y-3">
-        {QUICK_ACTIONS.map(({ icon: Icon, title, sub }) => (
+        {QUICK_ACTIONS.map(({ icon: Icon, title, sub, href }) => (
           <li key={title}>
-            <a
-              href="#"
+            <Link
+              href={href}
               className="group flex items-center gap-3.5 rounded-2xl border border-gray-100 p-3.5 transition-colors hover:border-brand-200 hover:bg-brand-50/50"
             >
               <span className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
                 <Icon className="h-[22px] w-[22px]" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold text-gray-900">
+                <span className="block text-[13.5px] font-semibold text-gray-900">
                   {title}
                 </span>
-                <span className="mt-0.5 block text-[12.5px] text-gray-500">
+                <span className="mt-0.5 block text-[11.5px] text-gray-500">
                   {sub}
                 </span>
               </span>
               <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-900 transition-transform group-hover:translate-x-0.5" />
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -184,25 +178,22 @@ export function QuickActionsCard() {
 
 export function HelpCard() {
   return (
-    <a
-      href="#"
-      className="group flex items-center gap-3.5 rounded-[28px] bg-brand-50 p-5 transition-colors hover:bg-brand-100"
-    >
+    <div className="group flex items-center gap-3.5 rounded-[28px] bg-brand-50 p-5 transition-colors hover:bg-brand-100">
       <span className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
         <BotIcon className="h-6 w-6" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-bold text-gray-900">
+        <span className="block text-[13.5px] font-bold text-gray-900">
           Need help?
         </span>
-        <span className="mt-0.5 block text-[12.5px] leading-snug text-gray-600">
+        <span className="mt-0.5 block text-[11.5px] leading-snug text-gray-600">
           Chat with Waste Assistant
           <br />
           Ask anything about your waste.
         </span>
       </span>
       <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-900 transition-transform group-hover:translate-x-0.5" />
-    </a>
+    </div>
   );
 }
 
@@ -214,7 +205,7 @@ export function QuoteCard() {
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent"
       />
-      <blockquote className="absolute inset-x-0 bottom-0 p-5 text-[17px] font-semibold leading-snug text-white">
+      <blockquote className="absolute inset-x-0 bottom-0 p-5 text-[15px] font-semibold leading-snug text-white">
         &ldquo;A cleaner Kigali,
         <LeafIcon className="mx-1 inline h-4 w-4 text-brand-200" />
         <br />

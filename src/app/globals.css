@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-public), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-public), ui-sans-serif,
+    system-ui, sans-serif;
 
   /* Official W2V palette */
   /* W2V Green #399318 — main accent, active states, links */
@@ -34,6 +36,14 @@
 body {
   background: var(--color-page);
   color: var(--color-text-strong);
+}
+
+/* Display face for headings and brand marks (HIG: minimize typeface count —
+   two families total: Bricolage Grotesque for display, Public Sans for body). */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }
 
 @keyframes fade-in {

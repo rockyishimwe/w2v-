@@ -14,9 +14,9 @@ export default async function AuthPage({
   const initialMode = mode === "signup" || mode === "forgot" ? mode : "login";
 
   return (
-    <div className="flex h-dvh min-h-[560px] overflow-hidden bg-page">
+    <div className="flex min-h-dvh bg-page">
       <BrandPanel />
-      <main className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto bg-page px-6 py-6 sm:px-10">
+      <main className="flex min-h-dvh w-full flex-1 items-center justify-center bg-page px-6 py-8 sm:px-10">
         <AuthForms initialMode={initialMode} />
       </main>
     </div>

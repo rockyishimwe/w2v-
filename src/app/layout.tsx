@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Bricolage_Grotesque, Public_Sans } from "next/font/google";
 import "./globals.css";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const publicSans = Public_Sans({
+  variable: "--font-public",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -23,7 +29,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${poppins.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${bricolageGrotesque.variable} ${publicSans.variable} h-full antialiased`}
+    >
       <body className="min-h-full font-sans">{children}</body>
     </html>
   );
