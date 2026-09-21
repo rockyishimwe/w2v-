@@ -1143,3 +1143,117 @@ export function ZapIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function PlayIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill="currentColor" />
+      <path d="M10 8.4v7.2l6-3.6-6-3.6Z" fill="white" />
+    </svg>
+  );
+}
+
+export function ShareIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="17.5" cy="5.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="17.5" cy="18.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="m8.2 10.8 7.1-4.1M8.2 13.2l7.1 4.1"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function CoinsIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <ellipse
+        cx="9.5"
+        cy="7.25"
+        rx="6"
+        ry="2.75"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M3.5 7.25v4c0 1.52 2.7 2.75 6 2.75s6-1.23 6-2.75v-4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8.5 15.6c.9.5 2.2.8 3.5.8 3.3 0 6-1.23 6-2.75v-4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <ellipse
+        cx="15"
+        cy="7.25"
+        rx="6"
+        ry="2.75"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+    </svg>
+  );
+}
+
+export function BarsIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <rect x="4" y="13" width="3.4" height="7" rx="1" fill="currentColor" />
+      <rect x="10.3" y="9" width="3.4" height="11" rx="1" fill="currentColor" />
+      <rect x="16.6" y="4" width="3.4" height="16" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function ClipboardIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect
+        x="5"
+        y="4.75"
+        width="14"
+        height="16"
+        rx="2.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M9 4.75V4a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 4v.75"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="m8.75 11.5 1.6 1.6 3.4-3.6M8.75 16.5l1.6 1.6 3.4-3.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

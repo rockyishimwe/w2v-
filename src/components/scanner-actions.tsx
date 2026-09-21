@@ -10,8 +10,8 @@ import {
 } from "./icons";
 
 const QUICK_ACTIONS = [
-  { icon: EyeIcon, label: "View Recommendation", href: "#" },
-  { icon: BookIcon, label: "View DIY Instructions", href: "#" },
+  { icon: EyeIcon, label: "View Recommendation", href: "/scanner/diy" },
+  { icon: BookIcon, label: "View DIY Instructions", href: "/scanner/diy" },
   { icon: ExchangeIcon, label: "Find Exchange Opportunities", href: "/dashboard" },
   { icon: BookmarkIcon, label: "Save", href: "#" },
 ];
@@ -34,28 +34,16 @@ export function ScannerQuickActionsCard() {
       <ul className="mt-6 space-y-4">
         {QUICK_ACTIONS.map(({ icon: Icon, label, href }) => (
           <li key={label}>
-            {href === "#" ? (
-              <div
-                className="group flex items-center gap-3.5 rounded-2xl border border-brand-300/70 bg-white px-5 py-4"
-              >
-                <Icon className="h-5 w-5 shrink-0 text-brand-800" />
-                <span className="min-w-0 flex-1 text-[14.5px] font-bold text-brand-800">
-                  {label}
-                </span>
-                <ChevronRightIcon className="h-5 w-5 shrink-0 text-brand-800/70" />
-              </div>
-            ) : (
-              <Link
-                href={href}
-                className="group flex items-center gap-3.5 rounded-2xl border border-brand-300/70 bg-white px-5 py-4 transition-colors hover:border-brand-500 hover:bg-brand-50/50"
-              >
-                <Icon className="h-5 w-5 shrink-0 text-brand-800" />
-                <span className="min-w-0 flex-1 text-[14.5px] font-bold text-brand-800">
-                  {label}
-                </span>
-                <ChevronRightIcon className="h-5 w-5 shrink-0 text-brand-800/70 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            )}
+            <Link
+              href={href}
+              className="group flex items-center gap-3.5 rounded-2xl border border-brand-300/70 bg-white px-5 py-4 transition-colors hover:border-brand-500 hover:bg-brand-50/50"
+            >
+              <Icon className="h-5 w-5 shrink-0 text-brand-800" />
+              <span className="min-w-0 flex-1 text-[14.5px] font-bold text-brand-800">
+                {label}
+              </span>
+              <ChevronRightIcon className="h-5 w-5 shrink-0 text-brand-800/70 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </li>
         ))}
       </ul>
