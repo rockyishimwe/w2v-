@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import {
   BookIcon,
   BookmarkIcon,
@@ -9,10 +10,18 @@ import {
   ZapIcon,
 } from "./icons";
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS: {
+  icon: (props: { className?: string }) => React.ReactNode;
+  label: string;
+  href: Route;
+}[] = [
   { icon: EyeIcon, label: "View Recommendation", href: "/scanner/diy" },
   { icon: BookIcon, label: "View DIY Instructions", href: "/scanner/diy" },
-  { icon: ExchangeIcon, label: "Find Exchange Opportunities", href: "/exchange" },
+  {
+    icon: ExchangeIcon,
+    label: "Find Exchange Opportunities",
+    href: "/exchange",
+  },
   { icon: BookmarkIcon, label: "Save", href: "#" },
 ];
 

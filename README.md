@@ -30,6 +30,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run format`     | Format all files with Prettier    |
 | `npm run format:check` | Check formatting                |
 | `npm run typecheck`  | Type-check without emitting       |
+| `npm run test`       | Run unit tests (Vitest)           |
+| `npm run check`      | Typecheck + lint + format + tests |
 
 ## Environment Variables
 

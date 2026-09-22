@@ -16,7 +16,12 @@ import {
 } from "./diy-art";
 import { SIMILAR_IDEAS } from "@/constants/diy-guide";
 
-const IDEA_ART = [IdeaLanternArt, IdeaHangingLightsArt, IdeaHerbPlanterArt, IdeaStorageJarArt];
+const IDEA_ART = [
+  IdeaLanternArt,
+  IdeaHangingLightsArt,
+  IdeaHerbPlanterArt,
+  IdeaStorageJarArt,
+];
 
 const IDEA_ICONS = { DIY: LightbulbIcon, Reuse: RecycleIcon } as const;
 

@@ -22,9 +22,7 @@ function downscaleToDataUrl(
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(sourceWidth * scale);
   canvas.height = Math.round(sourceHeight * scale);
-  canvas
-    .getContext("2d")
-    ?.drawImage(source, 0, 0, canvas.width, canvas.height);
+  canvas.getContext("2d")?.drawImage(source, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", JPEG_QUALITY);
 }
 

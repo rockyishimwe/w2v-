@@ -1,12 +1,23 @@
 import Link from "next/link";
-import { CameraIcon, ExchangeIcon, GridIcon, ClockIcon, SearchIcon } from "./icons";
+import type { Route } from "next";
+import {
+  CameraIcon,
+  ExchangeIcon,
+  GridIcon,
+  ClockIcon,
+  SearchIcon,
+} from "./icons";
 
 /**
  * Mobile primary navigation (replaces the md-hidden sidebar on phones).
  * HIG: bottom tab bars are the standard mobile primary nav pattern; five
  * tabs with ≥44pt touch targets, icons + short labels.
  */
-const TABS = [
+const TABS: {
+  label: string;
+  icon: (props: { className?: string }) => React.ReactNode;
+  href: Route;
+}[] = [
   { label: "Home", icon: GridIcon, href: "/dashboard" },
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
   { label: "Discover", icon: SearchIcon, href: "/scanner#examples" },
@@ -14,11 +25,7 @@ const TABS = [
   { label: "Activity", icon: ClockIcon, href: "/dashboard" },
 ];
 
-export function MobileTabBar({
-  activeItem = "Home",
-}: {
-  activeItem?: string;
-}) {
+export function MobileTabBar({ activeItem = "Home" }: { activeItem?: string }) {
   return (
     <nav
       aria-label="Primary"

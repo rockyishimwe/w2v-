@@ -71,7 +71,13 @@ export function DiyTopBar() {
             className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500"
             aria-hidden="true"
           >
-            <circle cx="11" cy="11" r="6.25" stroke="currentColor" strokeWidth="1.6" />
+            <circle
+              cx="11"
+              cy="11"
+              r="6.25"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            />
             <path
               d="m19.5 19.5-4.2-4.2"
               stroke="currentColor"
@@ -92,7 +98,12 @@ export function DiyTopBar() {
           aria-label="Notifications"
           className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
         >
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
             <path
               d="M18 15.5H6c1.2-1.1 1.8-2.6 1.8-4.6 0-2.9 1.9-4.9 4.2-4.9s4.2 2 4.2 4.9c0 2 .6 3.5 1.8 4.6Z"
               stroke="currentColor"
@@ -115,15 +126,33 @@ export function DiyTopBar() {
           className="flex shrink-0 items-center gap-1.5"
         >
           <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-brand-100">
-            <svg viewBox="0 0 96 96" className="h-full w-full" aria-hidden="true">
+            <svg
+              viewBox="0 0 96 96"
+              className="h-full w-full"
+              aria-hidden="true"
+            >
               <rect width="96" height="96" fill="#e8ded2" />
-              <path d="M27 50c-3-18 8-29 21-29s24 11 21 29l-3.5 14h-35Z" fill="#2e2620" />
+              <path
+                d="M27 50c-3-18 8-29 21-29s24 11 21 29l-3.5 14h-35Z"
+                fill="#2e2620"
+              />
               <circle cx="48" cy="47" r="13.5" fill="#c68863" />
               <path d="M28 96c2-15 9-21 20-21s18 6 20 21Z" fill="#35414b" />
             </svg>
           </span>
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-gray-900" aria-hidden="true">
-            <path d="m6.5 9.5 5.5 5 5.5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className="h-5 w-5 text-gray-900"
+            aria-hidden="true"
+          >
+            <path
+              d="m6.5 9.5 5.5 5 5.5-5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>
@@ -156,8 +185,22 @@ export function DiyHeroCard() {
             <rect x="0" y="238" width="400" height="162" fill="#a97845" />
             <path d="M0 238h400v10H0Z" fill="#8f6238" />
             <g>
-              <rect x="74" y="118" width="140" height="26" rx="8" fill="#191b1e" />
-              <rect x="74" y="118" width="140" height="9" rx="4.5" fill="#303338" />
+              <rect
+                x="74"
+                y="118"
+                width="140"
+                height="26"
+                rx="8"
+                fill="#191b1e"
+              />
+              <rect
+                x="74"
+                y="118"
+                width="140"
+                height="9"
+                rx="4.5"
+                fill="#303338"
+              />
               <path
                 d="M80 144h128v158a26 26 0 0 1-26 26H106a26 26 0 0 1-26-26V144Z"
                 fill="#cfd8d4"
@@ -166,8 +209,22 @@ export function DiyHeroCard() {
               <path d="M80 144h128v14H80Z" fill="#9fb0aa" opacity="0.6" />
             </g>
             <g>
-              <rect x="212" y="140" width="128" height="24" rx="8" fill="#b98d3e" />
-              <rect x="212" y="140" width="128" height="8" rx="4" fill="#d8b055" />
+              <rect
+                x="212"
+                y="140"
+                width="128"
+                height="24"
+                rx="8"
+                fill="#b98d3e"
+              />
+              <rect
+                x="212"
+                y="140"
+                width="128"
+                height="8"
+                rx="4"
+                fill="#d8b055"
+              />
               <path
                 d="M218 164h116v140a24 24 0 0 1-24 24H242a24 24 0 0 1-24-24V164Z"
                 fill="#d6ded9"
@@ -199,7 +256,9 @@ export function DiyHeroCard() {
             <div className="flex items-center gap-2.5">
               <ClockIcon className="h-5 w-5 shrink-0 text-gray-700" />
               <div>
-                <p className="text-[11.5px] leading-tight text-gray-500">Time Needed</p>
+                <p className="text-[11.5px] leading-tight text-gray-500">
+                  Time Needed
+                </p>
                 <p className="mt-0.5 text-[13.5px] font-bold leading-tight text-gray-900">
                   {GUIDE.timeNeeded}
                 </p>
@@ -208,7 +267,9 @@ export function DiyHeroCard() {
             <div className="flex items-center gap-2.5">
               <BarsIcon className="h-5 w-5 shrink-0 text-gray-700" />
               <div>
-                <p className="text-[11.5px] leading-tight text-gray-500">Difficulty</p>
+                <p className="text-[11.5px] leading-tight text-gray-500">
+                  Difficulty
+                </p>
                 <p className="mt-0.5 text-[13.5px] font-bold leading-tight text-gray-900">
                   {GUIDE.difficulty}
                 </p>
@@ -217,7 +278,9 @@ export function DiyHeroCard() {
             <div className="flex items-center gap-2.5">
               <LeafIcon className="h-5 w-5 shrink-0 text-gray-700" />
               <div>
-                <p className="text-[11.5px] leading-tight text-gray-500">Impact</p>
+                <p className="text-[11.5px] leading-tight text-gray-500">
+                  Impact
+                </p>
                 <p className="mt-0.5 text-[13.5px] font-bold leading-tight text-gray-900">
                   {GUIDE.impact}
                 </p>
@@ -272,7 +335,9 @@ export function DiyMaterialsCard() {
               className="flex flex-col items-center rounded-2xl bg-[#f7fbf8] px-3 py-4 text-center"
             >
               <Art className="h-14 w-14" />
-              <p className="mt-2.5 text-[13px] font-bold text-gray-900">{name}</p>
+              <p className="mt-2.5 text-[13px] font-bold text-gray-900">
+                {name}
+              </p>
               <p className="mt-0.5 text-[11.5px] text-gray-500">{note}</p>
             </div>
           );

@@ -6,11 +6,7 @@
 
 /** Outcome categories the AI scanner can recommend. */
 export type OutcomeCategory =
-  | "Reuse"
-  | "DIY"
-  | "Exchange"
-  | "Recycle"
-  | "Dispose safely";
+  "Reuse" | "DIY" | "Exchange" | "Recycle" | "Dispose safely";
 
 /** One suggestion attached to a scan result. */
 export interface ScanRecommendation {

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Route } from "next";
 import {
   CameraIcon,
   ChevronDownIcon,
@@ -12,7 +13,11 @@ import {
 } from "./icons";
 import { AvatarArt } from "./dashboard-art";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: {
+  label: string;
+  icon: (props: { className?: string }) => React.ReactNode;
+  href: Route;
+}[] = [
   { label: "Dashboard", icon: GridIcon, href: "/dashboard" },
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
   // Discover maps to the scanner's examples until its page exists;
@@ -31,7 +36,7 @@ function NavItem({
   label: string;
   icon: (props: { className?: string }) => React.ReactNode;
   active: boolean;
-  href: string;
+  href: Route;
 }) {
   return (
     <Link

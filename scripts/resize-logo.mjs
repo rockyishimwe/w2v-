@@ -91,7 +91,13 @@ function encodePNG(path, w, h, bpp, stride, px) {
   chunk("IHDR", ihdr);
   chunk("IDAT", idat);
   chunk("IEND", Buffer.alloc(0));
-  fs.writeFileSync(path, Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), ...chunks]));
+  fs.writeFileSync(
+    path,
+    Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      ...chunks,
+    ]),
+  );
 }
 
 const { w, h, bpp, stride, px } = decodePNG("public/images/logo.png");
@@ -106,7 +112,11 @@ for (let ty = 0; ty < targetH; ty++) {
   for (let tx = 0; tx < targetW; tx++) {
     const x0 = Math.floor((tx * w) / targetW);
     const x1 = Math.max(x0 + 1, Math.floor(((tx + 1) * w) / targetW));
-    let r = 0, g = 0, b = 0, a = 0, n = 0;
+    let r = 0,
+      g = 0,
+      b = 0,
+      a = 0,
+      n = 0;
     for (let y = y0; y < y1; y += Math.max(1, Math.floor((y1 - y0) / 24))) {
       for (let x = x0; x < x1; x += Math.max(1, Math.floor((x1 - x0) / 24))) {
         const o = y * stride + 1 + x * bpp;
@@ -130,5 +140,12 @@ for (let ty = 0; ty < targetH; ty++) {
   }
 }
 
-encodePNG("public/images/logo-small.png", targetW, targetH, bpp, outStride, out);
+encodePNG(
+  "public/images/logo-small.png",
+  targetW,
+  targetH,
+  bpp,
+  outStride,
+  out,
+);
 console.log(`wrote public/images/logo-small.png ${targetW}x${targetH}`);

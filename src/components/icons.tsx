@@ -1162,8 +1162,20 @@ export function ShareIcon({ className }: IconProps) {
       aria-hidden="true"
     >
       <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17.5" cy="5.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17.5" cy="18.5" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+      <circle
+        cx="17.5"
+        cy="5.5"
+        r="2.4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle
+        cx="17.5"
+        cy="18.5"
+        r="2.4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
       <path
         d="m8.2 10.8 7.1-4.1M8.2 13.2l7.1 4.1"
         stroke="currentColor"

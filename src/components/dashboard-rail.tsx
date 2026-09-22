@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import {
   BellIcon,
   BotIcon,
@@ -58,7 +59,8 @@ export function TopBar() {
       </div>
     </div>
   );
-}export function ImpactCard() {
+}
+export function ImpactCard() {
   const radius = 44;
   const circumference = 2 * Math.PI * radius;
   const filled = (MONTHLY_GOAL.percent / 100) * circumference;
@@ -66,7 +68,9 @@ export function TopBar() {
   return (
     <Card>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-[16px] font-semibold text-gray-900">Your Impact</h2>
+        <h2 className="font-display text-[16px] font-semibold text-gray-900">
+          Your Impact
+        </h2>
       </div>
 
       <div className="mt-5 flex items-center gap-5">
@@ -124,7 +128,12 @@ export function TopBar() {
   );
 }
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS: {
+  icon: (props: { className?: string }) => React.ReactNode;
+  title: string;
+  sub: string;
+  href: Route;
+}[] = [
   {
     icon: CameraIcon,
     title: "Scan Waste",
@@ -148,7 +157,9 @@ const QUICK_ACTIONS = [
 export function QuickActionsCard() {
   return (
     <Card>
-      <h2 className="font-display text-[16px] font-semibold text-gray-900">Quick Actions</h2>
+      <h2 className="font-display text-[16px] font-semibold text-gray-900">
+        Quick Actions
+      </h2>
       <ul className="mt-4 space-y-3">
         {QUICK_ACTIONS.map(({ icon: Icon, title, sub, href }) => (
           <li key={title}>

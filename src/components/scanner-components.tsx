@@ -94,7 +94,7 @@ export function UploadPanel() {
             <CameraIcon className="h-9 w-9" />
           </span>
         </span>
-          <h2 className="font-display mt-8 max-w-[500px] text-[22px] font-semibold leading-[1.35] text-[#153a2a]">
+        <h2 className="font-display mt-8 max-w-[500px] text-[22px] font-semibold leading-[1.35] text-[#153a2a]">
           Scan something you&apos;re about
           <br className="hidden xl:block" /> to throw away.
         </h2>
@@ -169,7 +169,9 @@ export function QuickTip() {
         <LightbulbIcon className="h-7 w-7" />
       </span>
       <div>
-        <h2 className="font-display text-[19px] font-semibold text-[#153a2a]">Quick Tip</h2>
+        <h2 className="font-display text-[19px] font-semibold text-[#153a2a]">
+          Quick Tip
+        </h2>
         <p className="mt-1 text-[15px] leading-snug text-[#5d786d]">
           Make sure the image is clear and well-lit for better results.
         </p>

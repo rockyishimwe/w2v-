@@ -1,0 +1,16 @@
+# Normalize all text files to LF on checkin and checkout, regardless of OS.
+# Prevents CRLF drift (e.g. src/components/brand-panel.tsx) between Windows
+# and Unix working copies.
+* text=auto eol=lf
+
+# Windows scripts keep CRLF where tools expect it
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary

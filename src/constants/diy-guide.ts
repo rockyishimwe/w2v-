@@ -60,11 +60,13 @@ export const DIY_GUIDE: DiyGuide = {
     },
     {
       title: "Add drainage",
-      description: "Place a layer of small stones at the bottom (about 2–3 cm).",
+      description:
+        "Place a layer of small stones at the bottom (about 2–3 cm).",
     },
     {
       title: "Add soil",
-      description: "Fill with planting soil, leaving a little space at the top.",
+      description:
+        "Fill with planting soil, leaving a little space at the top.",
     },
     {
       title: "Plant and decorate",
@@ -75,8 +77,28 @@ export const DIY_GUIDE: DiyGuide = {
 };
 
 export const SIMILAR_IDEAS: DiySimilarIdea[] = [
-  { title: "Candle Lantern", tag: "DIY", time: "1–2 hours", impact: "1 item reused" },
-  { title: "Hanging Lights", tag: "DIY", time: "3–4 hours", impact: "1 item reused" },
-  { title: "Herb Garden Planter", tag: "DIY", time: "2–3 hours", impact: "1 item reused" },
-  { title: "Food Storage Jar", tag: "Reuse", time: "Instant", impact: "1 item reused" },
+  {
+    title: "Candle Lantern",
+    tag: "DIY",
+    time: "1–2 hours",
+    impact: "1 item reused",
+  },
+  {
+    title: "Hanging Lights",
+    tag: "DIY",
+    time: "3–4 hours",
+    impact: "1 item reused",
+  },
+  {
+    title: "Herb Garden Planter",
+    tag: "DIY",
+    time: "2–3 hours",
+    impact: "1 item reused",
+  },
+  {
+    title: "Food Storage Jar",
+    tag: "Reuse",
+    time: "Instant",
+    impact: "1 item reused",
+  },
 ];

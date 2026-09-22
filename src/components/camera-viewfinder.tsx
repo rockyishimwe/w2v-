@@ -67,7 +67,9 @@ export function CameraViewfinder() {
     <section className="rounded-[42px] bg-white p-8 shadow-[0_14px_30px_rgba(17,24,39,0.08)]">
       <div className="flex items-center justify-between gap-4">
         <h2 className="font-display flex items-center gap-6 text-[21px] font-semibold text-[#132f42]">
-          <span aria-hidden="true" className="text-3xl leading-none">←</span>
+          <span aria-hidden="true" className="text-3xl leading-none">
+            ←
+          </span>
           Take Photo
         </h2>
         <span className="flex items-center gap-2 rounded-full border border-[#c9e9d1] bg-[#effaf1] px-5 py-2 text-[14.5px] font-semibold text-brand-700">
@@ -78,9 +80,20 @@ export function CameraViewfinder() {
 
       <div className="relative mt-6 aspect-[1.09] overflow-hidden rounded-md bg-[#c9ad85]">
         {cameraReady ? (
-          <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            className="h-full w-full object-cover"
+          />
         ) : (
-          <Image src="/images/scanner-jars-preview.png" alt="Two empty glass jars ready to scan" fill priority className="object-cover" />
+          <Image
+            src="/images/scanner-jars-preview.png"
+            alt="Two empty glass jars ready to scan"
+            fill
+            priority
+            className="object-cover"
+          />
         )}
         <div className="absolute inset-0 bg-black/5" />
         <FrameCorner className="left-6 top-6 rounded-tl-[24px] border-l-4 border-t-4" />
@@ -98,19 +111,35 @@ export function CameraViewfinder() {
         </button>
         {cameraError && (
           <p className="absolute inset-x-4 top-4 rounded-xl bg-black/55 px-4 py-2 text-center text-sm text-white">
-            Camera access is unavailable. Allow camera access and refresh to capture a photo.
+            Camera access is unavailable. Allow camera access and refresh to
+            capture a photo.
           </p>
         )}
       </div>
 
       <section className="mt-7 flex items-center gap-5 rounded-[25px] border border-[#c9ead0] bg-[#effaf1] px-7 py-4">
-        <span className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#dcf3e3] text-brand-700"><LightbulbIcon className="h-7 w-7" /></span>
-        <div><h3 className="font-display text-[16px] font-semibold text-brand-700">Tip</h3><p className="mt-1 text-[14.5px] leading-snug text-[#56766a]">Make sure the item is well lit and clearly<br className="hidden sm:block" /> visible.</p></div>
+        <span className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#dcf3e3] text-brand-700">
+          <LightbulbIcon className="h-7 w-7" />
+        </span>
+        <div>
+          <h3 className="font-display text-[16px] font-semibold text-brand-700">
+            Tip
+          </h3>
+          <p className="mt-1 text-[14.5px] leading-snug text-[#56766a]">
+            Make sure the item is well lit and clearly
+            <br className="hidden sm:block" /> visible.
+          </p>
+        </div>
       </section>
     </section>
   );
 }
 
 function FrameCorner({ className }: { className: string }) {
-  return <span aria-hidden="true" className={`absolute h-14 w-14 border-white ${className}`} />;
+  return (
+    <span
+      aria-hidden="true"
+      className={`absolute h-14 w-14 border-white ${className}`}
+    />
+  );
 }

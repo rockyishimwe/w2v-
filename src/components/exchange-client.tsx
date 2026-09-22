@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRightIcon,
   BellIcon,
@@ -48,8 +48,12 @@ import {
   VegetablesArt,
   WoodenChairArt,
 } from "./exchange-art";
+import { filterListings, type TypeFilter } from "@/lib/exchange-filters";
 
-const LISTING_ART: Record<string, (props: { className?: string }) => React.ReactNode> = {
+const LISTING_ART: Record<
+  string,
+  (props: { className?: string }) => React.ReactNode
+> = {
   "glass-jars": JarsPhotoArt,
   "cardboard-boxes": CardboardStackArt,
   "plastic-containers": PlasticContainersArt,
@@ -60,7 +64,10 @@ const LISTING_ART: Record<string, (props: { className?: string }) => React.React
   "metal-pots": MetalPotsArt,
 };
 
-const CATEGORY_ICONS: Record<string, { icon: (props: { className?: string }) => React.ReactNode; tone: string }> = {
+const CATEGORY_ICONS: Record<
+  string,
+  { icon: (props: { className?: string }) => React.ReactNode; tone: string }
+> = {
   Organic: { icon: LeafIcon, tone: "text-[#d9a13b]" },
   "Paper/Cardboard": { icon: BoxIcon, tone: "text-[#d9a13b]" },
   Plastic: { icon: RecycleIcon, tone: "text-[#4a7fb5]" },
@@ -76,22 +83,28 @@ const TAG_STYLES: Record<ListingTag, string> = {
   Sale: "bg-brand-900 text-white",
 };
 
-type TypeFilter = ListingTag | "All";
-
-function distanceKm(l: ExchangeListing): number {
-  return Number.parseFloat(l.distance);
-}
+const chipBase =
+  "flex h-[46px] items-center gap-2 rounded-2xl border px-4 text-[13.5px] font-semibold transition-colors";
 
 export function ExchangeClient() {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("All");
-  const [materialFilter, setMaterialFilter] = useState<MaterialFilter | "All">("All");
-  const [conditionFilter, setConditionFilter] = useState<ConditionFilter | "All">("All");
+  const [materialFilter, setMaterialFilter] = useState<MaterialFilter | "All">(
+    "All",
+  );
+  const [conditionFilter, setConditionFilter] = useState<
+    ConditionFilter | "All"
+  >("All");
   const [sortByDistance, setSortByDistance] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listingsRef = useRef<HTMLDivElement>(null);
+  const [openMenu, setOpenMenu] = useState<null | "material" | "category">(
+    null,
+  );
+  const materialMenuRef = useRef<HTMLDivElement>(null);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
 
   function showToast(message: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -115,23 +128,46 @@ export function ExchangeClient() {
     listingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const listings = useMemo(() => {
-    let result = LISTINGS.filter((l) => {
-      if (typeFilter !== "All" && l.tag !== typeFilter) return false;
-      if (materialFilter !== "All" && l.material !== materialFilter) return false;
-      if (conditionFilter !== "All" && l.condition !== conditionFilter) return false;
-      if (query.trim()) {
-        const q = query.trim().toLowerCase();
-        const haystack = `${l.title} ${l.material} ${l.district} ${l.postedBy}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
+  function toggleMenu(menu: "material" | "category") {
+    setOpenMenu((current) => (current === menu ? null : menu));
+  }
+
+  function closeMenu() {
+    setOpenMenu(null);
+  }
+
+  // Close an open filter popover on outside pointerdown or Escape.
+  useEffect(() => {
+    if (!openMenu) return;
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target as Node | null;
+      const ref = openMenu === "material" ? materialMenuRef : categoryMenuRef;
+      if (target && ref.current && !ref.current.contains(target)) {
+        setOpenMenu(null);
       }
-      return true;
-    });
-    if (sortByDistance) {
-      result = [...result].sort((a, b) => distanceKm(a) - distanceKm(b));
     }
-    return result;
-  }, [typeFilter, materialFilter, conditionFilter, query, sortByDistance]);
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenMenu(null);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [openMenu]);
+
+  const listings = useMemo(
+    () =>
+      filterListings(LISTINGS, {
+        query,
+        typeFilter,
+        materialFilter,
+        conditionFilter,
+        sortByDistance,
+      }),
+    [typeFilter, materialFilter, conditionFilter, query, sortByDistance],
+  );
 
   const featuredVisible =
     (typeFilter === "All" || FEATURED_LISTING.tag === typeFilter) &&
@@ -151,9 +187,6 @@ export function ExchangeClient() {
     setQuery("");
     setSortByDistance(false);
   }
-
-  const chipBase =
-    "flex h-[46px] items-center gap-2 rounded-2xl border px-4 text-[13.5px] font-semibold transition-colors";
 
   return (
     <>
@@ -191,7 +224,11 @@ export function ExchangeClient() {
             <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
           </button>
 
-          <button type="button" aria-label="Account menu" className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="Account menu"
+            className="flex shrink-0 items-center gap-1.5"
+          >
             <AvatarArt className="h-11 w-11 rounded-full object-cover" />
             <ChevronDownIcon className="h-5 w-5 text-gray-900" />
           </button>
@@ -218,22 +255,51 @@ export function ExchangeClient() {
                 <LayersIcon className="h-4.5 w-4.5" />
                 All
               </button>
-              <button
-                type="button"
-                onClick={() => resetAndScroll()}
-                className={`${chipBase} border-gray-100 bg-white text-gray-900 hover:border-brand-300`}
+              <FilterChip
+                id="material-chip"
+                panelId="material-filter-panel"
+                icon={<PersonIcon className="h-4.5 w-4.5" />}
+                label={
+                  materialFilter === "All"
+                    ? "Material"
+                    : `Material · ${materialFilter}`
+                }
+                active={materialFilter !== "All"}
+                open={openMenu === "material"}
+                onClick={() => toggleMenu("material")}
+                menuRef={materialMenuRef}
               >
-                <PersonIcon className="h-4.5 w-4.5" />
-                Material
-              </button>
-              <button
-                type="button"
-                onClick={() => resetAndScroll()}
-                className={`${chipBase} border-gray-100 bg-white text-gray-900 hover:border-brand-300`}
+                <MaterialMenu
+                  value={materialFilter}
+                  onSelect={(material) => {
+                    setMaterialFilter(material);
+                    closeMenu();
+                    resetAndScroll();
+                  }}
+                />
+              </FilterChip>
+              <FilterChip
+                id="category-chip"
+                panelId="category-filter-panel"
+                icon={<UsersIcon className="h-4.5 w-4.5" />}
+                label="Category"
+                active={materialFilter !== "All"}
+                open={openMenu === "category"}
+                onClick={() => toggleMenu("category")}
+                menuRef={categoryMenuRef}
               >
-                <UsersIcon className="h-4.5 w-4.5" />
-                Category
-              </button>
+                <CategoryMenu
+                  onSelect={(label) => {
+                    setMaterialFilter(
+                      label === "Paper/Cardboard"
+                        ? "Paper"
+                        : (label as MaterialFilter),
+                    );
+                    closeMenu();
+                    resetAndScroll();
+                  }}
+                />
+              </FilterChip>
               <button
                 type="button"
                 onClick={() => setSortByDistance((v) => !v)}
@@ -326,7 +392,11 @@ export function ExchangeClient() {
             <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
               <PopularCategoriesCard
                 onSelect={(label) => {
-                  setMaterialFilter(label === "Paper/Cardboard" ? "Paper" : (label as MaterialFilter));
+                  setMaterialFilter(
+                    label === "Paper/Cardboard"
+                      ? "Paper"
+                      : (label as MaterialFilter),
+                  );
                   resetAndScroll();
                 }}
               />
@@ -345,7 +415,11 @@ export function ExchangeClient() {
 
         {/* Right rail — solid sticky block (no internal scrolling) */}
         <div className="flex min-w-0 flex-col gap-5 xl:sticky xl:top-7 xl:self-start">
-          <PostMaterialCard onCreate={() => showToast("Listing creation goes live with the community beta.")} />
+          <PostMaterialCard
+            onCreate={() =>
+              showToast("Listing creation goes live with the community beta.")
+            }
+          />
           <QuickFiltersCard
             typeFilter={typeFilter}
             onType={setTypeFilter}
@@ -363,7 +437,12 @@ export function ExchangeClient() {
         type="button"
         className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-5 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
       >
-        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          className="h-5 w-5"
+          aria-hidden="true"
+        >
           <path
             d="M4 6.75A2.75 2.75 0 0 1 6.75 4h10.5A2.75 2.75 0 0 1 20 6.75v7A2.75 2.75 0 0 1 17.25 16.5H9l-4 3.5v-13.25Z"
             stroke="currentColor"
@@ -409,7 +488,9 @@ function ListingCard({
         </span>
       </div>
       <div className="p-3">
-        <p className="truncate text-[13.5px] font-bold text-gray-900">{listing.title}</p>
+        <p className="truncate text-[13.5px] font-bold text-gray-900">
+          {listing.title}
+        </p>
         <p className="mt-0.5 text-[11px] text-gray-500">{listing.meta}</p>
         <p className="mt-2 flex items-center gap-1 text-[11px] text-gray-500">
           <MapPinIcon className="h-3.5 w-3.5 text-brand-600" />
@@ -423,10 +504,16 @@ function ListingCard({
           <button
             type="button"
             onClick={onToggleFavorite}
-            aria-label={favorite ? `Remove ${listing.title} from favorites` : `Save ${listing.title} to favorites`}
+            aria-label={
+              favorite
+                ? `Remove ${listing.title} from favorites`
+                : `Save ${listing.title} to favorites`
+            }
             aria-pressed={favorite}
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
-              favorite ? "bg-brand-50 text-brand-700" : "text-gray-400 hover:text-brand-700"
+              favorite
+                ? "bg-brand-50 text-brand-700"
+                : "text-gray-400 hover:text-brand-700"
             }`}
           >
             <HeartIcon
@@ -441,7 +528,11 @@ function ListingCard({
 
 /* ── Popular categories ───────────────────────────────────────── */
 
-function PopularCategoriesCard({ onSelect }: { onSelect: (label: string) => void }) {
+function PopularCategoriesCard({
+  onSelect,
+}: {
+  onSelect: (label: string) => void;
+}) {
   return (
     <section className="rounded-[24px] bg-pale-green p-4">
       <h3 className="font-display flex items-center gap-2 text-[14px] font-bold text-gray-900">
@@ -450,7 +541,8 @@ function PopularCategoriesCard({ onSelect }: { onSelect: (label: string) => void
       </h3>
       <div className="mt-3 grid grid-cols-4 gap-2.5">
         {POPULAR_CATEGORIES.map(({ label }) => {
-          const { icon: Icon, tone } = CATEGORY_ICONS[label] ?? CATEGORY_ICONS.Organic;
+          const { icon: Icon, tone } =
+            CATEGORY_ICONS[label] ?? CATEGORY_ICONS.Organic;
           return (
             <button
               key={label}
@@ -504,7 +596,9 @@ function FeaturedCard({
       <div className="mt-3 flex items-center gap-3.5 rounded-2xl bg-white p-3">
         <FeaturedJarsArt className="h-[86px] w-[86px] shrink-0 rounded-xl object-cover" />
         <div className="min-w-0 flex-1">
-          <span className={`inline-block rounded-md px-2 py-0.5 text-[10.5px] font-bold ${TAG_STYLES[FEATURED_LISTING.tag]}`}>
+          <span
+            className={`inline-block rounded-md px-2 py-0.5 text-[10.5px] font-bold ${TAG_STYLES[FEATURED_LISTING.tag]}`}
+          >
             {FEATURED_LISTING.tag}
           </span>
           <p className="mt-1 truncate text-[14px] font-bold text-gray-900">
@@ -523,13 +617,19 @@ function FeaturedCard({
             <button
               type="button"
               onClick={onToggleFavorite}
-              aria-label={favorite ? "Remove from favorites" : "Save to favorites"}
+              aria-label={
+                favorite ? "Remove from favorites" : "Save to favorites"
+              }
               aria-pressed={favorite}
               className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                favorite ? "bg-brand-50 text-brand-700" : "text-gray-400 hover:text-brand-700"
+                favorite
+                  ? "bg-brand-50 text-brand-700"
+                  : "text-gray-400 hover:text-brand-700"
               }`}
             >
-              <HeartIcon className={`h-4 w-4 ${favorite ? "fill-brand-700" : ""}`} />
+              <HeartIcon
+                className={`h-4 w-4 ${favorite ? "fill-brand-700" : ""}`}
+              />
             </button>
           </div>
         </div>
@@ -548,7 +648,9 @@ function PostMaterialCard({ onCreate }: { onCreate: () => void }) {
           <PlusIcon className="h-5 w-5" />
         </span>
         <div className="min-w-0">
-          <h2 className="font-display text-[15.5px] font-bold text-gray-900">Post Material</h2>
+          <h2 className="font-display text-[15.5px] font-bold text-gray-900">
+            Post Material
+          </h2>
           <p className="mt-0.5 text-[12.5px] leading-relaxed text-gray-600">
             Give away, exchange or sell your reusable items.
           </p>
@@ -617,25 +719,52 @@ function QuickFiltersCard({
 
       <p className="mt-4 text-[13px] font-bold text-gray-900">Material</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        <FilterPill label="All" active={material === "All"} onClick={() => onMaterial("All")} />
+        <FilterPill
+          label="All"
+          active={material === "All"}
+          onClick={() => onMaterial("All")}
+        />
         {MATERIAL_FILTERS.map((m) => (
-          <FilterPill key={m} label={m} active={material === m} onClick={() => onMaterial(m)} />
+          <FilterPill
+            key={m}
+            label={m}
+            active={material === m}
+            onClick={() => onMaterial(m)}
+          />
         ))}
       </div>
 
       <p className="mt-4 text-[13px] font-bold text-gray-900">Condition</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        <FilterPill label="All" active={condition === "All"} onClick={() => onCondition("All")} />
+        <FilterPill
+          label="All"
+          active={condition === "All"}
+          onClick={() => onCondition("All")}
+        />
         {CONDITION_FILTERS.map((c) => (
-          <FilterPill key={c} label={c} active={condition === c} onClick={() => onCondition(c)} />
+          <FilterPill
+            key={c}
+            label={c}
+            active={condition === c}
+            onClick={() => onCondition(c)}
+          />
         ))}
       </div>
 
       <p className="mt-4 text-[13px] font-bold text-gray-900">Listing Type</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        <FilterPill label="All" active={typeFilter === "All"} onClick={() => onType("All")} />
+        <FilterPill
+          label="All"
+          active={typeFilter === "All"}
+          onClick={() => onType("All")}
+        />
         {TYPE_FILTERS.map((t) => (
-          <FilterPill key={t} label={t} active={typeFilter === t} onClick={() => onType(t)} />
+          <FilterPill
+            key={t}
+            label={t}
+            active={typeFilter === t}
+            onClick={() => onType(t)}
+          />
         ))}
       </div>
     </section>
@@ -663,5 +792,115 @@ function ImpactNoteCard() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ── Filter chip + popovers (Material / Category) ─────────────── */
+
+function FilterChip({
+  id,
+  panelId,
+  icon,
+  label,
+  active,
+  open,
+  onClick,
+  menuRef,
+  children,
+}: {
+  id: string;
+  panelId: string;
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  open: boolean;
+  onClick: () => void;
+  menuRef: React.RefObject<HTMLDivElement | null>;
+  children: React.ReactNode;
+}) {
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        id={id}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onClick}
+        className={`${chipBase} ${
+          active || open
+            ? "border-brand-700 bg-brand-700 text-white shadow-[0_8px_18px_rgba(20,92,54,0.28)]"
+            : "border-gray-100 bg-white text-gray-900 hover:border-brand-300"
+        }`}
+      >
+        {icon}
+        {label}
+      </button>
+      {open && (
+        <div
+          id={panelId}
+          role="menu"
+          aria-labelledby={id}
+          className="absolute left-0 top-[calc(100%+6px)] z-20 w-56 rounded-2xl border border-gray-100 bg-white p-2 shadow-[0_14px_30px_rgba(17,24,39,0.12)]"
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const MENU_ITEM_CLASS =
+  "flex h-9 w-full items-center rounded-xl px-3 text-left text-[13px] font-semibold text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-700";
+
+function MaterialMenu({
+  value,
+  onSelect,
+}: {
+  value: MaterialFilter | "All";
+  onSelect: (material: MaterialFilter | "All") => void;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        role="menuitemradio"
+        aria-checked={value === "All"}
+        onClick={() => onSelect("All")}
+        className={MENU_ITEM_CLASS}
+      >
+        All materials
+      </button>
+      {MATERIAL_FILTERS.map((m) => (
+        <button
+          key={m}
+          type="button"
+          role="menuitemradio"
+          aria-checked={value === m}
+          onClick={() => onSelect(m)}
+          className={MENU_ITEM_CLASS}
+        >
+          {m}
+        </button>
+      ))}
+    </>
+  );
+}
+
+function CategoryMenu({ onSelect }: { onSelect: (label: string) => void }) {
+  return (
+    <>
+      {POPULAR_CATEGORIES.map(({ label }) => (
+        <button
+          key={label}
+          type="button"
+          role="menuitem"
+          onClick={() => onSelect(label)}
+          className={MENU_ITEM_CLASS}
+        >
+          {label}
+        </button>
+      ))}
+    </>
   );
 }

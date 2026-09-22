@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import {
   ChevronRightIcon,
   LoopIcon,
@@ -9,7 +10,12 @@ import {
   TrashIcon,
 } from "./icons";
 
-const RECOMMENDATIONS = [
+const RECOMMENDATIONS: {
+  icon: (props: { className?: string }) => React.ReactNode;
+  title: string;
+  sub: string;
+  href: Route;
+}[] = [
   {
     icon: LoopIcon,
     title: "Reuse",

@@ -109,7 +109,11 @@ function resize(src, sw, sh, bpp, sstride, tw, th) {
     for (let tx = 0; tx < tw; tx++) {
       const x0 = Math.floor((tx * sw) / tw);
       const x1 = Math.max(x0 + 1, Math.floor(((tx + 1) * sw) / tw));
-      let r = 0, g = 0, b = 0, a = 0, n = 0;
+      let r = 0,
+        g = 0,
+        b = 0,
+        a = 0,
+        n = 0;
       for (let y = y0; y < y1; y += Math.max(1, Math.floor((y1 - y0) / 24))) {
         for (let x = x0; x < x1; x += Math.max(1, Math.floor((x1 - x0) / 24))) {
           const o = y * sstride + 1 + x * bpp;
@@ -139,7 +143,10 @@ const { w, h, bpp, stride, px } = decodePNG("public/images/logo.png");
 
 // 1) Alpha bounding box (ignore faint glow below threshold).
 const ALPHA_THRESHOLD = 16;
-let minX = w, minY = h, maxX = -1, maxY = -1;
+let minX = w,
+  minY = h,
+  maxX = -1,
+  maxY = -1;
 for (let y = 0; y < h; y++) {
   for (let x = 0; x < w; x++) {
     if (px[y * stride + 1 + x * bpp + 3] > ALPHA_THRESHOLD) {

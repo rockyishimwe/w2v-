@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getMockScanResult } from "@/services/scanner-service";
 import type { ScanResult } from "@/types";
+import { useCapturedPhoto } from "@/hooks/use-captured-photo";
 import {
   ArrowDownCircleIcon,
   BoxIcon,
@@ -16,9 +17,6 @@ import {
   TrashIcon,
 } from "./icons";
 import { GlassJarsPhotoArt, LeafWatermarkArt } from "./scanner-art";
-import { loadPhoto } from "@/lib/photo";
-
-
 /**
  * Mock analysis via the service layer — the UI is already shaped for the
  * real ScanResult API payload (see types/index.ts).
@@ -94,15 +92,8 @@ function ConfidenceRing({ percent }: { percent: number }) {
 }
 
 export function ScannerResultCard() {
-  const [photo, setPhoto] = useState<string | null>(null);
+  const photo = useCapturedPhoto();
   const [detailsOpen, setDetailsOpen] = useState(true);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setPhoto(loadPhoto());
-    });
-    return () => cancelAnimationFrame(frame);
-  }, []);
 
   return (
     <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-8">

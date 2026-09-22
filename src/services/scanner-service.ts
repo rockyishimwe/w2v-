@@ -39,7 +39,10 @@ export function getMockScanResult(): ScanResult {
         category: "Recycle",
         description: "If not reusable, recycle at a collection point",
       },
-      { category: "Dispose safely", description: "Use proper waste bin if needed" },
+      {
+        category: "Dispose safely",
+        description: "Use proper waste bin if needed",
+      },
     ],
   };
 }
