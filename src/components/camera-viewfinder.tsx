@@ -12,6 +12,7 @@ export function CameraViewfinder() {
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState(false);
+  const [captureError, setCaptureError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,7 +57,13 @@ export function CameraViewfinder() {
     const video = videoRef.current;
     if (!video || !cameraReady) return;
 
-    const captured = storeVideoFrame(video);
+    let captured: string | null;
+    try {
+      captured = storeVideoFrame(video);
+    } catch {
+      setCaptureError(true);
+      return;
+    }
     if (!captured) return;
 
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -79,14 +86,14 @@ export function CameraViewfinder() {
       </div>
 
       <div className="relative mt-6 aspect-[1.09] overflow-hidden rounded-md bg-[#c9ad85]">
-        {cameraReady ? (
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            className="h-full w-full object-cover"
-          />
-        ) : (
+        {/* Always mounted so the stream can attach before it is shown. */}
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          className={`h-full w-full object-cover ${cameraReady ? "" : "invisible"}`}
+        />
+        {!cameraReady && (
           <Image
             src="/images/scanner-jars-preview.png"
             alt="Two empty glass jars ready to scan"
@@ -113,6 +120,11 @@ export function CameraViewfinder() {
           <p className="absolute inset-x-4 top-4 rounded-xl bg-black/55 px-4 py-2 text-center text-sm text-white">
             Camera access is unavailable. Allow camera access and refresh to
             capture a photo.
+          </p>
+        )}
+        {captureError && !cameraError && (
+          <p className="absolute inset-x-4 top-4 rounded-xl bg-black/55 px-4 py-2 text-center text-sm text-white">
+            Could not save the photo. Free up browser storage and try again.
           </p>
         )}
       </div>

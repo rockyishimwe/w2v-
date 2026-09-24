@@ -10,6 +10,7 @@ export type MaterialFilter =
   | "Plastic"
   | "Glass"
   | "Metal"
+  | "Wood"
   | "Textile"
   | "Electronics";
 export type ConditionFilter = "New" | "Good" | "Fair";
@@ -74,7 +75,7 @@ export const LISTINGS: ExchangeListing[] = [
     distance: "4.8 km",
     district: "Rubavu",
     postedBy: "Patrick M.",
-    material: "Metal",
+    material: "Wood",
     condition: "Good",
   },
   {
@@ -126,7 +127,7 @@ export const LISTINGS: ExchangeListing[] = [
 export const FEATURED_LISTING: ExchangeListing = {
   id: "diy-storage-jars",
   title: "DIY storage jars",
-  meta: "5 pieces • Excellent condition",
+  meta: "5 pieces • New condition",
   tag: "Exchange",
   distance: "1.5 km",
   district: "Rubavu",
@@ -152,6 +153,7 @@ export const MATERIAL_FILTERS: MaterialFilter[] = [
   "Plastic",
   "Glass",
   "Metal",
+  "Wood",
   "Textile",
   "Electronics",
 ];

@@ -18,6 +18,7 @@ const VALID_MATERIALS: MaterialFilter[] = [
   "Plastic",
   "Glass",
   "Metal",
+  "Wood",
   "Textile",
   "Electronics",
 ];

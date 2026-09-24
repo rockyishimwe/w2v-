@@ -136,6 +136,12 @@ export function ExchangeClient() {
     setOpenMenu(null);
   }
 
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
   // Close an open filter popover on outside pointerdown or Escape.
   useEffect(() => {
     if (!openMenu) return;
@@ -169,16 +175,15 @@ export function ExchangeClient() {
     [typeFilter, materialFilter, conditionFilter, query, sortByDistance],
   );
 
+  // Featured card obeys exactly the same filter rules as the grid.
   const featuredVisible =
-    (typeFilter === "All" || FEATURED_LISTING.tag === typeFilter) &&
-    (materialFilter === "All" || FEATURED_LISTING.material === materialFilter);
-
-  const filtersActive =
-    typeFilter !== "All" ||
-    materialFilter !== "All" ||
-    conditionFilter !== "All" ||
-    query.trim() !== "" ||
-    sortByDistance;
+    filterListings([FEATURED_LISTING], {
+      query,
+      typeFilter,
+      materialFilter,
+      conditionFilter,
+      sortByDistance: false,
+    }).length > 0;
 
   function clearFilters() {
     setTypeFilter("All");
@@ -201,8 +206,8 @@ export function ExchangeClient() {
           </p>
         </div>
 
-        <div className="flex flex-1 items-center justify-end gap-4 pt-1">
-          <label className="relative hidden min-w-0 max-w-[520px] flex-1 sm:block">
+        <div className="flex flex-1 flex-wrap items-center justify-end gap-4 pt-1 sm:flex-nowrap">
+          <label className="relative order-last block w-full min-w-0 sm:order-none sm:w-auto sm:max-w-[520px] sm:flex-1">
             <span className="sr-only">Search listings</span>
             <SearchIcon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
             <input
@@ -283,7 +288,7 @@ export function ExchangeClient() {
                 panelId="category-filter-panel"
                 icon={<UsersIcon className="h-4.5 w-4.5" />}
                 label="Category"
-                active={materialFilter !== "All"}
+                active={false}
                 open={openMenu === "category"}
                 onClick={() => toggleMenu("category")}
                 menuRef={categoryMenuRef}
@@ -407,7 +412,7 @@ export function ExchangeClient() {
                   clearFilters();
                   resetAndScroll();
                 }}
-                hidden={!featuredVisible && filtersActive ? true : false}
+                hidden={!featuredVisible}
               />
             </div>
           </section>

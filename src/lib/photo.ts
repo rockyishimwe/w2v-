@@ -28,7 +28,7 @@ function downscaleToDataUrl(
 
 /**
  * Grabs the current video frame, downscales and stores it as a JPEG dataURL.
- * Returns null when the video is not ready.
+ * Returns null when the video is not ready; throws if storage fails.
  */
 export function storeVideoFrame(video: HTMLVideoElement): string | null {
   if (!video.videoWidth) return null;
@@ -51,13 +51,19 @@ export function storeImageFile(file: File): Promise<string> {
     const image = new Image();
     image.onload = () => {
       URL.revokeObjectURL(url);
-      const dataUrl = downscaleToDataUrl(
-        image,
-        image.naturalWidth,
-        image.naturalHeight,
-      );
-      sessionStorage.setItem(PHOTO_KEY, dataUrl);
-      resolve(dataUrl);
+      // Anything thrown here (e.g. storage quota exceeded) must reject,
+      // otherwise the promise never settles and callers hang.
+      try {
+        const dataUrl = downscaleToDataUrl(
+          image,
+          image.naturalWidth,
+          image.naturalHeight,
+        );
+        sessionStorage.setItem(PHOTO_KEY, dataUrl);
+        resolve(dataUrl);
+      } catch (error) {
+        reject(error);
+      }
     };
     image.onerror = () => {
       URL.revokeObjectURL(url);

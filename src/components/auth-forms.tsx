@@ -85,13 +85,23 @@ function Field({
   );
 }
 
-function PasswordField({ label }: { label: string }) {
+function PasswordField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value?: string;
+  onChange?: (value: string) => void;
+}) {
   const [visible, setVisible] = useState(false);
   return (
     <Field
       label={label}
       type={visible ? "text" : "password"}
       placeholder={label}
+      value={value}
+      onChange={onChange}
       icon={<LockIcon className="h-5 w-5" />}
       trailing={
         <button
@@ -251,6 +261,10 @@ function SignUpView({
   onSubmit: () => void;
   state: ViewState;
 }) {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [mismatch, setMismatch] = useState(false);
+
   return (
     <div className={viewClassName(state)} aria-hidden={state !== "active"}>
       <div className="flex items-center justify-center gap-3">
@@ -270,6 +284,10 @@ function SignUpView({
         method="post"
         onSubmit={(event) => {
           event.preventDefault();
+          if (password !== confirmPassword) {
+            setMismatch(true);
+            return;
+          }
           onSubmit();
         }}
       >
@@ -291,8 +309,30 @@ function SignUpView({
           placeholder="Email address"
           icon={<MailIcon className="h-5 w-5" />}
         />
-        <PasswordField label="Password" />
-        <PasswordField label="Confirm Password" />
+        <PasswordField
+          label="Password"
+          value={password}
+          onChange={(value) => {
+            setPassword(value);
+            setMismatch(false);
+          }}
+        />
+        <PasswordField
+          label="Confirm Password"
+          value={confirmPassword}
+          onChange={(value) => {
+            setConfirmPassword(value);
+            setMismatch(false);
+          }}
+        />
+        {mismatch ? (
+          <p
+            role="alert"
+            className="px-1 text-[clamp(0.75rem,1.7vh,0.875rem)] font-medium text-red-600"
+          >
+            Passwords do not match.
+          </p>
+        ) : null}
 
         <div className="mt-[clamp(0.4rem,1.4vh,1rem)] flex w-full flex-col gap-[clamp(0.8rem,2.4vh,2rem)]">
           <AuthButton>

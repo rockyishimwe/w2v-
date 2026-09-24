@@ -53,7 +53,7 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      <MobileTabBar activeItem="Dashboard" />
+      <MobileTabBar activeItem="Home" />
     </div>
   );
 }

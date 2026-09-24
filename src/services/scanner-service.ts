@@ -6,7 +6,7 @@ import type { ScanResult } from "@/types";
  * The component tree only ever talks to these functions, so when the real
  * backend lands (SRS: token-based auth against a REST API) the swap happens
  * here without touching UI code. Current implementation returns the design
- * mock after a simulated network delay.
+ * mock immediately.
  */
 
 export async function analyzeImage(_photoDataUrl: string): Promise<ScanResult> {

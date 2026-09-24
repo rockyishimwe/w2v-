@@ -9,7 +9,7 @@ export const metadata = { title: "Waste2Value - Review Photo" };
 
 export default function ReviewPage() {
   return (
-    <div className="flex min-h-dvh bg-page">
+    <div className="flex min-h-dvh bg-page pb-20 md:pb-0">
       <DashboardSidebar activeItem="Scanner" />
 
       <main className="min-w-0 flex-1 px-4 py-7 sm:px-5 lg:px-7 lg:py-8">

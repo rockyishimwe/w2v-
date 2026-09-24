@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { getMockScanResult } from "@/services/scanner-service";
+import { useEffect, useState } from "react";
+import { analyzeImage, getMockScanResult } from "@/services/scanner-service";
 import type { ScanResult } from "@/types";
 import { useCapturedPhoto } from "@/hooks/use-captured-photo";
 import {
@@ -17,20 +17,20 @@ import {
   TrashIcon,
 } from "./icons";
 import { GlassJarsPhotoArt, LeafWatermarkArt } from "./scanner-art";
-/**
- * Mock analysis via the service layer — the UI is already shaped for the
- * real ScanResult API payload (see types/index.ts).
- */
-const RESULT: ScanResult = getMockScanResult();
-
 /** View-model: pairs ScanResult fields with the icons that render them. */
-const DETAILS = [
-  { icon: DatabaseIcon, label: "Material", value: RESULT.material },
-  { icon: ShieldIcon, label: "Condition", value: RESULT.condition },
-  { icon: BoxIcon, label: "Category", value: RESULT.category },
-  { icon: TrashIcon, label: "Detected items", value: RESULT.detectedSummary },
-  { icon: GaugeIcon, label: "Estimated size", value: RESULT.estimatedSize },
-];
+function detailsFor(result: ScanResult) {
+  return [
+    { icon: DatabaseIcon, label: "Material", value: result.material },
+    { icon: ShieldIcon, label: "Condition", value: result.condition },
+    { icon: BoxIcon, label: "Category", value: result.category },
+    {
+      icon: TrashIcon,
+      label: "Detected items",
+      value: result.detectedSummary,
+    },
+    { icon: GaugeIcon, label: "Estimated size", value: result.estimatedSize },
+  ];
+}
 
 function MetaBlock({
   icon: Icon,
@@ -94,6 +94,20 @@ function ConfidenceRing({ percent }: { percent: number }) {
 export function ScannerResultCard() {
   const photo = useCapturedPhoto();
   const [detailsOpen, setDetailsOpen] = useState(true);
+  // Sample result until the captured photo has been analyzed via the
+  // service layer (the UI is shaped for the real ScanResult payload).
+  const [result, setResult] = useState<ScanResult>(getMockScanResult);
+
+  useEffect(() => {
+    if (!photo) return;
+    let cancelled = false;
+    void analyzeImage(photo).then((analyzed) => {
+      if (!cancelled) setResult(analyzed);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [photo]);
 
   return (
     <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-8">
@@ -110,12 +124,18 @@ export function ScannerResultCard() {
           ) : (
             <GlassJarsPhotoArt className="absolute inset-0 h-full w-full" />
           )}
-          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-semibold text-gray-900 shadow-sm">
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-700 text-white">
-              <CheckIcon className="h-2.5 w-2.5" />
+          {photo ? (
+            <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-semibold text-gray-900 shadow-sm">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-700 text-white">
+                <CheckIcon className="h-2.5 w-2.5" />
+              </span>
+              Image analyzed
             </span>
-            Image analyzed
-          </span>
+          ) : (
+            <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-semibold text-gray-900 shadow-sm">
+              Sample result
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col items-start py-1">
@@ -125,23 +145,23 @@ export function ScannerResultCard() {
           </span>
 
           <h2 className="font-display mt-3 text-[26px] font-bold leading-tight text-gray-900 sm:text-[30px]">
-            {RESULT.title}
+            {result.title}
           </h2>
 
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 sm:gap-x-8">
             <MetaBlock
               icon={DatabaseIcon}
               label="Material"
-              value={RESULT.material}
+              value={result.material}
             />
             <div className="hidden h-10 w-px bg-gray-200 sm:block" />
             <MetaBlock
               icon={BoxIcon}
               label="Category"
-              value={RESULT.category}
+              value={result.category}
             />
             <div className="hidden h-10 w-px bg-gray-200 sm:block" />
-            <ConfidenceRing percent={RESULT.confidence} />
+            <ConfidenceRing percent={result.confidence} />
           </div>
         </div>
       </div>
@@ -157,7 +177,7 @@ export function ScannerResultCard() {
               Detected items
             </p>
             <p className="mt-0.5 text-[13.5px] text-gray-600">
-              {RESULT.detectedSummary}
+              {result.detectedSummary}
             </p>
           </div>
         </div>
@@ -187,7 +207,7 @@ export function ScannerResultCard() {
             id="scan-details"
             className="grid gap-x-10 gap-y-5 px-6 pb-7 pt-5 sm:grid-cols-2 sm:px-7"
           >
-            {DETAILS.map(({ icon: Icon, label, value }) => (
+            {detailsFor(result).map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3.5">
                 <Icon className="h-5 w-5 shrink-0 text-gray-800" />
                 <div>
@@ -214,10 +234,10 @@ export function ScannerResultCard() {
           </span>
           <div>
             <p className="font-display text-[14.5px] font-bold text-gray-900">
-              {RESULT.tip.title}
+              {result.tip.title}
             </p>
             <p className="mt-0.5 text-[13.5px] text-gray-600">
-              {RESULT.tip.body}
+              {result.tip.body}
             </p>
           </div>
         </div>
