@@ -1430,6 +1430,132 @@ export function TagIcon({ className }: IconProps) {
   );
 }
 
+export function StarIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="m12 3.6 2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8L12 3.6Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function PowerIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3.5V11"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.3 6.8a6.75 6.75 0 1 0 9.4 0"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function PlantIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 20.5v-7.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 13c0-3.6-2.9-6.5-6.5-6.5C5.5 10.1 8.4 13 12 13Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 13c0-3.6 2.9-6.5 6.5-6.5C18.5 10.1 15.6 13 12 13Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function ExpandIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M14 4h6v6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m20 4-6.5 6.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10 20H4v-6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m4 20 6.5-6.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function ChatSolidIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3.25c-5.1 0-9.25 3.5-9.25 7.8 0 2.44 1.32 4.6 3.4 6.04-.14 1.2-.66 2.5-1.86 3.4 1.9.28 3.44-.24 4.5-.9a10.6 10.6 0 0 0 3.21.46c5.1 0 9.25-3.5 9.25-7.8S17.1 3.25 12 3.25Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function FilterIcon({ className }: IconProps) {
   return (
     <svg
@@ -1440,6 +1566,173 @@ export function FilterIcon({ className }: IconProps) {
     >
       <path
         d="M4.5 6h15l-6 7v5.5l-3-1.5V13l-6-7Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function GridSquaresIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect
+        x="4"
+        y="4"
+        width="6.5"
+        height="6.5"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <rect
+        x="13.5"
+        y="4"
+        width="6.5"
+        height="6.5"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <rect
+        x="4"
+        y="13.5"
+        width="6.5"
+        height="6.5"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <rect
+        x="13.5"
+        y="13.5"
+        width="6.5"
+        height="6.5"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+    </svg>
+  );
+}
+
+export function BottleIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M10 3.5h4M10.5 3.5v3l-2.1 2.6A4.5 4.5 0 0 0 7.5 12v6.75A1.75 1.75 0 0 0 9.25 20.5h5.5a1.75 1.75 0 0 0 1.75-1.75V12a4.5 4.5 0 0 0-.9-2.9L13.5 6.5v-3"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.5 14.5h9"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function JarIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect
+        x="8"
+        y="3"
+        width="8"
+        height="2.6"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M8.6 5.6h6.8v2.1c1.2.8 2 2.1 2 3.7v7A2.6 2.6 0 0 1 14.8 21H9.2a2.6 2.6 0 0 1-2.6-2.6v-7c0-1.6.8-2.9 2-3.7V5.6Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function AppleIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 8.2c-.9-1-2.2-1.5-3.4-1.3C6.4 7.2 5 9 5 11.4c0 3.9 2.7 8 5.1 8.6.6.15 1.2.15 1.8 0 2.4-.6 5.1-4.7 5.1-8.6 0-2.4-1.4-4.2-3.6-4.5-1.2-.2-2.5.3-3.4 1.3Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 8.2c0-1.9.9-3.2 2.6-3.9"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function ShirtIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M9 4 4.8 6.3a1.5 1.5 0 0 0-.7 1.8l1 2.9c.2.6.9.9 1.5.7l1.4-.5v6.9A1.9 1.9 0 0 0 9.9 20h4.2a1.9 1.9 0 0 0 1.9-1.9v-6.9l1.4.5c.6.2 1.3-.1 1.5-.7l1-2.9a1.5 1.5 0 0 0-.7-1.8L15 4c-.5 1.2-1.6 2-3 2s-2.5-.8-3-2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CompassIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="8.25"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="m15.5 8.5-2 5-5 2 2-5 5-2Z"
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinejoin="round"

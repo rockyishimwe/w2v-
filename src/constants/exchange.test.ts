@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  ALL_ITEMS,
+  AREA_ITEMS_LIMIT,
+  AREA_LISTINGS,
   CONDITION_FILTERS,
   FEATURED_LISTING,
+  getExchangeItemDetail,
   LISTINGS,
   MATERIAL_FILTERS,
   POPULAR_CATEGORIES,
@@ -97,5 +101,94 @@ describe("popular categories", () => {
         label === "Paper/Cardboard" ? "Paper" : (label as MaterialFilter);
       expect(VALID_MATERIALS, label).toContain(material);
     }
+  });
+});
+
+describe("area listings", () => {
+  it("have ids unique across every item", () => {
+    const ids = ALL_ITEMS.map((item) => item.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("use only valid tags, materials and conditions", () => {
+    for (const listing of AREA_LISTINGS) {
+      expect(VALID_TAGS, listing.id).toContain(listing.tag);
+      expect(VALID_MATERIALS, listing.id).toContain(listing.material);
+      expect(VALID_CONDITIONS, listing.id).toContain(listing.condition);
+    }
+  });
+});
+
+describe("getExchangeItemDetail", () => {
+  it("resolves every item", () => {
+    for (const { id } of ALL_ITEMS) {
+      expect(getExchangeItemDetail(id), id).not.toBeNull();
+    }
+  });
+
+  it("matches the listing card it was opened from", () => {
+    for (const listing of ALL_ITEMS) {
+      const detail = getExchangeItemDetail(listing.id);
+      expect(detail?.title, listing.id).toBe(listing.title);
+      expect(detail?.tag, listing.id).toBe(listing.tag);
+      expect(detail?.poster.name, listing.id).toBe(listing.postedBy);
+      expect(detail?.pickupPoint, listing.id).toBe(listing.district);
+    }
+  });
+
+  it("keeps the designed Glass Jar copy on top of the listing data", () => {
+    const detail = getExchangeItemDetail("glass-jars");
+    expect(detail?.badge).toBe("Free Item");
+    expect(detail?.statusNotes).toEqual([
+      "Clean",
+      "Reusable",
+      "Good condition",
+    ]);
+    expect(detail?.gallery).toHaveLength(3);
+  });
+
+  it("gives other items their own single photo", () => {
+    expect(getExchangeItemDetail("wooden-chair")?.gallery).toEqual([
+      "wooden-chair",
+    ]);
+  });
+
+  it("never repeats the material as the category", () => {
+    for (const { id } of ALL_ITEMS) {
+      const detail = getExchangeItemDetail(id);
+      const category = detail?.attributes.find((a) => a.label === "Category");
+      const material = detail?.attributes.find((a) => a.label === "Material");
+      expect(category?.value, id).not.toBe(material?.value);
+    }
+  });
+
+  it("only lists area items from the same district, never itself", () => {
+    for (const listing of ALL_ITEMS) {
+      const detail = getExchangeItemDetail(listing.id);
+      expect(detail?.areaItems.length, listing.id).toBeLessThanOrEqual(
+        AREA_ITEMS_LIMIT,
+      );
+      for (const item of detail?.areaItems ?? []) {
+        expect(item.id, listing.id).not.toBe(listing.id);
+        expect(item.location, listing.id).toBe(listing.district);
+      }
+    }
+  });
+
+  it("returns an empty area list for a district with no other items", () => {
+    // "Used clothes" is the only Goma listing.
+    expect(getExchangeItemDetail("used-clothes")?.areaItems).toEqual([]);
+  });
+
+  it("populates poster and exactly six detail rows", () => {
+    for (const { id } of ALL_ITEMS) {
+      const detail = getExchangeItemDetail(id);
+      expect(detail?.poster.memberSince, id).toBeTruthy();
+      expect(detail?.details, id).toHaveLength(6);
+    }
+  });
+
+  it("returns null for unknown ids", () => {
+    expect(getExchangeItemDetail("does-not-exist")).toBeNull();
   });
 });

@@ -144,7 +144,7 @@ const QUICK_ACTIONS: {
     icon: LightbulbIcon,
     title: "Explore Ideas",
     sub: "DIY, reuse and more",
-    href: "/scanner#examples",
+    href: "/discover",
   },
   {
     icon: SearchIcon,

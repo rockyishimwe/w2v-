@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRightIcon,
@@ -37,32 +38,8 @@ import {
   type ListingTag,
   type MaterialFilter,
 } from "@/constants/exchange";
-import {
-  CardboardStackArt,
-  ClothesArt,
-  FeaturedJarsArt,
-  JarsPhotoArt,
-  MetalPotsArt,
-  PlasticContainersArt,
-  SmartphonesArt,
-  VegetablesArt,
-  WoodenChairArt,
-} from "./exchange-art";
+import { FeaturedJarsArt, ItemArt } from "./exchange-art";
 import { filterListings, type TypeFilter } from "@/lib/exchange-filters";
-
-const LISTING_ART: Record<
-  string,
-  (props: { className?: string }) => React.ReactNode
-> = {
-  "glass-jars": JarsPhotoArt,
-  "cardboard-boxes": CardboardStackArt,
-  "plastic-containers": PlasticContainersArt,
-  "wooden-chair": WoodenChairArt,
-  "organic-vegetables": VegetablesArt,
-  "used-clothes": ClothesArt,
-  "old-smartphones": SmartphonesArt,
-  "metal-pots": MetalPotsArt,
-};
 
 const CATEGORY_ICONS: Record<
   string,
@@ -461,7 +438,7 @@ export function ExchangeClient() {
       {/* Toast */}
       <div aria-live="polite">
         {toast && (
-          <div className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-gray-900 px-5 py-2.5 text-[13px] font-medium text-white shadow-lg md:bottom-8">
+          <div className="fixed bottom-40 left-1/2 z-30 -translate-x-1/2 rounded-full bg-gray-900 px-5 py-2.5 text-[13px] font-medium text-white shadow-lg md:bottom-8">
             {toast}
           </div>
         )}
@@ -481,11 +458,18 @@ function ListingCard({
   favorite: boolean;
   onToggleFavorite: () => void;
 }) {
-  const Art = LISTING_ART[listing.id] ?? JarsPhotoArt;
   return (
-    <li className="overflow-hidden rounded-2xl border border-gray-100 bg-white transition-shadow hover:shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
+    <li className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white transition-shadow hover:shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
+      <Link
+        href={`/exchange/${listing.id}`}
+        className="absolute inset-0 z-10"
+        aria-label={`View ${listing.title}`}
+      />
       <div className="relative aspect-[1.12]">
-        <Art className="absolute inset-0 h-full w-full" />
+        <ItemArt
+          artKey={listing.id}
+          className="absolute inset-0 h-full w-full"
+        />
         <span
           className={`absolute bottom-2 left-2 rounded-md px-2 py-1 text-[10.5px] font-bold ${TAG_STYLES[listing.tag]}`}
         >
@@ -515,7 +499,7 @@ function ListingCard({
                 : `Save ${listing.title} to favorites`
             }
             aria-pressed={favorite}
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
+            className={`relative z-20 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
               favorite
                 ? "bg-brand-50 text-brand-700"
                 : "text-gray-400 hover:text-brand-700"
@@ -598,7 +582,12 @@ function FeaturedCard({
         </button>
       </div>
 
-      <div className="mt-3 flex items-center gap-3.5 rounded-2xl bg-white p-3">
+      <div className="relative mt-3 flex items-center gap-3.5 rounded-2xl bg-white p-3 transition-shadow hover:shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
+        <Link
+          href={`/exchange/${FEATURED_LISTING.id}`}
+          className="absolute inset-0 z-10 rounded-2xl"
+          aria-label={`View ${FEATURED_LISTING.title}`}
+        />
         <FeaturedJarsArt className="h-[86px] w-[86px] shrink-0 rounded-xl object-cover" />
         <div className="min-w-0 flex-1">
           <span
@@ -626,7 +615,7 @@ function FeaturedCard({
                 favorite ? "Remove from favorites" : "Save to favorites"
               }
               aria-pressed={favorite}
-              className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+              className={`relative z-20 flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                 favorite
                   ? "bg-brand-50 text-brand-700"
                   : "text-gray-400 hover:text-brand-700"
@@ -846,7 +835,7 @@ function FilterChip({
           id={panelId}
           role="menu"
           aria-labelledby={id}
-          className="absolute left-0 top-[calc(100%+6px)] z-20 w-56 rounded-2xl border border-gray-100 bg-white p-2 shadow-[0_14px_30px_rgba(17,24,39,0.12)]"
+          className="absolute left-0 top-[calc(100%+6px)] z-30 w-56 rounded-2xl border border-gray-100 bg-white p-2 shadow-[0_14px_30px_rgba(17,24,39,0.12)]"
         >
           {children}
         </div>

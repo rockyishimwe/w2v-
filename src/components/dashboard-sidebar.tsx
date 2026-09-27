@@ -20,10 +20,9 @@ const NAV_ITEMS: {
 }[] = [
   { label: "Dashboard", icon: GridIcon, href: "/dashboard" },
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
-  // Discover maps to the scanner's examples until its page exists;
-  // Activities maps to the dashboard feed until its page exists.
-  { label: "Discover", icon: SearchIcon, href: "/scanner" },
+  { label: "Discover", icon: SearchIcon, href: "/discover" },
   { label: "Exchange", icon: ExchangeIcon, href: "/exchange" },
+  // Activities maps to the dashboard feed until its page exists.
   { label: "Activities", icon: ClockIcon, href: "/dashboard" },
 ];
 

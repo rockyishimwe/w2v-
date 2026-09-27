@@ -18,6 +18,7 @@ function makeListing(
     district: "Rubavu",
     postedBy: "Amina K.",
     material: "Glass",
+    category: "Container",
     condition: "Good",
     ...overrides,
   };
