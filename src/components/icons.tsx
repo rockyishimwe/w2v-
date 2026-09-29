@@ -1715,7 +1715,6 @@ export function ShirtIcon({ className }: IconProps) {
     </svg>
   );
 }
-
 export function CompassIcon({ className }: IconProps) {
   return (
     <svg
@@ -1736,6 +1735,49 @@ export function CompassIcon({ className }: IconProps) {
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function PaperclipIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M20 11.5 12.4 19a5 5 0 0 1-7-7l7.5-7.6a3.4 3.4 0 0 1 4.8 4.8l-7.5 7.6a1.8 1.8 0 0 1-2.6-2.6l7-7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function SendIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M19.5 4.5 4.5 10.2c-.8.3-.8 1.4 0 1.7l5.8 2 2 5.8c.3.8 1.4.8 1.7 0l5.7-15c.3-.8-.5-1.5-1.2-1.2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m10.3 13.9 3.6-3.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
       />
     </svg>
   );

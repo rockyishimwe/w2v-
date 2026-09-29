@@ -301,7 +301,11 @@ export function RecentChatCard() {
   return (
     <Card>
       <CardHeader title="Recent Chat" icon={ChatIcon} />
-      <div className="mt-4 flex items-center gap-3.5">
+      <Link
+        href="/assistant"
+        className="mt-4 flex items-center gap-3.5"
+        aria-label="Open chat with Waste Assistant"
+      >
         <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
           <BotIcon className="h-7 w-7" />
         </span>
@@ -317,7 +321,7 @@ export function RecentChatCard() {
           </p>
         </div>
         <ArrowRightIcon className="h-4 w-4 shrink-0 text-gray-900" />
-      </div>
+      </Link>
     </Card>
   );
 }

@@ -322,16 +322,15 @@ export function DiscoverClient() {
                   </p>
                   <p className="mt-1 text-[12.5px] leading-relaxed text-gray-600">
                     {ASSISTANT_CARD.body}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => showToast("Waste Assistant is coming soon.")}
+                  </p>{" "}
+                  <Link
+                    href="/assistant"
                     className="mt-3 flex h-[44px] items-center gap-2.5 rounded-full bg-brand-700 px-5 text-[13.5px] font-semibold text-white shadow-[0_8px_18px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
                   >
                     <ChatSolidIcon className="h-4.5 w-4.5" />
                     {ASSISTANT_CARD.cta}
                     <ChevronRightIcon className="h-4 w-4" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -340,14 +339,13 @@ export function DiscoverClient() {
       </div>
 
       {/* Chat FAB */}
-      <button
-        type="button"
-        onClick={() => showToast("Waste Assistant is coming soon.")}
+      <Link
+        href="/assistant"
         className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-5 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
       >
         <ChatSolidIcon className="h-5 w-5" />
         Chat
-      </button>
+      </Link>
 
       {/* Toast */}
       <div aria-live="polite">
