@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { analyzeImage, getMockScanResult } from "@/services/scanner-service";
+import { analyzeImage } from "@/services/scanner-service";
 import type { ScanResult } from "@/types";
 import { useCapturedPhoto } from "@/hooks/use-captured-photo";
 import {
@@ -94,20 +94,61 @@ function ConfidenceRing({ percent }: { percent: number }) {
 export function ScannerResultCard() {
   const photo = useCapturedPhoto();
   const [detailsOpen, setDetailsOpen] = useState(true);
-  // Sample result until the captured photo has been analyzed via the
-  // service layer (the UI is shaped for the real ScanResult payload).
-  const [result, setResult] = useState<ScanResult>(getMockScanResult);
+  // Real AI analysis of the captured photo; null until the request lands.
+  const [result, setResult] = useState<ScanResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!photo) return;
     let cancelled = false;
-    void analyzeImage(photo).then((analyzed) => {
-      if (!cancelled) setResult(analyzed);
-    });
+    analyzeImage(photo)
+      .then((analyzed) => {
+        if (!cancelled) {
+          setResult(analyzed);
+          setError(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Couldn't analyze this photo. Please try scanning again.");
+        }
+      });
     return () => {
       cancelled = true;
     };
   }, [photo]);
+
+  if (error) {
+    return (
+      <section className="flex flex-col items-center gap-3 rounded-[32px] border border-gray-100 bg-white p-10 text-center shadow-[0_10px_30px_rgba(17,24,39,0.05)]">
+        <p className="text-[14.5px] font-semibold text-gray-900">{error}</p>
+        <a
+          href="/scanner"
+          className="flex h-11 items-center rounded-xl bg-brand-700 px-6 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
+        >
+          Back to scanner
+        </a>
+      </section>
+    );
+  }
+
+  if (!result) {
+    return (
+      <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-8">
+        <div className="grid gap-6 sm:gap-8 md:grid-cols-[minmax(0,328px)_minmax(0,1fr)]">
+          <div className="aspect-square animate-pulse rounded-[24px] bg-gray-100" />
+          <div className="space-y-4 py-2">
+            <div className="h-4 w-28 animate-pulse rounded bg-gray-100" />
+            <div className="h-8 w-2/3 animate-pulse rounded bg-gray-100" />
+            <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+            <p className="pt-2 text-[13px] text-gray-500">
+              Analyzing your photo…
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-8">

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   ArrowRightIcon,
   ChevronRightIcon,
@@ -8,20 +11,9 @@ import {
   RecycleIcon,
   ShareIcon,
 } from "./icons";
-import {
-  IdeaHangingLightsArt,
-  IdeaHerbPlanterArt,
-  IdeaLanternArt,
-  IdeaStorageJarArt,
-} from "./diy-art";
-import { SIMILAR_IDEAS } from "@/constants/diy-guide";
-
-const IDEA_ART = [
-  IdeaLanternArt,
-  IdeaHangingLightsArt,
-  IdeaHerbPlanterArt,
-  IdeaStorageJarArt,
-];
+import { IdeaArt } from "./discover-art";
+import { fetchIdeas } from "@/services/discover-service";
+import type { DiscoverIdea } from "@/services/discover-service";
 
 const IDEA_ICONS = { DIY: LightbulbIcon, Reuse: RecycleIcon } as const;
 
@@ -40,8 +32,8 @@ export function DiyImpactNote() {
             Small change. Big impact.
           </p>
           <p className="mt-1 text-[12.5px] leading-relaxed text-gray-600">
-            By reusing this glass jar, you&rsquo;re reducing waste and giving
-            the material a second life!
+            By reusing items instead of throwing them away, you&rsquo;re
+            reducing waste and giving materials a second life!
           </p>
         </div>
       </div>
@@ -49,7 +41,26 @@ export function DiyImpactNote() {
   );
 }
 
-export function DiySimilarIdeasCard() {
+/** "Similar Ideas" — real ideas from the API, excluding the open one. */
+export function DiySimilarIdeasCard({ excludeId }: { excludeId?: string }) {
+  const [ideas, setIdeas] = useState<DiscoverIdea[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchIdeas()
+      .then((response) => {
+        if (!cancelled) {
+          setIdeas(
+            response.data.filter((idea) => idea.id !== excludeId).slice(0, 4),
+          );
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [excludeId]);
+
   return (
     <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-6">
       <div className="flex items-center justify-between gap-3">
@@ -58,47 +69,58 @@ export function DiySimilarIdeasCard() {
           Similar Ideas
         </h2>
         <Link
-          href="/scanner"
-          className="flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-500 transition-colors hover:text-brand-700"
+          href="/discover"
+          className="flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-700 transition-colors hover:text-brand-500"
         >
           See all
           <ArrowRightIcon className="h-3.5 w-3.5" />
         </Link>
       </div>
 
-      <ul className="mt-4 space-y-3">
-        {SIMILAR_IDEAS.map(({ title, tag, time, impact }, index) => {
-          const Art = IDEA_ART[index] ?? IdeaLanternArt;
-          const TagIcon = IDEA_ICONS[tag];
-          return (
-            <li key={title}>
-              <div className="flex items-center gap-3 rounded-2xl border border-gray-100 p-2.5 transition-colors">
-                <Art className="h-[52px] w-[52px] shrink-0 rounded-xl object-cover" />
-                <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-center gap-2 text-[14px] font-bold text-gray-900">
-                    {title}
-                    <span className="inline-flex items-center gap-1 rounded-full bg-pale-green px-2 py-0.5 text-[10.5px] font-bold text-brand-700">
-                      <TagIcon className="h-3 w-3" />
-                      {tag}
-                    </span>
-                  </p>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <ClockIcon className="h-3.5 w-3.5" />
-                      {time}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <LeafIcon className="h-3.5 w-3.5" />
-                      {impact}
-                    </span>
-                  </p>
-                </div>
-                <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-400" />
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      {ideas.length === 0 ? (
+        <p className="mt-4 text-[13px] text-gray-500">
+          No other ideas yet — explore the Discover page to create some.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-3">
+          {ideas.map((idea) => {
+            const TagIcon = IDEA_ICONS[idea.tag];
+            return (
+              <li key={idea.id}>
+                <Link
+                  href={`/scanner/diy?idea=${encodeURIComponent(idea.id)}`}
+                  className="flex items-center gap-3 rounded-2xl border border-gray-100 p-2.5 transition-colors hover:border-brand-200"
+                >
+                  <IdeaArt
+                    artKey={idea.artKey}
+                    className="h-[52px] w-[52px] shrink-0 rounded-xl object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2 text-[14px] font-bold text-gray-900">
+                      {idea.title}
+                      <span className="inline-flex items-center gap-1 rounded-full bg-pale-green px-2 py-0.5 text-[10.5px] font-bold text-brand-700">
+                        <TagIcon className="h-3 w-3" />
+                        {idea.tag}
+                      </span>
+                    </p>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11.5px] text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <ClockIcon className="h-3.5 w-3.5" />
+                        {idea.time}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <LeafIcon className="h-3.5 w-3.5" />
+                        {idea.impact}
+                      </span>
+                    </p>
+                  </div>
+                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-400" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

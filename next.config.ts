@@ -5,8 +5,13 @@ const nextConfig: NextConfig = {
   // the real route tree (generated into .next/types by `next typegen`).
   typedRoutes: true,
 
-  // Prefer modern image formats for the future photo pipeline (listings,
-  // scan captures) — smaller payloads on low-bandwidth connections.
+  // The Postgres driver adapter is optional (SQLite dev doesn't need it,
+  // production installs it) — keep it out of the bundle so the build
+  // doesn't warn about a module that isn't a dependency.
+  serverExternalPackages: ["@prisma/adapter-pg"],
+
+  // Prefer modern image formats for the photo pipeline (listings, scan
+  // captures) — smaller payloads on low-bandwidth connections.
   images: {
     formats: ["image/avif", "image/webp"],
   },

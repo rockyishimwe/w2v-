@@ -22,7 +22,7 @@ const TABS: {
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
   { label: "Discover", icon: SearchIcon, href: "/discover" },
   { label: "Exchange", icon: ExchangeIcon, href: "/exchange" },
-  { label: "Activity", icon: ClockIcon, href: "/dashboard" },
+  { label: "Activity", icon: ClockIcon, href: "/activity" },
 ];
 
 export function MobileTabBar({ activeItem = "Home" }: { activeItem?: string }) {

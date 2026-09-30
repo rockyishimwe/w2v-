@@ -34,7 +34,13 @@ import {
   UsersIcon,
 } from "./icons";
 import { AvatarArt } from "./dashboard-art";
-import type { ExchangeItemDetail, ListingTag } from "@/constants/exchange";
+import {
+  expressInterest,
+  fetchListingDetail,
+  type ExchangeItemDetail,
+  type ListingTag,
+} from "@/services/exchange-service";
+import { hasSession } from "@/services/auth-service";
 import { ItemArt, MapArt } from "./exchange-art";
 
 /** Listing-type chip icons, matching the exchange page's type filters. */
@@ -68,12 +74,11 @@ const DETAIL_ROW_ICONS: Record<
 
 const CARD_SHADOW = "shadow-[0_10px_30px_rgba(17,24,39,0.045)]";
 
-export function ExchangeDetailClient({
-  detail,
-}: {
-  detail: ExchangeItemDetail;
-}) {
-  const [selected, setSelected] = useState(0);
+export function ExchangeDetailClient({ listingId }: { listingId: string }) {
+  const [detail, setDetail] = useState<ExchangeItemDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selected] = useState(0);
   const [savedAreaItems, setSavedAreaItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -82,6 +87,41 @@ export function ExchangeDetailClient({
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast(message);
     toastTimer.current = setTimeout(() => setToast(null), 2500);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  // Fetch the real listing detail from the API.
+  useEffect(() => {
+    let cancelled = false;
+    fetchListingDetail(listingId)
+      .then((payload) => {
+        if (!cancelled) setDetail(payload);
+      })
+      .catch(() => {
+        if (!cancelled) setError("This listing is unavailable.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listingId]);
+
+  /** Real "message the poster" flow: POST interest, then confirm. */
+  function handleMessageSeller() {
+    if (!hasSession()) {
+      showToast("Please log in to contact the poster.");
+      return;
+    }
+    expressInterest(listingId)
+      .then(() => showToast("Interest sent! The poster will reach out."))
+      .catch(() => showToast("Couldn't send your message. Try again."));
   }
 
   function toggleSaved(id: string) {
@@ -96,13 +136,33 @@ export function ExchangeDetailClient({
     });
   }
 
-  useEffect(() => {
-    return () => {
-      if (toastTimer.current) clearTimeout(toastTimer.current);
-    };
-  }, []);
+  if (loading) {
+    return (
+      <div className="grid gap-5">
+        <div className="h-[380px] animate-pulse rounded-[24px] bg-white" />
+        <div className="h-[280px] animate-pulse rounded-[24px] bg-white" />
+      </div>
+    );
+  }
 
-  const hasGallery = detail.gallery.length > 1;
+  if (error || !detail) {
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-[24px] bg-white px-6 py-16 text-center shadow-[0_10px_30px_rgba(17,24,39,0.045)]">
+        <SearchIcon className="h-8 w-8 text-brand-700" />
+        <p className="text-[15px] font-semibold text-gray-900">
+          {error ?? "Listing not found."}
+        </p>
+        <Link
+          href="/exchange"
+          className="flex h-11 items-center rounded-xl bg-brand-700 px-6 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
+        >
+          Back to listings
+        </Link>
+      </div>
+    );
+  }
+
+  const gallery = detail.image ? [detail.image] : [];
 
   return (
     <>
@@ -167,49 +227,25 @@ export function ExchangeDetailClient({
             className={`rounded-[24px] bg-white p-5 ${CARD_SHADOW} sm:p-6`}
           >
             <div className="grid gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
-              {/* Photo + thumbnails */}
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <div className="relative aspect-square min-w-0 flex-1 overflow-hidden rounded-2xl bg-[#f2f7f3]">
+              {/* Photo */}
+              <div className="relative aspect-square min-w-0 flex-1 overflow-hidden rounded-2xl bg-[#f2f7f3]">
+                {gallery.length > 0 ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={gallery[selected] ?? gallery[0]}
+                    alt={detail.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : (
                   <ItemArt
-                    artKey={detail.gallery[selected] ?? detail.gallery[0]}
+                    artKey={detail.id}
                     className="absolute inset-0 h-full w-full"
                   />
-                  <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-gray-900 shadow-sm">
-                    <UsersIcon className="h-3.5 w-3.5" />
-                    {AVAILABILITY_LABELS[detail.tag]}
-                  </span>
-                  {hasGallery && (
-                    <span className="absolute bottom-3 left-3 rounded-md bg-gray-900/70 px-2 py-1 text-[11px] font-semibold text-white">
-                      {selected + 1}/{detail.gallery.length}
-                    </span>
-                  )}
-                </div>
-
-                {hasGallery && (
-                  <div className="flex gap-2.5 sm:w-12 sm:shrink-0 sm:flex-col">
-                    {detail.gallery.map((key, index) => {
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setSelected(index)}
-                          aria-label={`Show photo ${index + 1}`}
-                          aria-pressed={selected === index}
-                          className={`relative aspect-square w-[52px] shrink-0 overflow-hidden rounded-xl transition-opacity sm:h-auto sm:w-full ${
-                            selected === index
-                              ? "ring-2 ring-brand-700"
-                              : "opacity-90 hover:opacity-100"
-                          }`}
-                        >
-                          <ItemArt
-                            artKey={key}
-                            className="absolute inset-0 h-full w-full"
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
                 )}
+                <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-gray-900 shadow-sm">
+                  <UsersIcon className="h-3.5 w-3.5" />
+                  {AVAILABILITY_LABELS[detail.tag]}
+                </span>
               </div>
 
               {/* Identification + attributes */}
@@ -337,18 +373,25 @@ export function ExchangeDetailClient({
                       key={item.id}
                       className="relative rounded-2xl border border-gray-100 bg-white p-2 transition-shadow hover:shadow-[0_10px_24px_rgba(17,24,39,0.08)]"
                     >
-                      {/* Full-card link sits under the save button, so no
-                          button is nested inside the <a>. */}
                       <Link
                         href={`/exchange/${item.id}`}
                         className="absolute inset-0 z-10 rounded-2xl"
                         aria-label={`View ${item.title}`}
                       />
                       <div className="relative aspect-[1.05] overflow-hidden rounded-xl">
-                        <ItemArt
-                          artKey={item.id}
-                          className="absolute inset-0 h-full w-full"
-                        />
+                        {item.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.image}
+                            alt=""
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                        ) : (
+                          <ItemArt
+                            artKey={item.id}
+                            className="absolute inset-0 h-full w-full"
+                          />
+                        )}
                       </div>
                       <button
                         type="button"
@@ -390,19 +433,14 @@ export function ExchangeDetailClient({
 
         {/* Right rail */}
         <div className="flex min-w-0 flex-col gap-5 xl:sticky xl:top-7 xl:self-start">
-          {/* Poster card */}
+          {/* Poster card — real stats only */}
           <section className={`rounded-[24px] bg-white p-6 ${CARD_SHADOW}`}>
             <div className="flex items-center gap-4">
               <AvatarArt className="h-[72px] w-[72px] shrink-0 rounded-full object-cover" />
               <div className="min-w-0">
                 <p className="text-[13px] text-gray-500">Posted by</p>
-                <p className="mt-0.5 flex items-center gap-2 text-[19px] font-bold leading-tight text-gray-900">
+                <p className="mt-0.5 text-[19px] font-bold leading-tight text-gray-900">
                   <span className="truncate">{detail.poster.name}</span>
-                  {detail.poster.online && (
-                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500">
-                      <span className="sr-only">Online now</span>
-                    </span>
-                  )}
                 </p>
                 <p className="mt-0.5 text-[13px] text-gray-500">
                   Member since {detail.poster.memberSince}
@@ -414,12 +452,21 @@ export function ExchangeDetailClient({
               <p className="flex items-center gap-2 text-[14.5px]">
                 <StarIcon className="h-5 w-5 text-gray-800" />
                 <span className="font-bold text-gray-900">
-                  {detail.poster.rating}
+                  {detail.poster.exchanges}
                 </span>
                 <span className="text-gray-500">
-                  ({detail.poster.exchangeCount}{" "}
-                  {detail.poster.exchangeCount === 1 ? "exchange" : "exchanges"}
-                  )
+                  {detail.poster.exchanges === 1 ? "exchange" : "exchanges"}{" "}
+                  made
+                </span>
+              </p>
+              <p className="mt-2 flex items-center gap-2 text-[14.5px]">
+                <BoxIcon className="h-5 w-5 text-gray-800" />
+                <span className="font-bold text-gray-900">
+                  {detail.poster.activeListings}
+                </span>
+                <span className="text-gray-500">
+                  active{" "}
+                  {detail.poster.activeListings === 1 ? "listing" : "listings"}
                 </span>
               </p>
             </div>
@@ -437,13 +484,11 @@ export function ExchangeDetailClient({
 
             <button
               type="button"
-              onClick={() =>
-                showToast("Messaging goes live with the community beta.")
-              }
+              onClick={handleMessageSeller}
               className="mt-5 flex h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl bg-brand-700 text-[15px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
             >
               <ChatSolidIcon className="h-5 w-5" />
-              Message Seller
+              Message Poster
             </button>
           </section>
 

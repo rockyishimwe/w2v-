@@ -1,60 +1,217 @@
-# Waste2Value — Frontend
+# Waste2Value — Waste-to-Resource Platform (Kigali, Rwanda)
 
-AI-powered household waste-to-resource platform (MVP) — Kigali, Rwanda.
-Mobile-first responsive web client built per the Waste2Value SRS v1.0.
+AI-powered household waste-to-resource platform (MVP).
+Mobile-first Next.js web client **with a full backend in the same project** —
+Route Handlers under `src/app/api/**` + Prisma + Groq AI (free-tier models).
 
 ## Tech Stack
 
-- [Next.js](https://nextjs.org) (App Router, file-based routing) + TypeScript
-- [Tailwind CSS v4](https://tailwindcss.com) (design tokens TBD from design assets)
-- ESLint (eslint-config-next, core-web-vitals) + Prettier
+- [Next.js](https://nextjs.org) 16 (App Router) + TypeScript strict
+- [Prisma ORM v7](https://www.prisma.io) — SQLite for zero-config dev, PostgreSQL for production (driver adapters)
+- Auth: short-lived JWTs ([jose](https://github.com/panva/jose)) + rotating refresh tokens (bcrypt password hashing)
+- Validation: [zod](https://zod.dev) on every input
+- AI: [Groq SDK](https://groq.com) with JSON-mode structured outputs
+- Tailwind CSS v4, ESLint, Prettier, Vitest
 
-## Getting Started
+## Quick Start
 
 ```bash
 npm install
+npx prisma migrate dev       # creates prisma/dev.db (SQLite) + applies migrations
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open http://localhost:3000 and create your account — all data in the app
+is real user data. There is **no seeding**: the marketplace starts empty
+and fills as you post listings; Discover ideas grow from assistant chats
+and AI generation.
 
-## Scripts
-
-| Command              | Description                       |
-| -------------------- | --------------------------------- |
-| `npm run dev`        | Start dev server (Turbopack)      |
-| `npm run build`      | Production build                  |
-| `npm run start`      | Run production build              |
-| `npm run lint`       | Lint the project                  |
-| `npm run lint:fix`   | Lint and auto-fix                 |
-| `npm run format`     | Format all files with Prettier    |
-| `npm run format:check` | Check formatting                |
-| `npm run typecheck`  | Type-check without emitting       |
-| `npm run test`       | Run unit tests (Vitest)           |
-| `npm run check`      | Typecheck + lint + format + tests |
+**AI**: add `GROQ_API_KEY` to `.env.local` for live AI (vision scanning,
+assistant, DIY guides, idea generation). Some scan/assistant fallbacks
+still exist for offline resilience.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.local` and fill in values. All `NEXT_PUBLIC_*`
-variables are exposed to the browser — never put secrets there.
+Copy `.env.example` → `.env.local`. Only `NEXT_PUBLIC_*` vars reach the
+browser, and none of them are secrets.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | no | PostgreSQL URL. Unset → local SQLite `prisma/dev.db`. |
+| `JWT_SECRET` | yes (auth) | HMAC secret for access JWTs (≥16 chars). |
+| `JWT_REFRESH_SECRET` | reserved | Extra secret slot for refresh-token pepper. |
+| `GROQ_API_KEY` | recommended | Enables live AI features. |
+| `GROQ_TEXT_MODEL` | no | Default `openai/gpt-oss-20b` (fast small model). |
+| `GROQ_REASONING_MODEL` | no | Default `openai/gpt-oss-120b` (larger reasoning model). |
+| `GROQ_VISION_MODEL` | no | Default `qwen/qwen3.8-27b` (photo identification). |
+| `ALLOWED_ORIGINS` | no | Comma-separated CORS origins (empty = same-origin). |
+| `NEXT_PUBLIC_API_BASE_URL` | no | Empty = same-origin `/api` (the default topology). |
+
+> Free-tier model IDs verified Sep 2026 at console.groq.com/docs/models.
+> `llama-3.1-8b-instant` / `llama-3.3-70b-versatile` are Enterprise-only now;
+> `meta-llama/llama-4-scout` left the free tier — `qwen/qwen3.8-27b` is the
+> free vision model. Re-verify before launch.
+
+## Database
+
+Prisma 7 uses `prisma.config.ts` + driver adapters:
+
+```bash
+npx prisma migrate dev      # apply migrations locally (SQLite)
+npx prisma studio           # browse data
+```
+
+Uploaded listing photos are stored under `uploads/` (gitignored) and
+served via `GET /api/uploads/[name]`. For production, swap
+`src/server/lib/uploads.ts` for blob storage (S3/R2) behind the same
+routes.
+
+**PostgreSQL**: set `DATABASE_URL`, switch `provider = "postgresql"` in
+`prisma/schema.prisma`, run `npx prisma migrate dev`, and add
+`@prisma/adapter-pg` (`npm i @prisma/adapter-pg pg`) — `src/server/lib/prisma.ts`
+already auto-selects the Postgres adapter when `DATABASE_URL` is a
+`postgres://` URL.
+
+## Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start dev server |
+| `npm run build` / `npm start` | Production build / serve |
+| `npm run test` | Vitest unit + integration tests |
+| `npm run typecheck` | `next typegen && tsc --noEmit` |
+| `npm run lint` / `lint:fix` | ESLint |
+| `npm run format` / `format:check` | Prettier |
+| `npm run check` | typecheck + lint + format + tests |
 
 ## Project Structure
 
 ```
 src/
-├── app/            # Next.js App Router pages/layouts (file-based routing)
-├── components/     # Reusable UI components (empty — awaiting designs)
-├── hooks/          # Custom React hooks
-├── lib/            # Utilities, API client, config helpers
-├── services/       # Backend API service layer
-├── types/          # Shared TypeScript types
-└── constants/      # App-wide constants
+├── app/
+│   ├── api/            # ← backend Route Handlers
+│   │   ├── auth/       #   register, login, refresh, logout, me
+│   │   ├── ai/         #   scan (vision), assistant (chat), tips
+│   │   ├── activity/   #   feed GET/POST (ETag, idempotency)
+│   │   ├── exchange/   #   listings list/detail/interest
+│   │   ├── ideas/      #   discover ideas + DIY guide
+│   │   └── health/
+│   ├── ...             # frontend pages (unchanged UI)
+├── components/  hooks/  lib/  services/  types/  constants/
+└── server/             # backend layers (routes stay thin)
+    ├── lib/            # auth, errors, http, logger, groq, prisma, rate-limit, tokens, idempotency
+    ├── schemas/        # zod request validation
+    ├── repositories/   # Prisma data access
+    ├── services/       # business logic (auth, ai, fallbacks)
+    └── generated/      # Prisma client (gitignored)
+prisma/
+├── schema.prisma  migrations/
+uploads/                # user-uploaded images (gitignored)
 ```
 
-## SRS Notes (frontend-relevant)
+## API Reference
 
-- Mobile-first responsive web; native mobile app deferred to post-MVP.
-- Low-bandwidth + intermittent connectivity must be tolerated (offline queuing).
-- Localization: Kinyarwanda / English / French (scope to be confirmed).
-- Basic accessibility: contrast, font sizes, alt text.
-- Auth: token-based (JWT/OAuth2) against the backend API over HTTPS/REST.
+All responses are JSON. Errors always use
+`{ "error": { "code", "message", "details?" } }`.
+Protected endpoints require `Authorization: Bearer <accessToken>`.
+POSTs accept an `Idempotency-Key` header for safe offline retries.
+Locale: `Accept-Language: rw | en | fr` (or a `locale` body field).
+
+### Auth
+
+```bash
+# Register
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"Vanessa","lastName":"Uwase","email":"v@ex.rw","password":"Password123"}'
+
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.rw","password":"YourPassword123"}'
+
+# Refresh (rotates the refresh token)
+curl -X POST http://localhost:3000/api/auth/refresh \
+  -H "Content-Type: application/json" -d '{"refreshToken":"<refreshToken>"}'
+
+# Me
+curl http://localhost:3000/api/auth/me -H "Authorization: Bearer <accessToken>"
+```
+
+Session shape: `{ user, accessToken, refreshToken, expiresIn }`.
+
+### AI (Groq)
+
+```bash
+# Scan a waste photo (vision model; persists a Scan + activity entry)
+curl -X POST http://localhost:3000/api/ai/scan \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: queued-scan-42" \
+  -d '{"image":"data:image/jpeg;base64,…","locale":"en"}'
+# → ScanResult: { id, title, material, category, confidence, detectedSummary,
+#                 condition, estimatedSize, tip, recommendations[] }
+
+# Chat assistant
+curl -X POST http://localhost:3000/api/ai/assistant \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"I have plastic bottles. What can I do with them?","locale":"en"}'
+# → { text, ideas: [{ title, difficulty, time, description }] }
+
+# Recycling tips for a material
+curl -X POST http://localhost:3000/api/ai/tips \
+  -H "Content-Type: application/json" -d '{"material":"Plastic","locale":"rw"}'
+```
+
+AI prompt-injection defense: user text is wrapped as untrusted data, never
+treated as instructions; outputs are zod-validated with one retry.
+
+### Activity
+
+```bash
+curl "http://localhost:3000/api/activity?filter=Reuse&days=30" \
+  -H "Authorization: Bearer <accessToken>"
+# → { data[], page, pageSize, total, stats, impact } (ETag + 304 support)
+
+curl -X POST http://localhost:3000/api/activity \
+  -H "Authorization: Bearer <accessToken>" -H "Idempotency-Key: act-1" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"Reuse","title":"Reused glass jar","description":"Storage for spices"}'
+```
+
+### Exchange marketplace
+
+```bash
+curl "http://localhost:3000/api/exchange/listings?material=Glass&sort=distance"
+curl "http://localhost:3000/api/exchange/listings/glass-jars"        # detail
+curl -X POST "http://localhost:3000/api/exchange/listings/glass-jars" \
+  -H "Authorization: Bearer <accessToken>" -H "Content-Type: application/json" \
+  -d '{"message":"Hi, is it still available?"}'                      # interest
+```
+
+### Ideas / health
+
+```bash
+curl "http://localhost:3000/api/ideas?category=Glass"
+curl "http://localhost:3000/api/ideas/candle-jars/guide"
+curl http://localhost:3000/api/health   # { status, db, ai, time }
+```
+
+## Security
+
+- All input validated with zod; consistent error envelope
+- Rate limiting: 10/min auth, 20/min AI, 120/min elsewhere (per IP/user)
+- Security headers on every API response (`nosniff`, `DENY`, referrer policy)
+- CORS allow-list via `ALLOWED_ORIGINS` (default: same-origin only)
+- Refresh tokens stored as SHA-256 hashes; rotation with replay detection
+  (reuse revokes the whole token family)
+- Structured logs never contain passwords, tokens or API keys (redacted)
+- Secrets only in env vars — never in client bundles
+
+## SRS Notes
+
+- Mobile-first responsive web; offline queuing supported via idempotent POSTs
+- Localization: Kinyarwanda / English / French (Accept-Language or `locale`)
+- Low-bandwidth: small JSON payloads, ETag/304 on list endpoints,
+  downscaled JPEG scan uploads, AI fallbacks when connectivity drops

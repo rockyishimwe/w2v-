@@ -30,18 +30,18 @@ import {
   DISCOVER_CATEGORIES,
   DISCOVER_HERO,
   POPULAR_SEARCHES,
-  RECOMMENDED_IDEAS,
-  RECYCLING_TIPS,
-  TRENDING_IDEAS,
-  filterIdeasByCategory,
+  TIP_MATERIALS,
   type DiscoverCategoryFilter,
-  type DiscoverIdea,
 } from "@/constants/discover";
+import { fetchIdeas, generateIdea } from "@/services/discover-service";
+import type { DiscoverIdea } from "@/services/discover-service";
 import {
   DiscoverHeroArt,
   DiscoverLeafWatermarkArt,
   IdeaArt,
 } from "./discover-art";
+import { api } from "@/lib/api-client";
+import { hasSession } from "@/services/auth-service";
 
 /** Icon per category chip label ("All" uses a grid-of-squares glyph). */
 const CATEGORY_ICONS: Record<
@@ -64,6 +64,12 @@ export function DiscoverClient() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Real ideas from the API.
+  const [ideas, setIdeas] = useState<DiscoverIdea[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   function showToast(message: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -89,14 +95,51 @@ export function DiscoverClient() {
     });
   }
 
-  const trending = useMemo(
-    () => filterIdeasByCategory(TRENDING_IDEAS, category),
-    [category],
-  );
-  const recommended = useMemo(
-    () => filterIdeasByCategory(RECOMMENDED_IDEAS, category),
-    [category],
-  );
+  // Fetch ideas from the real API (refetch when the category changes).
+  // Existing ideas stay visible while a refetch is in flight.
+  useEffect(() => {
+    let cancelled = false;
+    fetchIdeas(category)
+      .then((response) => {
+        if (!cancelled) {
+          setIdeas(response.data);
+          setError(null);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Couldn't load ideas. Please try again.");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
+
+  /** Splits the real idea list into the two designed rails. */
+  const [trending, recommended] = useMemo(() => {
+    const midpoint = Math.ceil(ideas.length / 2);
+    return [ideas.slice(0, midpoint), ideas.slice(midpoint)];
+  }, [ideas]);
+
+  /** Asks the AI to invent a new idea for a category (persisted server-side). */
+  function handleGenerate() {
+    if (!hasSession()) {
+      showToast("Please log in to generate new ideas.");
+      return;
+    }
+    const material = category === "All" ? "household waste" : category;
+    setGenerating(true);
+    generateIdea(material)
+      .then((idea) => {
+        setIdeas((prev) => [idea, ...prev]);
+        showToast(`New idea: ${idea.title}`);
+      })
+      .catch(() => showToast("Couldn't generate an idea. Try again."))
+      .finally(() => setGenerating(false));
+  }
 
   return (
     <>
@@ -210,27 +253,55 @@ export function DiscoverClient() {
             })}
           </div>
 
-          {/* Trending Ideas */}
-          <IdeaRailCard
-            icon={<LightbulbIcon className="h-5 w-5 text-brand-700" />}
-            title="Trending Ideas"
-            subtitle="Popular reuse ideas in your area"
-            ideas={trending}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-            onReset={() => setCategory("All")}
-          />
-
-          {/* Recommended for You */}
-          <IdeaRailCard
-            icon={<SparkleIcon className="h-5 w-5 text-brand-700" />}
-            title="Recommended for You"
-            subtitle="Based on your interests and recent scans"
-            ideas={recommended}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-            onReset={() => setCategory("All")}
-          />
+          {/* Idea rails — one dataset from the API, split into two rails */}
+          {loading ? (
+            <div className="grid grid-cols-1 gap-4 rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.045)] sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((index) => (
+                <div
+                  key={index}
+                  className="overflow-hidden rounded-2xl border border-gray-100"
+                >
+                  <div className="aspect-[1.05] animate-pulse bg-gray-100" />
+                  <div className="space-y-2 p-3">
+                    <div className="h-3.5 w-3/4 animate-pulse rounded bg-gray-100" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center gap-3 rounded-[28px] bg-white px-6 py-12 text-center shadow-[0_10px_30px_rgba(17,24,39,0.045)]">
+              <p className="text-[14px] font-semibold text-gray-900">{error}</p>
+            </div>
+          ) : (
+            <>
+              <IdeaRailCard
+                icon={<LightbulbIcon className="h-5 w-5 text-brand-700" />}
+                title="Trending Ideas"
+                subtitle="Fresh ideas for your materials"
+                ideas={trending}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                onReset={() => setCategory("All")}
+                emptyHint="Generate the first idea for this category."
+                onEmptyAction={handleGenerate}
+                emptyActionLabel={generating ? "Generating…" : "Generate idea"}
+                emptyActionBusy={generating}
+              />
+              {recommended.length > 0 && (
+                <IdeaRailCard
+                  icon={<SparkleIcon className="h-5 w-5 text-brand-700" />}
+                  title="More for You"
+                  subtitle="More ideas from the community"
+                  ideas={recommended}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                  onReset={() => setCategory("All")}
+                  emptyHint="Nothing more here yet."
+                />
+              )}
+            </>
+          )}
         </div>
 
         {/* Right rail — solid sticky block (no internal scrolling) */}
@@ -275,42 +346,12 @@ export function DiscoverClient() {
             </div>
           </section>
 
-          {/* Recycling Tips */}
+          {/* Recycling tips — real AI content for a picked material */}
+          <RecyclingTipsCard onToast={showToast} />
+
+          {/* Assistant card */}
           <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.045)]">
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="font-display flex items-center gap-2.5 text-[16px] font-bold text-gray-900">
-                <LightbulbIcon className="h-5 w-5 text-brand-700" />
-                Recycling Tips
-              </h3>
-              <Link
-                href="/scanner"
-                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-700 transition-colors hover:text-brand-500"
-              >
-                View all
-                <ChevronRightIcon className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <ul className="mt-2 divide-y divide-gray-100">
-              {RECYCLING_TIPS.map((tip) => (
-                <li key={tip}>
-                  <button
-                    type="button"
-                    onClick={() => showToast("Tip articles are coming soon.")}
-                    className="group flex w-full items-center gap-3 py-3.5 text-left"
-                  >
-                    <RecycleIcon className="h-4.5 w-4.5 shrink-0 text-brand-600" />
-                    <span className="min-w-0 flex-1 text-[13.5px] font-medium text-gray-900">
-                      {tip}
-                    </span>
-                    <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-700 transition-transform group-hover:translate-x-0.5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-
-            {/* Assistant card */}
-            <div className="relative mt-4 overflow-hidden rounded-2xl bg-pale-green p-5">
+            <div className="relative overflow-hidden rounded-2xl bg-pale-green p-5">
               <DiscoverLeafWatermarkArt className="pointer-events-none absolute bottom-0 right-0 h-16 w-16 text-brand-300/50" />
               <div className="relative z-10 flex items-start gap-3.5">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
@@ -359,7 +400,76 @@ export function DiscoverClient() {
   );
 }
 
-/* ── Idea rail (Trending / Recommended share one layout) ──────── */
+/* ── Recycling tips (real AI via /api/ai/tips) ────────────────── */
+
+function RecyclingTipsCard({ onToast }: { onToast: (m: string) => void }) {
+  const [material, setMaterial] = useState(TIP_MATERIALS[0]);
+  const [tips, setTips] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  function loadTips(material: string) {
+    setMaterial(material);
+    setLoading(true);
+    setOpen(true);
+    api
+      .post<{ tips: string[] }>("/api/ai/tips", { material })
+      .then((response) => setTips(response.tips))
+      .catch(() => onToast("Couldn't load tips. Try again."))
+      .finally(() => setLoading(false));
+  }
+
+  return (
+    <section className="rounded-[24px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.045)]">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-display flex items-center gap-2.5 text-[16px] font-bold text-gray-900">
+          <LightbulbIcon className="h-5 w-5 text-brand-700" />
+          Recycling Tips
+        </h3>
+        <ChevronDownIcon
+          className={`h-5 w-5 text-gray-700 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </div>
+
+      <div className="mt-3.5 flex flex-wrap gap-2.5">
+        {TIP_MATERIALS.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => loadTips(option)}
+            aria-pressed={material === option}
+            className={`flex h-[38px] items-center rounded-full px-4 text-[12.5px] font-semibold transition-colors ${
+              material === option
+                ? "bg-brand-700 text-white shadow-[0_6px_14px_rgba(20,92,54,0.25)]"
+                : "bg-pale-green text-gray-700 hover:bg-brand-100 hover:text-brand-700"
+            }`}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+
+      {open && (
+        <ul className="mt-3 divide-y divide-gray-100">
+          {loading ? (
+            <li className="py-3.5 text-[13.5px] text-gray-500">Thinking…</li>
+          ) : (
+            tips.map((tip) => (
+              <li key={tip} className="flex items-start gap-3 py-3.5">
+                <RecycleIcon className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brand-600" />
+                <span className="min-w-0 flex-1 text-[13.5px] font-medium text-gray-900">
+                  {tip}
+                </span>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/* ── Idea rail (Trending / More share one layout) ─────────────── */
 
 function IdeaRailCard({
   icon,
@@ -369,6 +479,10 @@ function IdeaRailCard({
   favorites,
   onToggleFavorite,
   onReset,
+  emptyHint,
+  onEmptyAction,
+  emptyActionLabel,
+  emptyActionBusy,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -377,6 +491,10 @@ function IdeaRailCard({
   favorites: Set<string>;
   onToggleFavorite: (id: string) => void;
   onReset: () => void;
+  emptyHint?: string;
+  onEmptyAction?: () => void;
+  emptyActionLabel?: string;
+  emptyActionBusy?: boolean;
 }) {
   return (
     <section className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.045)] sm:p-6">
@@ -401,15 +519,26 @@ function IdeaRailCard({
         <div className="mt-5 flex flex-col items-center gap-2 rounded-2xl bg-pale-green px-6 py-8 text-center">
           <SparkleIcon className="h-7 w-7 text-brand-700" />
           <p className="text-[13.5px] font-semibold text-gray-900">
-            Nothing here for this category yet.
+            {emptyHint ?? "Nothing here for this category yet."}
           </p>
-          <button
-            type="button"
-            onClick={onReset}
-            className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
-          >
-            Show all categories
-          </button>
+          {onEmptyAction ? (
+            <button
+              type="button"
+              onClick={onEmptyAction}
+              disabled={emptyActionBusy}
+              className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
+            >
+              {emptyActionLabel ?? "Generate idea"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onReset}
+              className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
+            >
+              Show all categories
+            </button>
+          )}
         </div>
       ) : (
         <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

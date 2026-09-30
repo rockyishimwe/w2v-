@@ -71,12 +71,12 @@ export function AssistantClient() {
   function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
-    setMessages((prev) => [
-      ...prev,
-      toUserMessage(trimmed),
-      ...getAssistantResponse(trimmed),
-    ]);
     setDraft("");
+    // API-backed reply: append the user bubble immediately, then the
+    // assistant's response when it arrives.
+    void getAssistantResponse(trimmed).then((reply) => {
+      setMessages((prev) => [...prev, toUserMessage(trimmed), ...reply]);
+    });
   }
 
   function sendChip(chip: AssistantChip) {

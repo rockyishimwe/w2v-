@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "validate",
+  "stage": "render",
+  "type": "architecture",
+  "input": "C:\\Users\\awk-3\\OneDrive\\Documents\\freelancer\\Projects\\project19\\w2v\\docs\\w2v-architecture.architecture.json",
+  "error": "Architecture layout validation failed:\n- [clean-flow/endpoint-side-direction] architecture connections[11] id \"services-data\" \"services\" -> \"mock-data\" first segment 0 [1310, 306] -> [1345, 567] does not honor fromSide \"right\" — it must run horizontal rightward; keep automatic routing so the renderer can use a side-aware bridge, or set truthful fromSide/toSide with perpendicular via segments.\n- [clean-flow/endpoint-side-direction] architecture connections[11] id \"services-data\" \"services\" -> \"mock-data\" final segment 2 [720, 567] -> [930, 507] does not honor toSide \"right\" — it must run horizontal leftward from the right; keep automatic routing so the renderer can use a side-aware bridge, or set truthful fromSide/toSide with perpendicular via segments.\n- [clean-flow/edge-through-node] architecture connections[13] id \"auth-api\" \"auth\" -> \"api\" crosses component \"mock-data\" (unrelated to this relationship) on segment 1 [340, 507] -> [1060, 507] (2px clearance) — adjust fromSide/toSide, set route/via, or move the component.\n- Label \"listings + pure filters\" overlaps component \"discover\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [585, 428, 120, 14]\n  component \"discover\" rect: [700, 366, 180, 72]\n  Suggested fix: labelAt [645, 452] or labelDy +14 (below); or labelAt [645, 362] or labelDy -76 (above)\n- Label \"returns mock data\" overlaps component \"mock-data\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [779, 531, 92, 14]\n  component \"mock-data\" rect: [490, 472, 440, 70]\n  Suggested fix: labelAt [825, 556] or labelDy +15 (below); or labelAt [825, 468] or labelDy -73 (above)\n- Label \"planned REST swap\" overlaps component \"services\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [1089, 330, 92, 14]\n  component \"services\" rect: [1110, 270, 200, 72]\n  Suggested fix: labelAt [1135, 356] or labelDy +16 (below); or labelAt [1135, 266] or labelDy -74 (above)\n- Label \"planned token auth\" overlaps component \"mock-data\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [652, 487, 96, 14]\n  component \"mock-data\" rect: [490, 472, 440, 70]\n  Suggested fix: labelAt [700, 556] or labelDy +59 (below); or labelAt [700, 468] or labelDy -29 (above)",
+  "diagnostics": [
+    {
+      "code": "clean-flow/endpoint-side-direction",
+      "severity": "error",
+      "message": "[clean-flow/endpoint-side-direction] architecture connections[11] id \"services-data\" \"services\" -> \"mock-data\" first segment 0 [1310, 306] -> [1345, 567] does not honor fromSide \"right\" — it must run horizontal rightward; keep automatic routing so the renderer can use a side-aware bridge, or set truthful fromSide/toSide with perpendicular via segments.",
+      "subject": {
+        "diagramType": "architecture",
+        "collection": "connections",
+        "index": 11,
+        "id": "services-data",
+        "from": "services",
+        "to": "mock-data"
+      },
+      "evidence": {
+        "endpoint": "source",
+        "authoredField": "fromSide",
+        "sideOrigin": "authored",
+        "side": "right",
+        "segmentIndex": 0,
+        "from": [1310, 306],
+        "to": [1345, 567],
+        "expectedAxis": "horizontal",
+        "expectedDirection": "rightward"
+      },
+      "supportedFixes": [
+        "keep automatic routing so the renderer can use a side-aware bridge, or set truthful fromSide/toSide with perpendicular via segments"
+      ]
+    },
+    {
+      "code": "clean-flow/endpoint-side-direction",
+      "severity": "error",
+      "message": "[clean-flow/endpoint-side-direction] architecture connections[11] id \"services-data\" \"services\" -> \"mock-data\" final segment 2 [720, 567] -> [930, 507] does not honor toSide \"right\" — it must run horizontal leftward from the right; keep automatic routing so the renderer can use a side-aware bridge, or set truthful fromSide/toSide with perpendicular via segments.",
+      "subject": {
+        "diagramType": "architecture",
+        "collection": "connections",
+        "index": 11,
+        "id": "services-data",
+        "from": "services",
+        "to": "mock-data"
+      },
+      "evidence": {
+        "endpoint": "target",
+        "authoredField": "toSide",
+        "sideOrigin": "authored",
+        "side": "right",
+        "segmentIndex": 2,
+        "from": [720, 567],
+        "to": [930, 507],
+        "expectedAxis": "horizontal",
+        "expectedDirection": "leftward from the right"
+      },
+      "supportedFixes": [
+        "keep automatic routing so the renderer can use a side-aware bridge, or set truthful fromSide/toSide with perpendicular via segments"
+      ]
+    },
+    {
+      "code": "clean-flow/edge-through-node",
+      "severity": "error",
+      "message": "[clean-flow/edge-through-node] architecture connections[13] id \"auth-api\" \"auth\" -> \"api\" crosses component \"mock-data\" (unrelated to this relationship) on segment 1 [340, 507] -> [1060, 507] (2px clearance) — adjust fromSide/toSide, set route/via, or move the component.",
+      "subject": {
+        "diagramType": "architecture",
+        "collection": "connections",
+        "index": 13,
+        "id": "auth-api",
+        "from": "auth",
+        "to": "api"
+      },
+      "evidence": {
+        "obstacleKind": "component",
+        "obstacleId": "mock-data",
+        "segmentIndex": 1,
+        "from": [340, 507],
+        "to": [1060, 507],
+        "clearancePx": 2
+      },
+      "supportedFixes": [
+        "adjust fromSide/toSide, set route/via, or move the component"
+      ]
+    },
+    {
+      "code": "layout/constraint",
+      "severity": "error",
+      "message": "Label \"listings + pure filters\" overlaps component \"discover\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [585, 428, 120, 14]\n  component \"discover\" rect: [700, 366, 180, 72]\n  Suggested fix: labelAt [645, 452] or labelDy +14 (below); or labelAt [645, 362] or labelDy -76 (above)",
+      "subject": {
+        "diagramType": "architecture"
+      },
+      "evidence": {},
+      "supportedFixes": []
+    },
+    {
+      "code": "layout/constraint",
+      "severity": "error",
+      "message": "Label \"returns mock data\" overlaps component \"mock-data\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [779, 531, 92, 14]\n  component \"mock-data\" rect: [490, 472, 440, 70]\n  Suggested fix: labelAt [825, 556] or labelDy +15 (below); or labelAt [825, 468] or labelDy -73 (above)",
+      "subject": {
+        "diagramType": "architecture"
+      },
+      "evidence": {},
+      "supportedFixes": []
+    },
+    {
+      "code": "layout/constraint",
+      "severity": "error",
+      "message": "Label \"planned REST swap\" overlaps component \"services\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [1089, 330, 92, 14]\n  component \"services\" rect: [1110, 270, 200, 72]\n  Suggested fix: labelAt [1135, 356] or labelDy +16 (below); or labelAt [1135, 266] or labelDy -74 (above)",
+      "subject": {
+        "diagramType": "architecture"
+      },
+      "evidence": {},
+      "supportedFixes": []
+    },
+    {
+      "code": "layout/constraint",
+      "severity": "error",
+      "message": "Label \"planned token auth\" overlaps component \"mock-data\" — adjust labelDx/labelDy/labelSegment or set labelAt.\n  label rect: [652, 487, 96, 14]\n  component \"mock-data\" rect: [490, 472, 440, 70]\n  Suggested fix: labelAt [700, 556] or labelDy +59 (below); or labelAt [700, 468] or labelDy -29 (above)",
+      "subject": {
+        "diagramType": "architecture"
+      },
+      "evidence": {},
+      "supportedFixes": []
+    }
+  ]
+}

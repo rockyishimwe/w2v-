@@ -1,11 +1,6 @@
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
-import {
-  DiyHeroCard,
-  DiyMaterialsCard,
-  DiyStepsCard,
-  DiyTopBar,
-} from "@/components/diy-guide";
+import { DiyGuideClient, DiyTopBar } from "@/components/diy-guide";
 import {
   DiyImpactNote,
   DiyShareCard,
@@ -14,7 +9,18 @@ import {
 
 export const metadata = { title: "Waste2Value - DIY Idea" };
 
-export default function DiyGuidePage() {
+/**
+ * DIY guide detail. The idea is chosen with ?idea=<slug> (linked from
+ * Discover and assistant idea cards); the guide itself is AI-generated
+ * server-side and rendered here.
+ */
+export default async function DiyGuidePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ idea?: string }>;
+}) {
+  const { idea } = await searchParams;
+
   return (
     <div className="flex min-h-dvh bg-page pb-20 md:pb-0">
       <DashboardSidebar activeItem="Scanner" />
@@ -23,11 +29,9 @@ export default function DiyGuidePage() {
         <DiyTopBar />
 
         <div className="mt-7 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.53fr)_minmax(400px,1fr)]">
-          {/* Left: recommendation, materials, steps */}
+          {/* Left: guide content (hero, materials, steps) */}
           <div className="flex min-w-0 flex-col gap-6">
-            <DiyHeroCard />
-            <DiyMaterialsCard />
-            <DiyStepsCard />
+            <DiyGuideClient ideaId={idea} />
           </div>
 
           {/* Right rail: impact note, similar ideas, share. Pinned as one
@@ -35,7 +39,7 @@ export default function DiyGuidePage() {
               scrolling, so cards can never clip or overlap each other. */}
           <div className="flex min-w-0 flex-col gap-6 xl:sticky xl:top-9 xl:self-start">
             <DiyImpactNote />
-            <DiySimilarIdeasCard />
+            <DiySimilarIdeasCard excludeId={idea} />
             <DiyShareCard />
           </div>
         </div>

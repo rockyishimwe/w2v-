@@ -1,0 +1,155 @@
+// Waste2Value — Prisma schema (Prisma ORM v7)
+//
+// SQLite for local dev out of the box; for production PostgreSQL switch
+// `provider` to "postgresql", set DATABASE_URL, and re-run
+// `npx prisma migrate dev --name init` (see README "Database").
+// Prisma 7 requires:
+//   - a `prisma-client` generator with an explicit `output`,
+//   - a driver adapter at runtime (see src/server/lib/prisma.ts).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/server/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  locale       String   @default("en") // rw | en | fr
+  createdAt    DateTime @default(now())
+
+  refreshTokens   RefreshToken[]
+  scans           Scan[]
+  activityEntries ActivityEntry[]
+  listings        ExchangeListing[]
+  assistantMessages AssistantMessage[]
+}
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Scan {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  material       String
+  category       String
+  confidence     Int
+  detectedSummary String
+  condition      String
+  estimatedSize  String
+  tipTitle       String
+  tipBody        String
+  recommendations Json
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model ExchangeListing {
+  id            String   @id @default(cuid())
+  seedId        String   @unique // stable public id ("user-lx3k2-abc12")
+  title         String
+  meta          String
+  tag           String // Free | Exchange | Sale
+  district      String
+  distanceKm    Float
+  postedByName  String
+  postedById    String
+  postedBy      User     @relation(fields: [postedById], references: [id])
+  material      String // Organic | Paper | Plastic | Glass | Metal | Wood | Textile | Electronics
+  category      String
+  condition     String // New | Good | Fair
+  /** Uploaded photo path under /api/uploads (null = UI art by material). */
+  imagePath     String?
+  featured      Boolean  @default(false)
+  status        String   @default("available") // available | matched | removed
+  createdAt     DateTime @default(now())
+
+  interests ExchangeInterest[]
+}
+
+model ExchangeInterest {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   ExchangeListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@unique([listingId, userId])
+}
+
+model ActivityEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String // Scan | Reuse | Recycling | Exchange
+  title       String
+  description String
+  location    String
+  artKey      String
+  /** Real kg diverted as reported by the user (null = unknown). */
+  wasteKg     Float?
+  occurredAt  DateTime @default(now())
+
+  @@index([userId, occurredAt])
+}
+
+model AssistantMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String // user | assistant
+  text      String?
+  ideas     Json?
+  locale    String   @default("en")
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Idea {
+  id          String   @id @default(cuid())
+  seedId      String   @unique // stable public id (slug, e.g. "hanging-planter")
+  title       String
+  description String
+  tag         String // DIY | Reuse
+  time        String
+  impact      String
+  categories  String // csv: "Plastic,Glass"
+  artKey      String
+  /** AI-generated DIY guide (cached after first request). */
+  guide       Json?
+  createdAt   DateTime @default(now())
+
+  @@index([tag])
+}
+
+model IdempotencyRecord {
+  key         String   @id
+  userId      String?
+  endpoint    String
+  requestBody String
+  status      Int
+  responseBody String
+  createdAt   DateTime @default(now())
+
+  @@index([userId, endpoint])
+}

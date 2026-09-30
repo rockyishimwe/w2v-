@@ -3,7 +3,7 @@ import type {
   ExchangeListing,
   ListingTag,
   MaterialFilter,
-} from "@/constants/exchange";
+} from "@/services/exchange-service";
 
 /** All "All" state for one call site (the Exchange page). */
 export type TypeFilter = ListingTag | "All";

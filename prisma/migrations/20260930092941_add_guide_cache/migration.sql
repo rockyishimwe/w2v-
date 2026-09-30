@@ -1,0 +1,6 @@
+-- CreateTable
+CREATE TABLE "GuideCache" (
+    "slug" TEXT NOT NULL PRIMARY KEY,
+    "guide" JSONB NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

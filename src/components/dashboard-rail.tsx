@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
+import { useEffect, useState } from "react";
 import {
   BellIcon,
   BotIcon,
@@ -12,19 +15,35 @@ import {
 } from "./icons";
 import { AvatarArt, QuoteHillsArt } from "./dashboard-art";
 import { Card } from "./dashboard-cards";
-
-const MONTHLY_GOAL = {
-  percent: 68,
-  current: "15 kg",
-  target: "22 kg",
-};
+import { fetchActivity } from "@/services/activity-service";
+import { fetchCurrentUser } from "@/services/auth-service";
 
 export function TopBar() {
+  // Real greeting from the signed-in user's profile.
+  const [firstName, setFirstName] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchCurrentUser()
+      .then((user) => {
+        if (!cancelled) setFirstName(user.firstName);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+
   return (
     <div className="flex flex-wrap items-start justify-between gap-5">
       <h1 className="font-display text-[26px] font-bold leading-[1.1] text-gray-900 sm:text-[34px]">
-        Good Morning
-        <span className="block text-[34px] text-brand-500">Vanessa!</span>
+        {greeting}
+        <span className="block text-[34px] text-brand-500">
+          {firstName ? `${firstName}!` : "!"}
+        </span>
       </h1>
 
       <div className="flex flex-1 items-center justify-end gap-4 pt-1">
@@ -61,9 +80,28 @@ export function TopBar() {
   );
 }
 export function ImpactCard() {
+  // Real 30-day impact from /api/activity.
+  const [goal, setGoal] = useState<{
+    percent: number;
+    current: string;
+    target: string;
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchActivity()
+      .then((response) => {
+        if (!cancelled) setGoal(response.impact);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const radius = 44;
   const circumference = 2 * Math.PI * radius;
-  const filled = (MONTHLY_GOAL.percent / 100) * circumference;
+  const percent = goal?.percent ?? 0;
+  const filled = (percent / 100) * circumference;
 
   return (
     <Card>
@@ -96,30 +134,30 @@ export function ImpactCard() {
             />
           </svg>
           <p className="absolute inset-0 flex items-center justify-center text-[19px] font-bold text-gray-900">
-            {MONTHLY_GOAL.percent}%
+            {percent}%
           </p>
         </div>
 
         <div className="min-w-0 flex-1">
           <p className="text-[12px] text-gray-500">Monthly goal</p>
           <p className="mt-1 text-[15px] font-bold text-gray-900">
-            {MONTHLY_GOAL.current}
+            {goal ? goal.current : "—"}
             <span className="font-medium text-gray-500">
               {" "}
-              / {MONTHLY_GOAL.target}
+              / {goal ? goal.target : "—"}
             </span>
           </p>
           <div
             className="mt-3 h-2 rounded-full bg-gray-200"
             role="progressbar"
-            aria-valuenow={MONTHLY_GOAL.percent}
+            aria-valuenow={percent}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Monthly goal progress"
           >
             <div
               className="h-full rounded-full bg-brand-700"
-              style={{ width: `${MONTHLY_GOAL.percent}%` }}
+              style={{ width: `${percent}%` }}
             />
           </div>
         </div>

@@ -4,7 +4,7 @@ import {
   filterListings,
   type ExchangeFilterState,
 } from "./exchange-filters";
-import type { ExchangeListing } from "@/constants/exchange";
+import type { ExchangeListing } from "@/services/exchange-service";
 
 function makeListing(
   overrides: Partial<ExchangeListing> = {},

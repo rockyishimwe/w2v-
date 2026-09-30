@@ -8,6 +8,7 @@ import {
   BoxIcon,
   BrainIcon,
   ChevronDownIcon,
+  CloseIcon,
   ExchangeIcon,
   FilterIcon,
   HeartIcon,
@@ -28,18 +29,23 @@ import {
 import { AvatarArt } from "./dashboard-art";
 import {
   CONDITION_FILTERS,
-  FEATURED_LISTING,
-  LISTINGS,
   MATERIAL_FILTERS,
   POPULAR_CATEGORIES,
   TYPE_FILTERS,
   type ConditionFilter,
-  type ExchangeListing,
   type ListingTag,
   type MaterialFilter,
-} from "@/constants/exchange";
-import { FeaturedJarsArt, ItemArt } from "./exchange-art";
-import { filterListings, type TypeFilter } from "@/lib/exchange-filters";
+} from "@/services/exchange-service";
+import {
+  createListing,
+  fetchListings,
+  uploadImage,
+  type ExchangeListing,
+} from "@/services/exchange-service";
+import { filterListings } from "@/lib/exchange-filters";
+import { ItemArt } from "./exchange-art";
+import { hasSession } from "@/services/auth-service";
+import type { TypeFilter } from "@/lib/exchange-filters";
 
 const CATEGORY_ICONS: Record<
   string,
@@ -82,6 +88,13 @@ export function ExchangeClient() {
   );
   const materialMenuRef = useRef<HTMLDivElement>(null);
   const categoryMenuRef = useRef<HTMLDivElement>(null);
+
+  // Real data state (fetched from the API, no mock fallback).
+  const [listings, setListings] = useState<ExchangeListing[]>([]);
+  const [featured, setFeatured] = useState<ExchangeListing | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
 
   function showToast(message: string) {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -140,27 +153,48 @@ export function ExchangeClient() {
     };
   }, [openMenu]);
 
-  const listings = useMemo(
+  // Fetch listings from the real API; refetch on filter changes.
+  // Existing results stay visible while a refetch is in flight.
+  useEffect(() => {
+    let cancelled = false;
+    fetchListings({
+      query,
+      tag: typeFilter,
+      material: materialFilter,
+      condition: conditionFilter,
+      sortByDistance,
+    })
+      .then((response) => {
+        if (cancelled) return;
+        setListings(response.data);
+        setFeatured(response.data.find((item) => item.featured) ?? null);
+        setError(null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Couldn't load listings. Please try again.");
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [query, typeFilter, materialFilter, conditionFilter, sortByDistance]);
+
+  // Featured card obeys exactly the same filter rules as the grid.
+  const featuredVisible = useMemo(
     () =>
-      filterListings(LISTINGS, {
+      featured !== null &&
+      filterListings([featured], {
         query,
         typeFilter,
         materialFilter,
         conditionFilter,
-        sortByDistance,
-      }),
-    [typeFilter, materialFilter, conditionFilter, query, sortByDistance],
+        sortByDistance: false,
+      }).length > 0,
+    [featured, query, typeFilter, materialFilter, conditionFilter],
   );
-
-  // Featured card obeys exactly the same filter rules as the grid.
-  const featuredVisible =
-    filterListings([FEATURED_LISTING], {
-      query,
-      typeFilter,
-      materialFilter,
-      conditionFilter,
-      sortByDistance: false,
-    }).length > 0;
 
   function clearFilters() {
     setTypeFilter("All");
@@ -340,21 +374,49 @@ export function ExchangeClient() {
               </button>
             </div>
 
-            {listings.length === 0 ? (
+            {loading ? (
+              <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                {[0, 1, 2, 3].map((index) => (
+                  <div
+                    key={index}
+                    className="overflow-hidden rounded-2xl border border-gray-100"
+                  >
+                    <div className="aspect-[1.12] animate-pulse bg-gray-100" />
+                    <div className="space-y-2 p-3">
+                      <div className="h-3.5 w-3/4 animate-pulse rounded bg-gray-100" />
+                      <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
               <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-pale-green px-6 py-10 text-center">
-                <SearchIcon className="h-8 w-8 text-brand-700" />
                 <p className="text-[14px] font-semibold text-gray-900">
-                  No listings match your filters.
-                </p>
-                <p className="text-[12.5px] text-gray-500">
-                  Try a different material or listing type.
+                  {error}
                 </p>
                 <button
                   type="button"
                   onClick={clearFilters}
                   className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
                 >
-                  Clear all filters
+                  Retry
+                </button>
+              </div>
+            ) : listings.length === 0 ? (
+              <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-pale-green px-6 py-10 text-center">
+                <SearchIcon className="h-8 w-8 text-brand-700" />
+                <p className="text-[14px] font-semibold text-gray-900">
+                  No listings yet.
+                </p>
+                <p className="text-[12.5px] text-gray-500">
+                  Be the first to post a reusable item for your community.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(true)}
+                  className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
+                >
+                  Create the first listing
                 </button>
               </div>
             ) : (
@@ -382,26 +444,25 @@ export function ExchangeClient() {
                   resetAndScroll();
                 }}
               />
-              <FeaturedCard
-                favorite={favorites.has(FEATURED_LISTING.id)}
-                onToggleFavorite={() => toggleFavorite(FEATURED_LISTING.id)}
-                onViewAll={() => {
-                  clearFilters();
-                  resetAndScroll();
-                }}
-                hidden={!featuredVisible}
-              />
+              {featured && (
+                <FeaturedCard
+                  listing={featured}
+                  favorite={favorites.has(featured.id)}
+                  onToggleFavorite={() => toggleFavorite(featured.id)}
+                  onViewAll={() => {
+                    clearFilters();
+                    resetAndScroll();
+                  }}
+                  hidden={!featuredVisible}
+                />
+              )}
             </div>
           </section>
         </div>
 
         {/* Right rail — solid sticky block (no internal scrolling) */}
         <div className="flex min-w-0 flex-col gap-5 xl:sticky xl:top-7 xl:self-start">
-          <PostMaterialCard
-            onCreate={() =>
-              showToast("Listing creation goes live with the community beta.")
-            }
-          />
+          <PostMaterialCard onCreate={() => setShowCreate(true)} />
           <QuickFiltersCard
             typeFilter={typeFilter}
             onType={setTypeFilter}
@@ -413,6 +474,23 @@ export function ExchangeClient() {
           <ImpactNoteCard />
         </div>
       </div>
+
+      {/* Create-listing panel */}
+      {showCreate && (
+        <CreateListingForm
+          onClose={() => setShowCreate(false)}
+          onCreated={(listing) => {
+            setShowCreate(false);
+            setListings((prev) => [listing, ...prev]);
+            showToast("Listing posted!");
+          }}
+          onError={(message) => {
+            setShowCreate(false);
+            showToast(message);
+          }}
+          showToast={showToast}
+        />
+      )}
 
       {/* Chat FAB */}
       <Link
@@ -466,10 +544,19 @@ function ListingCard({
         aria-label={`View ${listing.title}`}
       />
       <div className="relative aspect-[1.12]">
-        <ItemArt
-          artKey={listing.id}
-          className="absolute inset-0 h-full w-full"
-        />
+        {listing.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={listing.image}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <ItemArt
+            artKey={listing.id}
+            className="absolute inset-0 h-full w-full"
+          />
+        )}
         <span
           className={`absolute bottom-2 left-2 rounded-md px-2 py-1 text-[10.5px] font-bold ${TAG_STYLES[listing.tag]}`}
         >
@@ -554,11 +641,13 @@ function PopularCategoriesCard({
 /* ── Featured listing ─────────────────────────────────────────── */
 
 function FeaturedCard({
+  listing,
   favorite,
   onToggleFavorite,
   onViewAll,
   hidden,
 }: {
+  listing: ExchangeListing;
   favorite: boolean;
   onToggleFavorite: () => void;
   onViewAll: () => void;
@@ -584,29 +673,41 @@ function FeaturedCard({
 
       <div className="relative mt-3 flex items-center gap-3.5 rounded-2xl bg-white p-3 transition-shadow hover:shadow-[0_10px_24px_rgba(17,24,39,0.08)]">
         <Link
-          href={`/exchange/${FEATURED_LISTING.id}`}
+          href={`/exchange/${listing.id}`}
           className="absolute inset-0 z-10 rounded-2xl"
-          aria-label={`View ${FEATURED_LISTING.title}`}
+          aria-label={`View ${listing.title}`}
         />
-        <FeaturedJarsArt className="h-[86px] w-[86px] shrink-0 rounded-xl object-cover" />
+        {listing.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={listing.image}
+            alt=""
+            className="h-[86px] w-[86px] shrink-0 rounded-xl object-cover"
+          />
+        ) : (
+          <ItemArt
+            artKey={listing.id}
+            className="h-[86px] w-[86px] shrink-0 rounded-xl object-cover"
+          />
+        )}
         <div className="min-w-0 flex-1">
           <span
-            className={`inline-block rounded-md px-2 py-0.5 text-[10.5px] font-bold ${TAG_STYLES[FEATURED_LISTING.tag]}`}
+            className={`inline-block rounded-md px-2 py-0.5 text-[10.5px] font-bold ${TAG_STYLES[listing.tag]}`}
           >
-            {FEATURED_LISTING.tag}
+            {listing.tag}
           </span>
           <p className="mt-1 truncate text-[14px] font-bold text-gray-900">
-            {FEATURED_LISTING.title}
+            {listing.title}
           </p>
-          <p className="text-[11.5px] text-gray-500">{FEATURED_LISTING.meta}</p>
+          <p className="text-[11.5px] text-gray-500">{listing.meta}</p>
           <p className="mt-1.5 flex items-center gap-1 text-[11px] text-gray-500">
             <MapPinIcon className="h-3.5 w-3.5 text-brand-600" />
-            {FEATURED_LISTING.distance} • {FEATURED_LISTING.district}
+            {listing.distance} • {listing.district}
           </p>
           <div className="mt-1 flex items-center justify-between gap-2">
             <p className="flex items-center gap-1 text-[11px] text-gray-500">
               <PersonIcon className="h-3.5 w-3.5" />
-              {FEATURED_LISTING.postedBy}
+              {listing.postedBy}
             </p>
             <button
               type="button"
@@ -659,6 +760,257 @@ function PostMaterialCard({ onCreate }: { onCreate: () => void }) {
         Create Listing
       </button>
     </section>
+  );
+}
+
+/* ── Create listing form (real POST /api/exchange/listings) ───── */
+
+const FORM_FIELD =
+  "h-[46px] w-full rounded-xl border border-gray-100 bg-white px-3.5 text-[13.5px] text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30";
+
+function CreateListingForm({
+  onClose,
+  onCreated,
+  onError,
+  showToast,
+}: {
+  onClose: () => void;
+  onCreated: (listing: ExchangeListing) => void;
+  onError: (message: string) => void;
+  showToast: (message: string) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [quantity, setQuantity] = useState("1 piece");
+  const [tag, setTag] = useState<ListingTag>("Free");
+  const [district, setDistrict] = useState("");
+  const [distanceKm, setDistanceKm] = useState("");
+  const [material, setMaterial] = useState<MaterialFilter>("Plastic");
+  const [category, setCategory] = useState("");
+  const [condition, setCondition] = useState<ConditionFilter>("Good");
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setFormError(null);
+
+    if (!hasSession()) {
+      onError("Please log in to post a listing.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      let imagePath: string | undefined;
+      if (photo) {
+        imagePath = await uploadImage(photo);
+      }
+      const listing = await createListing({
+        title: title.trim(),
+        meta: `${quantity.trim()} • ${condition} condition`,
+        tag,
+        district: district.trim(),
+        distanceKm: Number(distanceKm) || 0,
+        material,
+        category: category.trim(),
+        condition,
+        ...(imagePath ? { imagePath } : {}),
+      });
+      onCreated(listing);
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "Couldn't post the listing. Please try again.",
+      );
+      showToast("Posting failed. Check the form and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-end justify-center bg-gray-900/40 p-4 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Create listing"
+    >
+      <div className="max-h-[88dvh] w-full max-w-[560px] overflow-y-auto rounded-[28px] bg-white p-6 shadow-2xl">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-[19px] font-bold text-gray-900">
+            Post Material
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+          >
+            <CloseIcon className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <div>
+            <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+              What are you giving?
+            </label>
+            <input
+              required
+              minLength={3}
+              maxLength={120}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="e.g. Glass jars (various sizes)"
+              className={FORM_FIELD}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Quantity
+              </label>
+              <input
+                required
+                maxLength={40}
+                value={quantity}
+                onChange={(event) => setQuantity(event.target.value)}
+                placeholder="e.g. 10 pieces"
+                className={FORM_FIELD}
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Listing type
+              </label>
+              <select
+                value={tag}
+                onChange={(event) => setTag(event.target.value as ListingTag)}
+                className={FORM_FIELD}
+              >
+                <option value="Free">Free</option>
+                <option value="Exchange">Exchange</option>
+                <option value="Sale">Sale</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                District / area
+              </label>
+              <input
+                required
+                minLength={2}
+                maxLength={60}
+                value={district}
+                onChange={(event) => setDistrict(event.target.value)}
+                placeholder="e.g. Kimihurura"
+                className={FORM_FIELD}
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Distance (km)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={200}
+                step="0.1"
+                value={distanceKm}
+                onChange={(event) => setDistanceKm(event.target.value)}
+                placeholder="e.g. 2.4"
+                className={FORM_FIELD}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Material
+              </label>
+              <select
+                value={material}
+                onChange={(event) =>
+                  setMaterial(event.target.value as MaterialFilter)
+                }
+                className={FORM_FIELD}
+              >
+                {MATERIAL_FILTERS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Category
+              </label>
+              <input
+                required
+                minLength={2}
+                maxLength={60}
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                placeholder="e.g. Container"
+                className={FORM_FIELD}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Condition
+              </label>
+              <select
+                value={condition}
+                onChange={(event) =>
+                  setCondition(event.target.value as ConditionFilter)
+                }
+                className={FORM_FIELD}
+              >
+                <option value="New">New</option>
+                <option value="Good">Good</option>
+                <option value="Fair">Fair</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-semibold text-gray-900">
+                Photo (optional)
+              </label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
+                className="h-[46px] w-full rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-[12.5px] text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-brand-700"
+              />
+            </div>
+          </div>
+
+          {formError && (
+            <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-[12.5px] font-medium text-red-700">
+              {formError}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={busy}
+            className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl bg-brand-700 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800 disabled:opacity-60"
+          >
+            {busy ? "Posting…" : "Post listing"}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
 

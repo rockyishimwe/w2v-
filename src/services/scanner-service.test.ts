@@ -1,54 +1,87 @@
-import { describe, expect, it } from "vitest";
-import { analyzeImage, getMockScanResult } from "./scanner-service";
-import type { OutcomeCategory, ScanResult } from "@/types";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { analyzeImage } from "./scanner-service";
+import type { ScanResult } from "@/types";
 
-const VALID_CATEGORIES: OutcomeCategory[] = [
-  "Reuse",
-  "DIY",
-  "Exchange",
-  "Recycle",
-  "Dispose safely",
-];
-
-describe("getMockScanResult", () => {
-  it("returns a complete ScanResult shape", () => {
-    const result: ScanResult = getMockScanResult();
-
-    expect(result.id).toBeTruthy();
-    expect(result.title).toBeTruthy();
-    expect(result.material).toBeTruthy();
-    expect(result.category).toBeTruthy();
-    expect(result.detectedSummary).toBeTruthy();
-    expect(result.condition).toBeTruthy();
-    expect(result.estimatedSize).toBeTruthy();
-
-    expect(result.tip.title).toBeTruthy();
-    expect(result.tip.body).toBeTruthy();
-    expect(result.recommendations.length).toBeGreaterThan(0);
-  });
-
-  it("keeps confidence within the documented 0-100 range", () => {
-    const { confidence } = getMockScanResult();
-    expect(confidence).toBeGreaterThanOrEqual(0);
-    expect(confidence).toBeLessThanOrEqual(100);
-  });
-
-  it("only uses known outcome categories in recommendations", () => {
-    const { recommendations } = getMockScanResult();
-    for (const rec of recommendations) {
-      expect(VALID_CATEGORIES).toContain(rec.category);
-      expect(rec.description).toBeTruthy();
-    }
-  });
-});
+function makeServerResult(): ScanResult {
+  return {
+    id: "scan-123",
+    title: "Cardboard box",
+    material: "Paper",
+    category: "Packaging",
+    confidence: 91,
+    detectedSummary: "1 cardboard box",
+    condition: "Good",
+    estimatedSize: "40 x 30 cm",
+    tip: { title: "Good condition", body: "Reusable as storage." },
+    recommendations: [
+      { category: "Reuse", description: "Use for storage" },
+      { category: "DIY", description: "Make a desk organizer" },
+      { category: "Recycle", description: "Recycle at a drop-off point" },
+    ],
+  };
+}
 
 describe("analyzeImage", () => {
-  it("resolves to the mock result regardless of the photo payload", async () => {
-    const fromAnalyze = await analyzeImage("data:image/jpeg;base64,abc123");
-    expect(fromAnalyze).toEqual(getMockScanResult());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
-  it("resolves even for an empty data URL", async () => {
-    await expect(analyzeImage("")).resolves.toBeInstanceOf(Object);
+  it("posts the photo to /api/ai/scan and returns the server payload", async () => {
+    const serverResult = makeServerResult();
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify(serverResult), {
+          status: 201,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await analyzeImage("data:image/jpeg;base64,abc123");
+    expect(result).toEqual(serverResult);
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(url).toBe("/api/ai/scan");
+    expect(init.method).toBe("POST");
+    expect(String(init.body)).toContain("data:image/jpeg;base64,abc123");
+  });
+
+  it("throws ApiClientError when the server rejects the scan", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              error: {
+                code: "VALIDATION_ERROR",
+                message: "Invalid request body.",
+              },
+            }),
+            { status: 422, headers: { "Content-Type": "application/json" } },
+          ),
+        ),
+      ),
+    );
+
+    await expect(
+      analyzeImage("data:image/jpeg;base64,abc123"),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR", status: 422 });
+  });
+
+  it("propagates network failures (UI renders the error state)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new TypeError("Failed to fetch"))),
+    );
+
+    await expect(
+      analyzeImage("data:image/jpeg;base64,abc123"),
+    ).rejects.toBeInstanceOf(TypeError);
   });
 });

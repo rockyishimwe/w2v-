@@ -22,8 +22,7 @@ const NAV_ITEMS: {
   { label: "Scanner", icon: CameraIcon, href: "/scanner" },
   { label: "Discover", icon: SearchIcon, href: "/discover" },
   { label: "Exchange", icon: ExchangeIcon, href: "/exchange" },
-  // Activities maps to the dashboard feed until its page exists.
-  { label: "Activities", icon: ClockIcon, href: "/dashboard" },
+  { label: "Activities", icon: ClockIcon, href: "/activity" },
 ];
 
 function NavItem({

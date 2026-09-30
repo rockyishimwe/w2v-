@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   findReply,
   getAssistantResponse,
@@ -37,8 +37,16 @@ describe("findReply", () => {
 });
 
 describe("getAssistantResponse", () => {
-  it("attaches ideas and a follow-up bubble for material replies", () => {
-    const response = getAssistantResponse(
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("falls back to canned replies when the network is unreachable", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new TypeError("Failed to fetch"))),
+    );
+    const response = await getAssistantResponse(
       "I have some plastic bottles. What can I do with them?",
     );
     expect(response).toHaveLength(2);
@@ -48,15 +56,51 @@ describe("getAssistantResponse", () => {
     expect(response.every((m) => m.role === "assistant")).toBe(true);
   });
 
-  it("returns a single text bubble for the fallback", () => {
-    const response = getAssistantResponse("good morning");
+  it("uses the server reply when the API responds", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              text: "Try a vertical herb garden!",
+              ideas: [
+                {
+                  title: "Vertical Herb Garden",
+                  difficulty: "Easy",
+                  time: "30 min",
+                  description: "Grow herbs in a reused bottle.",
+                },
+              ],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        ),
+      ),
+    );
+    const response = await getAssistantResponse("any message");
+    expect(response).toHaveLength(2);
+    expect(response[0].text).toBe("Try a vertical herb garden!");
+    expect(response[0].ideas?.[0].title).toBe("Vertical Herb Garden");
+  });
+
+  it("returns a single text bubble for the offline fallback", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new TypeError("Failed to fetch"))),
+    );
+    const response = await getAssistantResponse("good morning");
     expect(response).toHaveLength(1);
     expect(response[0].ideas).toBeUndefined();
     expect(response[0].text).toBe(FALLBACK_REPLY.text);
   });
 
-  it("gives every message a unique id and timestamp", () => {
-    const [a, b] = getAssistantResponse("I have cardboard");
+  it("gives every message a unique id and timestamp", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new TypeError("Failed to fetch"))),
+    );
+    const [a, b] = await getAssistantResponse("I have cardboard");
     expect(a.id).not.toBe(b.id);
     expect(new Date(a.at).toString()).not.toBe("Invalid Date");
   });
@@ -70,9 +114,13 @@ describe("message builders", () => {
     expect(message.id).toBeTruthy();
   });
 
-  it("keeps message ids unique across builders", () => {
+  it("keeps message ids unique across builders", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new TypeError("Failed to fetch"))),
+    );
     const a = toUserMessage("one");
-    const [b] = getAssistantResponse("one");
+    const [b] = await getAssistantResponse("one");
     expect(a.id).not.toBe(b.id);
   });
 

@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Waste2Value — Frontend Architecture",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [1370, 610],
+    "repository": {
+      "url": "https://github.com/rockyishimwe/w2v-.git",
+      "revision": "613522967d3f3a4e063aff6ab76017c83de8f9ad"
+    },
+    "views": [
+      {
+        "id": "scan-pipeline",
+        "label": "Scan pipeline",
+        "focus": ["dashboard", "scanner", "capture", "photo-store", "services"],
+        "note": "Capture → downscale → sessionStorage handoff → mock analysis; photos never leave the browser."
+      },
+      {
+        "id": "marketplace-and-activity",
+        "label": "Marketplace & activity",
+        "focus": ["dashboard", "exchange", "discover", "mock-data"],
+        "note": "Exchange, Discover and My Activity render typed mock datasets through pure, unit-tested filters."
+      },
+      {
+        "id": "assistant-and-backend",
+        "label": "Assistant & the API seam",
+        "focus": ["assistant", "services", "api"],
+        "note": "Keyword replies come from the service layer; the same seam will call the real REST API later."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "visitor",
+      "type": "external",
+      "label": "Visitor",
+      "sublabel": "Mobile-first browser",
+      "pos": [30, 134],
+      "size": [130, 64]
+    },
+    {
+      "id": "auth",
+      "type": "frontend",
+      "label": "Auth — /",
+      "sublabel": "login · signup · forgot",
+      "tag": "crossfade views",
+      "sources": [{ "path": "src/app/page.tsx", "line": 1 }],
+      "pos": [250, 124],
+      "size": [180, 84]
+    },
+    {
+      "id": "dashboard",
+      "type": "frontend",
+      "label": "Dashboard",
+      "sublabel": "/dashboard",
+      "sources": [{ "path": "src/app/dashboard/page.tsx", "line": 1 }],
+      "pos": [520, 124],
+      "size": [180, 84]
+    },
+    {
+      "id": "capture",
+      "type": "frontend",
+      "label": "Capture & upload",
+      "sublabel": "getUserMedia · file picker",
+      "sources": [
+        { "path": "src/components/camera-viewfinder.tsx", "line": 1 }
+      ],
+      "pos": [790, 24],
+      "size": [180, 64]
+    },
+    {
+      "id": "photo-store",
+      "type": "database",
+      "label": "Photo handoff",
+      "sublabel": "sessionStorage · JPEG dataURL",
+      "sources": [{ "path": "src/lib/photo.ts", "line": 1 }],
+      "pos": [1050, 24],
+      "size": [190, 64]
+    },
+    {
+      "id": "scanner",
+      "type": "frontend",
+      "label": "Scanner flow",
+      "sublabel": "take-photo → review → result → diy",
+      "sources": [{ "path": "src/app/scanner/page.tsx", "line": 1 }],
+      "pos": [780, 124],
+      "size": [200, 86]
+    },
+    {
+      "id": "exchange",
+      "type": "frontend",
+      "label": "Exchange",
+      "sublabel": "/exchange · /exchange/[id]",
+      "sources": [{ "path": "src/components/exchange-client.tsx", "line": 1 }],
+      "pos": [490, 270],
+      "size": [180, 72]
+    },
+    {
+      "id": "assistant",
+      "type": "frontend",
+      "label": "Waste Assistant",
+      "sublabel": "/assistant chat",
+      "sources": [{ "path": "src/components/assistant-client.tsx", "line": 1 }],
+      "pos": [700, 270],
+      "size": [180, 72]
+    },
+    {
+      "id": "services",
+      "type": "backend",
+      "label": "Service layer",
+      "sublabel": "scanner-service · assistant-service",
+      "tag": "mock today",
+      "sources": [{ "path": "src/services/scanner-service.ts", "line": 12 }],
+      "pos": [1110, 270],
+      "size": [200, 72]
+    },
+    {
+      "id": "discover",
+      "type": "frontend",
+      "label": "Discover · Activity",
+      "sublabel": "/discover · /activity",
+      "sources": [{ "path": "src/components/discover-client.tsx", "line": 1 }],
+      "pos": [700, 366],
+      "size": [180, 72]
+    },
+    {
+      "id": "api",
+      "type": "external",
+      "label": "W2V REST backend",
+      "sublabel": "planned (SRS)",
+      "sources": [{ "path": ".env.example", "line": 12 }],
+      "pos": [1110, 376],
+      "size": [200, 64]
+    },
+    {
+      "id": "mock-data",
+      "type": "database",
+      "label": "Mock datasets",
+      "sublabel": "src/constants/* — typed design data",
+      "sources": [{ "path": "src/constants/exchange.ts", "line": 1 }],
+      "pos": [490, 472],
+      "size": [440, 70]
+    }
+  ],
+  "connections": [
+    {
+      "id": "visitor-auth",
+      "from": "visitor",
+      "to": "auth",
+      "label": "opens app",
+      "variant": "emphasis"
+    },
+    {
+      "id": "auth-dashboard",
+      "from": "auth",
+      "to": "dashboard",
+      "label": "sign-in"
+    },
+    {
+      "id": "dashboard-scanner",
+      "from": "dashboard",
+      "to": "scanner",
+      "label": "scan CTA",
+      "variant": "emphasis"
+    },
+    {
+      "id": "dashboard-exchange",
+      "from": "dashboard",
+      "to": "exchange",
+      "label": "nearby exchanges",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "scanner-capture",
+      "from": "scanner",
+      "to": "capture",
+      "label": "take photo / upload",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "capture-store",
+      "from": "capture",
+      "to": "photo-store",
+      "label": "downscale"
+    },
+    {
+      "id": "store-scanner",
+      "from": "photo-store",
+      "to": "scanner",
+      "label": "review reads capture",
+      "fromSide": "bottom",
+      "toSide": "right",
+      "via": [
+        [1145, 167],
+        [1010, 167]
+      ]
+    },
+    {
+      "id": "scanner-services",
+      "from": "scanner",
+      "to": "services",
+      "label": "analyzeImage()",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [880, 246],
+        [1210, 246]
+      ]
+    },
+    {
+      "id": "assistant-services",
+      "from": "assistant",
+      "to": "services",
+      "label": "getAssistantResponse()"
+    },
+    {
+      "id": "exchange-data",
+      "from": "exchange",
+      "to": "mock-data",
+      "label": "listings + pure filters",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "discover-data",
+      "from": "discover",
+      "to": "mock-data",
+      "label": "ideas · tips datasets",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [820, 452]
+    },
+    {
+      "id": "services-data",
+      "from": "services",
+      "to": "mock-data",
+      "label": "returns mock data",
+      "fromSide": "right",
+      "toSide": "right",
+      "via": [
+        [1345, 567],
+        [720, 567]
+      ],
+      "labelSegment": 2,
+      "labelDy": 14
+    },
+    {
+      "id": "services-api",
+      "from": "services",
+      "to": "api",
+      "label": "planned REST swap",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": -75,
+      "labelDy": 8
+    },
+    {
+      "id": "auth-api",
+      "from": "auth",
+      "to": "api",
+      "label": "planned token auth",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [340, 507],
+        [1060, 507],
+        [1060, 408]
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Pages & flows",
+      "items": [
+        "Every page shares one shell: DashboardSidebar (md+) · MobileTabBar (<md)",
+        "Scanner pipeline: capture → review → mock result → DIY guide",
+        "Exchange item details are statically generated per listing id"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Data today",
+      "items": [
+        "All content is typed mock constants consumed through a service seam",
+        "Filtering lives in pure functions covered by Vitest unit tests",
+        "Photos are downscaled client-side and handed off via sessionStorage"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Next: real backend",
+      "items": [
+        "SRS plans token-based auth (JWT/OAuth2) over HTTPS/REST",
+        "The swap happens inside services without touching UI code"
+      ]
+    }
+  ]
+}

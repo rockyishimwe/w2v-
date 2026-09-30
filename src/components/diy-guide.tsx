@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   BarsIcon,
   BookmarkIcon,
@@ -16,7 +19,11 @@ import {
   MaterialStonesArt,
   MaterialTwineArt,
 } from "./diy-art";
-import { DIY_GUIDE } from "@/constants/diy-guide";
+import {
+  fetchGuide,
+  type DiyGuide as DiyGuidePayload,
+} from "@/services/discover-service";
+import { IdeaArt } from "./discover-art";
 
 const MATERIAL_ART = [
   MaterialJarArt,
@@ -25,8 +32,6 @@ const MATERIAL_ART = [
   MaterialPlantArt,
   MaterialTwineArt,
 ];
-
-const GUIDE = DIY_GUIDE;
 
 export function DiyTopBar() {
   return (
@@ -92,69 +97,6 @@ export function DiyTopBar() {
             className="h-[52px] w-full rounded-full border border-gray-100 bg-white pl-12 pr-5 text-[14.5px] text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           />
         </label>
-
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            className="h-5 w-5"
-            aria-hidden="true"
-          >
-            <path
-              d="M18 15.5H6c1.2-1.1 1.8-2.6 1.8-4.6 0-2.9 1.9-4.9 4.2-4.9s4.2 2 4.2 4.9c0 2 .6 3.5 1.8 4.6Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M10.3 18.2a1.8 1.8 0 0 0 3.4 0"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
-        </button>
-
-        <button
-          type="button"
-          aria-label="Account menu"
-          className="flex shrink-0 items-center gap-1.5"
-        >
-          <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-brand-100">
-            <svg
-              viewBox="0 0 96 96"
-              className="h-full w-full"
-              aria-hidden="true"
-            >
-              <rect width="96" height="96" fill="#e8ded2" />
-              <path
-                d="M27 50c-3-18 8-29 21-29s24 11 21 29l-3.5 14h-35Z"
-                fill="#2e2620"
-              />
-              <circle cx="48" cy="47" r="13.5" fill="#c68863" />
-              <path d="M28 96c2-15 9-21 20-21s18 6 20 21Z" fill="#35414b" />
-            </svg>
-          </span>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            className="h-5 w-5 text-gray-900"
-            aria-hidden="true"
-          >
-            <path
-              d="m6.5 9.5 5.5 5 5.5-5"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
       </div>
     </div>
   );
@@ -169,71 +111,84 @@ function TagPill({ label }: { label: string }) {
   );
 }
 
-export function DiyHeroCard() {
+/**
+ * Full DIY guide page body — fetches the AI-generated guide for the
+ * requested idea (cache: server-side DB) and renders it. All content is
+ * real AI output; there is no placeholder guide anymore.
+ */
+export function DiyGuideClient({ ideaId }: { ideaId?: string }) {
+  const [guide, setGuide] = useState<DiyGuidePayload | null>(null);
+  const [state, setState] = useState<"loading" | "error" | "ready">(() =>
+    ideaId ? "loading" : "error",
+  );
+
+  useEffect(() => {
+    if (!ideaId) return;
+    let cancelled = false;
+    fetchGuide(ideaId)
+      .then((payload) => {
+        if (cancelled) return;
+        setGuide(payload);
+        setState("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ideaId]);
+
+  if (state === "loading") {
+    return (
+      <div className="grid gap-6">
+        <div className="h-[320px] animate-pulse rounded-[32px] bg-white" />
+        <div className="h-[220px] animate-pulse rounded-[32px] bg-pale-green" />
+        <div className="h-[260px] animate-pulse rounded-[32px] bg-pale-green" />
+      </div>
+    );
+  }
+
+  if (state === "error" || !guide) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-[32px] bg-white px-6 py-16 text-center shadow-[0_10px_30px_rgba(17,24,39,0.05)]">
+        <LightbulbIcon className="h-8 w-8 text-brand-700" />
+        <p className="text-[15px] font-semibold text-gray-900">
+          {ideaId
+            ? "This guide couldn't be generated right now."
+            : "Pick an idea on the Discover page to see its guide."}
+        </p>
+        <Link
+          href="/discover"
+          className="flex h-11 items-center rounded-xl bg-brand-700 px-6 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
+        >
+          Browse ideas
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6">
+      <DiyHeroCard guide={guide} />
+      <DiyMaterialsCard guide={guide} />
+      <DiyStepsCard guide={guide} />
+    </div>
+  );
+}
+
+function DiyHeroCard({ guide }: { guide: DiyGuidePayload }) {
   return (
     <section className="rounded-[32px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:p-7">
       <div className="grid gap-6 sm:gap-8 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
-        {/* Photo */}
-        <div className="relative aspect-square overflow-hidden rounded-[24px] bg-[#c9ad85]">
-          <svg
-            viewBox="0 0 400 400"
+        {/* Art keyed by the idea's own artKey */}
+        <div className="relative aspect-square overflow-hidden rounded-[24px] bg-pale-green">
+          <IdeaArt
+            artKey={guide.id}
             className="absolute inset-0 h-full w-full"
-            preserveAspectRatio="xMidYMid slice"
-            aria-hidden="true"
-          >
-            <rect width="400" height="400" fill="#3a3f45" />
-            <rect x="0" y="238" width="400" height="162" fill="#a97845" />
-            <path d="M0 238h400v10H0Z" fill="#8f6238" />
-            <g>
-              <rect
-                x="74"
-                y="118"
-                width="140"
-                height="26"
-                rx="8"
-                fill="#191b1e"
-              />
-              <rect
-                x="74"
-                y="118"
-                width="140"
-                height="9"
-                rx="4.5"
-                fill="#303338"
-              />
-              <path
-                d="M80 144h128v158a26 26 0 0 1-26 26H106a26 26 0 0 1-26-26V144Z"
-                fill="#cfd8d4"
-                opacity="0.55"
-              />
-              <path d="M80 144h128v14H80Z" fill="#9fb0aa" opacity="0.6" />
-            </g>
-            <g>
-              <rect
-                x="212"
-                y="140"
-                width="128"
-                height="24"
-                rx="8"
-                fill="#b98d3e"
-              />
-              <rect
-                x="212"
-                y="140"
-                width="128"
-                height="8"
-                rx="4"
-                fill="#d8b055"
-              />
-              <path
-                d="M218 164h116v140a24 24 0 0 1-24 24H242a24 24 0 0 1-24-24V164Z"
-                fill="#d6ded9"
-                opacity="0.6"
-              />
-            </g>
-          </svg>
+          />
           <span className="absolute left-3 top-3">
-            <TagPill label="DIY" />
+            <TagPill label={guide.tag} />
           </span>
         </div>
 
@@ -245,11 +200,11 @@ export function DiyHeroCard() {
           </span>
 
           <h2 className="font-display mt-3 text-[24px] font-bold leading-tight text-brand-900 sm:text-[28px]">
-            {GUIDE.title}
+            {guide.title}
           </h2>
 
           <p className="mt-3 max-w-[520px] text-[13.5px] leading-relaxed text-gray-500">
-            {GUIDE.intro}
+            {guide.intro}
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-4">
@@ -260,7 +215,7 @@ export function DiyHeroCard() {
                   Time Needed
                 </p>
                 <p className="mt-0.5 text-[13.5px] font-bold leading-tight text-gray-900">
-                  {GUIDE.timeNeeded}
+                  {guide.timeNeeded}
                 </p>
               </div>
             </div>
@@ -271,7 +226,7 @@ export function DiyHeroCard() {
                   Difficulty
                 </p>
                 <p className="mt-0.5 text-[13.5px] font-bold leading-tight text-gray-900">
-                  {GUIDE.difficulty}
+                  {guide.difficulty}
                 </p>
               </div>
             </div>
@@ -282,7 +237,7 @@ export function DiyHeroCard() {
                   Impact
                 </p>
                 <p className="mt-0.5 text-[13.5px] font-bold leading-tight text-gray-900">
-                  {GUIDE.impact}
+                  {guide.impact}
                 </p>
               </div>
             </div>
@@ -310,7 +265,7 @@ export function DiyHeroCard() {
   );
 }
 
-export function DiyMaterialsCard() {
+function DiyMaterialsCard({ guide }: { guide: DiyGuidePayload }) {
   return (
     <section className="rounded-[32px] bg-pale-green p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -322,23 +277,25 @@ export function DiyMaterialsCard() {
         </h2>
         <p className="flex items-center gap-2 text-[13px] font-semibold text-gray-600">
           <CoinsIcon className="h-5 w-5 text-gray-600" />
-          Estimated cost: {GUIDE.estimatedCost}
+          Estimated cost: {guide.estimatedCost}
         </p>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3 rounded-[24px] bg-white p-4 sm:grid-cols-3 lg:grid-cols-5 sm:p-5">
-        {GUIDE.materials.map(({ name, note }, index) => {
+        {guide.materials.map(({ name, note }, index) => {
           const Art = MATERIAL_ART[index] ?? MaterialJarArt;
           return (
             <div
-              key={name}
+              key={`${name}-${index}`}
               className="flex flex-col items-center rounded-2xl bg-[#f7fbf8] px-3 py-4 text-center"
             >
               <Art className="h-14 w-14" />
               <p className="mt-2.5 text-[13px] font-bold text-gray-900">
                 {name}
               </p>
-              <p className="mt-0.5 text-[11.5px] text-gray-500">{note}</p>
+              {note && (
+                <p className="mt-0.5 text-[11.5px] text-gray-500">{note}</p>
+              )}
             </div>
           );
         })}
@@ -347,7 +304,7 @@ export function DiyMaterialsCard() {
   );
 }
 
-export function DiyStepsCard() {
+function DiyStepsCard({ guide }: { guide: DiyGuidePayload }) {
   return (
     <section className="rounded-[32px] bg-pale-green p-5 sm:p-6">
       <h2 className="font-display flex items-center gap-3 text-[19px] font-bold text-brand-900">
@@ -359,8 +316,8 @@ export function DiyStepsCard() {
 
       <div className="mt-5 rounded-[24px] bg-white p-5 sm:p-7">
         <ol className="space-y-6">
-          {GUIDE.steps.map(({ title, description }, index) => (
-            <li key={title} className="flex items-start gap-4">
+          {guide.steps.map(({ title, description }, index) => (
+            <li key={`${title}-${index}`} className="flex items-start gap-4">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-700 text-[13px] font-bold text-white">
                 {index + 1}
               </span>

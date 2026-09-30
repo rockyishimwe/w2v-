@@ -1,9 +1,10 @@
 /**
  * Waste Assistant service layer.
  *
- * The chat UI only ever talks to these functions, so when the real chat
- * backend lands the swap happens here without touching UI code. Current
- * implementation matches canned keyword replies from constants/assistant.
+ * The chat UI only ever talks to these functions. Replies now come from the
+ * backend (POST /api/ai/assistant — Groq text model); when the backend is
+ * unreachable or the user is offline, the canned keyword replies from
+ * constants/assistant keep the conversation working.
  */
 
 import {
@@ -12,6 +13,7 @@ import {
   FOLLOW_UP_QUESTION,
   type AssistantReply,
 } from "@/constants/assistant";
+import { api } from "@/lib/api-client";
 
 /** One message in the chat transcript. */
 export interface AssistantChatMessage {
@@ -22,6 +24,24 @@ export interface AssistantChatMessage {
   text?: string;
   /** Idea cards attached to an assistant bubble. */
   ideas?: AssistantReply["ideas"];
+}
+
+/**
+ * Server reply payload. Ideas may carry the UI's artKey/id/href (canned
+ * fallbacks) or only title/difficulty/time (live AI) — the mapper below
+ * handles both.
+ */
+interface ServerReply {
+  text: string;
+  ideas: Array<{
+    title: string;
+    difficulty: "Easy" | "Medium";
+    time: string;
+    description?: string;
+    id?: string;
+    artKey?: string;
+    href?: string;
+  }>;
 }
 
 /** Monotonic id counter for chat messages within the session. */
@@ -43,44 +63,6 @@ export function findReply(message: string): AssistantReply {
   return FALLBACK_REPLY;
 }
 
-/**
- * Builds the assistant's response to one user message.
- * Idea replies get their ideas attached plus the follow-up question;
- * the fallback is a plain text bubble.
- */
-export function getAssistantResponse(
-  userMessage: string,
-): AssistantChatMessage[] {
-  const reply = findReply(userMessage);
-
-  if (reply.ideas.length === 0) {
-    return [
-      {
-        id: nextMessageId(),
-        role: "assistant",
-        at: new Date().toISOString(),
-        text: reply.text,
-      },
-    ];
-  }
-
-  return [
-    {
-      id: nextMessageId(),
-      role: "assistant",
-      at: new Date().toISOString(),
-      text: reply.text,
-      ideas: reply.ideas,
-    },
-    {
-      id: nextMessageId(),
-      role: "assistant",
-      at: new Date().toISOString(),
-      text: FOLLOW_UP_QUESTION,
-    },
-  ];
-}
-
 /** Wraps a user message in a chat message record. */
 export function toUserMessage(text: string): AssistantChatMessage {
   return {
@@ -89,6 +71,60 @@ export function toUserMessage(text: string): AssistantChatMessage {
     at: new Date().toISOString(),
     text,
   };
+}
+
+/**
+ * Builds the assistant's response to one user message.
+ * Calls the real AI backend; falls back to the canned replies when the
+ * request fails so the chat keeps working offline.
+ */
+export async function getAssistantResponse(
+  userMessage: string,
+): Promise<AssistantChatMessage[]> {
+  let text: string;
+  let ideas: AssistantReply["ideas"];
+
+  try {
+    const reply = await api.post<ServerReply>("/api/ai/assistant", {
+      message: userMessage,
+    });
+    text = reply.text;
+    ideas = reply.ideas.map((idea, index) => ({
+      id: idea.id ?? `ai-idea-${index + 1}`,
+      title: idea.title,
+      difficulty: idea.difficulty,
+      time: idea.time,
+      href: (idea.href ??
+        "/scanner/diy") as AssistantReply["ideas"][number]["href"],
+      artKey: idea.artKey ?? "vertical-herb-garden",
+    }));
+  } catch {
+    const reply = findReply(userMessage);
+    text = reply.text;
+    ideas = reply.ideas;
+  }
+
+  const response: AssistantChatMessage[] = [
+    {
+      id: nextMessageId(),
+      role: "assistant",
+      at: new Date().toISOString(),
+      text,
+      ...(ideas.length > 0 ? { ideas } : {}),
+    },
+  ];
+
+  // Follow-up prompt mirrors the canned behavior for idea replies.
+  if (ideas.length > 0) {
+    response.push({
+      id: nextMessageId(),
+      role: "assistant",
+      at: new Date().toISOString(),
+      text: FOLLOW_UP_QUESTION,
+    });
+  }
+
+  return response;
 }
 
 /** Builds the opening assistant bubble shown before any interaction. */

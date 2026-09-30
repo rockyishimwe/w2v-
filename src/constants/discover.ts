@@ -1,12 +1,10 @@
 /**
- * Discover page data — matches the approved design.
- * Mock dataset, swap for the real API via the service layer later;
- * UI consumes types only.
+ * Discover page UI constants — hero copy, category chips and rail card
+ * copy. All idea DATA comes from the API (see services/discover-service);
+ * nothing here is mock content.
  */
 
-import type { OutcomeCategory } from "@/types";
-
-/** Filter chip above the idea grid (design shows "All" active). */
+/** Filter chip above the idea grid ("All" active by default). */
 export type DiscoverCategoryFilter =
   "All" | "Plastic" | "Glass" | "Cardboard" | "Organic" | "Textile";
 
@@ -30,91 +28,7 @@ export const DISCOVER_HERO = {
   title: "Turn waste into\nsomething valuable",
   body: "Discover reuse ideas, DIY projects, and sustainable alternatives for a cleaner, greener tomorrow.",
   cta: "Explore Ideas",
-};
-
-/**
- * One idea card in "Trending Ideas" / "Recommended for You".
- * `artKey` selects its SVG stand-in (see IDEA_ART in discover-art).
- */
-export interface DiscoverIdea {
-  id: string;
-  title: string;
-  description: string;
-  tag: Extract<OutcomeCategory, "DIY" | "Reuse">;
-  time: string;
-  impact: string;
-  /** Category chips this idea belongs to (design filter behavior). */
-  categories: Exclude<DiscoverCategoryFilter, "All">[];
-  artKey: string;
-}
-
-/** Ideas in the design's "Trending Ideas" rail order. */
-export const TRENDING_IDEAS: DiscoverIdea[] = [
-  {
-    id: "hanging-planter",
-    title: "Hanging Planter",
-    description: "Turn plastic bottles into beautiful hanging planters.",
-    tag: "DIY",
-    time: "1–2 hours",
-    impact: "1 item reused",
-    categories: ["Plastic"],
-    artKey: "hanging-planter",
-  },
-  {
-    id: "candle-jars",
-    title: "Candle Jars",
-    description: "Repurpose glass jars into natural candles.",
-    tag: "DIY",
-    time: "1–2 hours",
-    impact: "1 item reused",
-    categories: ["Glass"],
-    artKey: "candle-jars",
-  },
-  {
-    id: "desk-organizer",
-    title: "Desk Organizer",
-    description: "Use cardboard boxes to create a stylish organizer.",
-    tag: "DIY",
-    time: "30–60 min",
-    impact: "1 item reused",
-    categories: ["Cardboard"],
-    artKey: "desk-organizer",
-  },
-];
-
-/** Ideas in the design's "Recommended for You" order. */
-export const RECOMMENDED_IDEAS: DiscoverIdea[] = [
-  {
-    id: "hanging-planter",
-    title: "Hanging Planter",
-    description: "Turn plastic bottles into beautiful hanging planters.",
-    tag: "DIY",
-    time: "1–2 hours",
-    impact: "1 item reused",
-    categories: ["Plastic"],
-    artKey: "hanging-planter",
-  },
-  {
-    id: "string-lights",
-    title: "String Lights",
-    description: "Glow up your space with jar-powered string lights.",
-    tag: "DIY",
-    time: "3–4 hours",
-    impact: "1 item reused",
-    categories: ["Glass"],
-    artKey: "string-lights",
-  },
-  {
-    id: "herb-garden",
-    title: "Herb Garden",
-    description: "Grow kitchen herbs in reused tin cans.",
-    tag: "Reuse",
-    time: "2–3 hours",
-    impact: "1 item reused",
-    categories: ["Organic"],
-    artKey: "herb-garden",
-  },
-];
+} as const;
 
 /** Chips in the right rail's "Popular Searches". */
 export const POPULAR_SEARCHES: string[] = [
@@ -127,12 +41,13 @@ export const POPULAR_SEARCHES: string[] = [
   "electronics",
 ];
 
-/** Rows in the right rail's "Recycling Tips" list. */
-export const RECYCLING_TIPS: string[] = [
-  "How to clean and prepare recyclables",
-  "What can and cannot be recycled",
-  "Composting at home",
-  "Reducing waste in daily life",
+/** Materials offered in the AI "Recycling Tips" widget. */
+export const TIP_MATERIALS: string[] = [
+  "plastic bottles",
+  "glass jars",
+  "cardboard",
+  "food scraps",
+  "old clothes",
 ];
 
 /** Right rail's "Did you know?" card. */
@@ -147,12 +62,3 @@ export const ASSISTANT_CARD = {
   body: "Chat with Waste Assistant for personalized suggestions.",
   cta: "Chat Now",
 };
-
-/** Ideas that pass the active category chip (All passes everything). */
-export function filterIdeasByCategory(
-  ideas: DiscoverIdea[],
-  category: DiscoverCategoryFilter,
-): DiscoverIdea[] {
-  if (category === "All") return ideas;
-  return ideas.filter((idea) => idea.categories.includes(category));
-}

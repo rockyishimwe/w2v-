@@ -13,9 +13,32 @@ import {
   MailIcon,
   UserIcon,
 } from "./icons";
+import { ApiClientError, login, register } from "@/services/auth-service";
 
 type AuthMode = "login" | "signup" | "forgot";
 type ViewState = "active" | "leaving" | "hidden";
+
+/** Credentials submitted by the login form. */
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+/** Credentials submitted by the signup form. */
+interface RegisterCredentials {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
+/** Maps a thrown auth error to a user-facing message. */
+function authErrorMessage(error: unknown): string {
+  if (error instanceof ApiClientError) {
+    return error.message;
+  }
+  return "Cannot reach the server. Check your connection and try again.";
+}
 
 const VIEW_FADE_OUT_MS = 220;
 const VIEWS: AuthMode[] = ["login", "signup", "forgot"];
@@ -154,19 +177,41 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
 
 function AuthButton({
   children,
+  busy = false,
   onClick,
 }: {
   children: React.ReactNode;
+  busy?: boolean;
   onClick?: () => void;
 }) {
   return (
     <button
       type="submit"
       onClick={onClick}
-      className="mx-auto flex h-[clamp(2.75rem,6.2vh,3.5rem)] w-[min(420px,100%)] items-center justify-center gap-2 rounded-full bg-brand-700 text-[clamp(0.8rem,1.8vh,0.9rem)] font-medium text-white shadow-[0_14px_28px_rgba(20,92,54,0.35)] transition-colors hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+      disabled={busy}
+      className="mx-auto flex h-[clamp(2.75rem,6.2vh,3.5rem)] w-[min(420px,100%)] items-center justify-center gap-2 rounded-full bg-brand-700 text-[clamp(0.8rem,1.8vh,0.9rem)] font-medium text-white shadow-[0_14px_28px_rgba(20,92,54,0.35)] transition-colors hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {children}
+      {busy ? (
+        <span
+          aria-hidden="true"
+          className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+        />
+      ) : null}
     </button>
+  );
+}
+
+/** Inline form-level error, styled like the existing mismatch alert. */
+function AuthError({ message }: { message: string | null }) {
+  if (!message) return null;
+  return (
+    <p
+      role="alert"
+      className="px-1 text-center text-[clamp(0.75rem,1.7vh,0.875rem)] font-medium text-red-600"
+    >
+      {message}
+    </p>
   );
 }
 
@@ -178,9 +223,14 @@ function LoginView({
 }: {
   onSwitch: () => void;
   onForgot: () => void;
-  onSubmit: () => void;
+  onSubmit: (credentials: LoginCredentials) => Promise<void>;
   state: ViewState;
 }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   return (
     <div className={viewClassName(state)} aria-hidden={state !== "active"}>
       <div className="flex items-center justify-center gap-3">
@@ -199,7 +249,14 @@ function LoginView({
         method="post"
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit();
+          if (busy) return;
+          setBusy(true);
+          setError(null);
+          onSubmit({ email, password })
+            .catch((submitError: unknown) => {
+              setError(authErrorMessage(submitError));
+            })
+            .finally(() => setBusy(false));
         }}
       >
         <Field
@@ -207,8 +264,16 @@ function LoginView({
           type="email"
           placeholder="Email address"
           icon={<MailIcon className="h-5 w-5" />}
+          value={email}
+          onChange={setEmail}
         />
-        <PasswordField label="Password" />
+        <PasswordField
+          label="Password"
+          value={password}
+          onChange={setPassword}
+        />
+
+        <AuthError message={error} />
 
         <div className="mt-[clamp(0.1rem,0.6vh,0.4rem)] flex w-full items-center justify-between px-1">
           <label className="flex cursor-pointer items-center gap-2 text-[clamp(0.75rem,1.7vh,0.875rem)] text-gray-500">
@@ -229,7 +294,7 @@ function LoginView({
         </div>
 
         <div className="mt-[clamp(0.4rem,1.4vh,1rem)] flex w-full flex-col gap-[clamp(0.8rem,2.4vh,2rem)]">
-          <AuthButton>
+          <AuthButton busy={busy}>
             Log in
             <ArrowRightIcon className="h-4 w-4" />
           </AuthButton>
@@ -258,12 +323,17 @@ function SignUpView({
   state,
 }: {
   onSwitch: () => void;
-  onSubmit: () => void;
+  onSubmit: (credentials: RegisterCredentials) => Promise<void>;
   state: ViewState;
 }) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [mismatch, setMismatch] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className={viewClassName(state)} aria-hidden={state !== "active"}>
@@ -284,11 +354,18 @@ function SignUpView({
         method="post"
         onSubmit={(event) => {
           event.preventDefault();
+          if (busy) return;
           if (password !== confirmPassword) {
             setMismatch(true);
             return;
           }
-          onSubmit();
+          setBusy(true);
+          setError(null);
+          onSubmit({ firstName, lastName, email, password })
+            .catch((submitError: unknown) => {
+              setError(authErrorMessage(submitError));
+            })
+            .finally(() => setBusy(false));
         }}
       >
         <Field
@@ -296,18 +373,24 @@ function SignUpView({
           type="text"
           placeholder="First name"
           icon={<UserIcon className="h-5 w-5" />}
+          value={firstName}
+          onChange={setFirstName}
         />
         <Field
           label="Last name"
           type="text"
           placeholder="Last name"
           icon={<UserIcon className="h-5 w-5" />}
+          value={lastName}
+          onChange={setLastName}
         />
         <Field
           label="Email address"
           type="email"
           placeholder="Email address"
           icon={<MailIcon className="h-5 w-5" />}
+          value={email}
+          onChange={setEmail}
         />
         <PasswordField
           label="Password"
@@ -334,8 +417,10 @@ function SignUpView({
           </p>
         ) : null}
 
+        <AuthError message={error} />
+
         <div className="mt-[clamp(0.4rem,1.4vh,1rem)] flex w-full flex-col gap-[clamp(0.8rem,2.4vh,2rem)]">
-          <AuthButton>
+          <AuthButton busy={busy}>
             Sign up
             <ArrowRightIcon className="h-4 w-4" />
           </AuthButton>
@@ -445,19 +530,21 @@ function AuthView({
   mode,
   state,
   onSwitch,
-  onSubmit,
+  onLogin,
+  onRegister,
 }: {
   mode: AuthMode;
   state: ViewState;
   onSwitch: (mode: AuthMode) => void;
-  onSubmit: () => void;
+  onLogin: (credentials: LoginCredentials) => Promise<void>;
+  onRegister: (credentials: RegisterCredentials) => Promise<void>;
 }) {
   if (mode === "signup") {
     return (
       <SignUpView
         state={state}
         onSwitch={() => onSwitch("login")}
-        onSubmit={onSubmit}
+        onSubmit={onRegister}
       />
     );
   }
@@ -471,7 +558,7 @@ function AuthView({
       state={state}
       onSwitch={() => onSwitch("signup")}
       onForgot={() => onSwitch("forgot")}
-      onSubmit={onSubmit}
+      onSubmit={onLogin}
     />
   );
 }
@@ -493,6 +580,24 @@ export function AuthForms({
   }, []);
 
   const goToDashboard = useCallback(() => router.push("/dashboard"), [router]);
+
+  /** Calls the real login endpoint, then navigates on success. */
+  const handleLogin = useCallback(
+    async (credentials: LoginCredentials) => {
+      await login(credentials);
+      goToDashboard();
+    },
+    [goToDashboard],
+  );
+
+  /** Calls the real register endpoint, then navigates on success. */
+  const handleRegister = useCallback(
+    async (credentials: RegisterCredentials) => {
+      await register(credentials);
+      goToDashboard();
+    },
+    [goToDashboard],
+  );
 
   const switchTo = (next: AuthMode) => {
     if (next === mode) return;
@@ -519,7 +624,8 @@ export function AuthForms({
                 : "hidden"
           }
           onSwitch={switchTo}
-          onSubmit={goToDashboard}
+          onLogin={handleLogin}
+          onRegister={handleRegister}
         />
       ))}
     </div>
