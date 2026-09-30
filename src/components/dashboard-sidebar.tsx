@@ -18,6 +18,7 @@ import {
 import { Avatar } from "./avatar";
 import { logout } from "@/services/auth-service";
 import { clearCurrentUser, useCurrentUser } from "@/hooks/use-current-user";
+import { useT } from "@/i18n/use-translation";
 
 const NAV_ITEMS: {
   label: string;
@@ -42,6 +43,8 @@ function NavItem({
   active: boolean;
   href: Route;
 }) {
+  const t = useT();
+
   return (
     <Link
       href={href}
@@ -53,7 +56,7 @@ function NavItem({
       }`}
     >
       <Icon className="h-5 w-5" />
-      {label}
+      {t(label)}
     </Link>
   );
 }
@@ -66,6 +69,7 @@ export function DashboardSidebar({
   const router = useRouter();
   const { user } = useCurrentUser();
   const [loggingOut, setLoggingOut] = useState(false);
+  const t = useT();
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -74,7 +78,9 @@ export function DashboardSidebar({
     router.replace("/");
   }
 
-  const fullName = user ? `${user.firstName} ${user.lastName}` : "Your account";
+  const fullName = user
+    ? `${user.firstName} ${user.lastName}`
+    : t("Your account");
 
   return (
     <aside className="sticky top-0 hidden h-dvh w-[234px] shrink-0 self-start flex-col rounded-r-[42px] bg-white shadow-[5px_0_22px_rgba(17,24,39,0.025)] md:flex">
@@ -92,7 +98,7 @@ export function DashboardSidebar({
         </p>
       </div>
 
-      <nav aria-label="Main" className="mt-1 space-y-1.5 px-[18px]">
+      <nav aria-label={t("Main")} className="mt-1 space-y-1.5 px-[18px]">
         {NAV_ITEMS.map((item) => (
           <NavItem
             key={item.label}
@@ -104,7 +110,7 @@ export function DashboardSidebar({
 
       <div className="mx-8 my-5 h-px bg-gray-200" />
 
-      <nav aria-label="Secondary" className="space-y-1.5 px-[18px]">
+      <nav aria-label={t("Settings")} className="space-y-1.5 px-[18px]">
         <NavItem
           label="Settings"
           icon={GearIcon}
@@ -118,7 +124,7 @@ export function DashboardSidebar({
           className="flex h-[40px] w-full items-center gap-3 rounded-full px-3 text-left text-[13.5px] font-medium text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
         >
           <LogoutIcon className="h-5 w-5" />
-          {loggingOut ? "Logging out…" : "Logout"}
+          {loggingOut ? `${t("Logout")}…` : t("Logout")}
         </button>
       </nav>
 
@@ -136,7 +142,7 @@ export function DashboardSidebar({
           </p>
           <Link
             href="/settings"
-            aria-label="Account settings"
+            aria-label={t("Account settings")}
             className="mt-2 text-gray-700 transition-colors hover:text-gray-900"
           >
             <ChevronDownIcon className="h-5 w-5" />

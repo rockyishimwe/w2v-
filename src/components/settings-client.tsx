@@ -30,13 +30,8 @@ import {
   setCurrentUser,
   useCurrentUser,
 } from "@/hooks/use-current-user";
-
-/** Languages the backend accepts (SRS: Kinyarwanda, English, French). */
-const LOCALES: { value: string; label: string; hint: string }[] = [
-  { value: "rw", label: "Kinyarwanda", hint: "Ikinyarwanda" },
-  { value: "en", label: "English", hint: "English" },
-  { value: "fr", label: "French", hint: "Français" },
-];
+import { LOCALE_LABELS, isLocale, type Locale } from "@/i18n/locales";
+import { rememberLocale, useT } from "@/i18n/use-translation";
 
 /** Shared card shell — same rounding/shadow as the other pages' cards. */
 function SettingsCard({
@@ -107,11 +102,12 @@ function photoMessageOf(error: unknown, fallback: string): string {
 export function SettingsClient() {
   const router = useRouter();
   const { user, loading } = useCurrentUser();
+  const t = useT();
 
   /* ── Profile form ──────────────────────────────────────────── */
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [locale, setLocale] = useState("en");
+  const [locale, setLocale] = useState<Locale>("en");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -124,7 +120,7 @@ export function SettingsClient() {
     setSeededFor(user.id);
     setFirstName(user.firstName);
     setLastName(user.lastName);
-    setLocale(user.locale || "en");
+    setLocale(isLocale(user.locale) ? user.locale : "en");
   }
 
   async function handleProfileSave(event: React.FormEvent) {
@@ -139,11 +135,37 @@ export function SettingsClient() {
         locale,
       });
       setCurrentUser(updated);
-      setProfileMessage("Your profile has been updated.");
+      setProfileMessage(t("Your profile has been updated."));
     } catch (error) {
-      setProfileError(messageOf(error, "Couldn't save your profile."));
+      setProfileError(messageOf(error, t("Couldn't save your profile.")));
     } finally {
       setSavingProfile(false);
+    }
+  }
+
+  /**
+   * Switching language takes effect immediately: the choice is saved and
+   * the whole UI re-renders in it, rather than waiting for a separate
+   * "Save changes" in the Profile card.
+   */
+  const [switchingLocale, setSwitchingLocale] = useState(false);
+
+  async function handleLocalePick(next: Locale) {
+    if (next === locale) return;
+    const previous = locale;
+    // Paint in the new language first, then persist it.
+    setLocale(next);
+    rememberLocale(next);
+    setSwitchingLocale(true);
+    setProfileError(null);
+    try {
+      setCurrentUser(await updateProfile({ locale: next }));
+    } catch (error) {
+      setLocale(previous);
+      rememberLocale(previous);
+      setProfileError(messageOf(error, t("Couldn't change the language.")));
+    } finally {
+      setSwitchingLocale(false);
     }
   }
 
@@ -159,7 +181,7 @@ export function SettingsClient() {
     setPasswordError(null);
 
     if (newPassword !== confirmPassword) {
-      setPasswordError("The two new passwords don't match.");
+      setPasswordError(t("The two new passwords don't match."));
       return;
     }
 
@@ -171,7 +193,7 @@ export function SettingsClient() {
       router.replace("/?password=changed");
     } catch (error) {
       setPasswordError(
-        messageOf(error, "Couldn't change your password. Please try again."),
+        messageOf(error, t("Couldn't change your password. Please try again.")),
       );
       setSavingPassword(false);
     }
@@ -201,7 +223,7 @@ export function SettingsClient() {
       setCurrentUser(await uploadAvatar(file));
       setPhotoSaved(true);
     } catch (error) {
-      setPhotoError(photoMessageOf(error, "Couldn't upload that photo."));
+      setPhotoError(photoMessageOf(error, t("Couldn't upload that photo.")));
     } finally {
       setPhotoBusy(false);
       setPreview(null);
@@ -216,7 +238,7 @@ export function SettingsClient() {
     try {
       setCurrentUser(await removeAvatar());
     } catch (error) {
-      setPhotoError(photoMessageOf(error, "Couldn't remove that photo."));
+      setPhotoError(photoMessageOf(error, t("Couldn't remove that photo.")));
     } finally {
       setPhotoBusy(false);
     }
@@ -243,10 +265,10 @@ export function SettingsClient() {
           <GearIcon className="mt-1.5 h-7 w-7 text-gray-900" />
           <div>
             <h1 className="font-display text-[30px] font-bold leading-none text-black">
-              Settings
+              {t("Settings")}
             </h1>
             <p className="mt-2.5 text-[14px] text-[#607493]">
-              Manage your account, language and security
+              {t("Manage your account, language and security")}
             </p>
           </div>
         </div>
@@ -254,7 +276,7 @@ export function SettingsClient() {
         <div className="flex flex-1 flex-wrap items-center justify-end gap-4 pt-1 sm:flex-nowrap">
           <button
             type="button"
-            aria-label="Notifications"
+            aria-label={t("Notifications")}
             className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
           >
             <BellIcon className="h-5 w-5" />
@@ -269,7 +291,7 @@ export function SettingsClient() {
         <span className="relative shrink-0">
           <Avatar
             src={preview ?? undefined}
-            alt={user ? `${user.firstName} ${user.lastName}` : "Your photo"}
+            alt={user ? `${user.firstName} ${user.lastName}` : t("Your photo")}
             className="h-16 w-16 rounded-full object-cover ring-2 ring-brand-500 ring-offset-2 ring-offset-white"
           />
           <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white bg-brand-500" />
@@ -279,8 +301,8 @@ export function SettingsClient() {
             {user
               ? `${user.firstName} ${user.lastName}`
               : loading
-                ? "Loading…"
-                : "Your account"}
+                ? t("Loading…")
+                : t("Your account")}
           </p>
           <p className="mt-1 flex items-center gap-1.5 text-[13.5px] text-gray-600">
             <MailIcon className="h-4 w-4 text-gray-500" />
@@ -303,10 +325,10 @@ export function SettingsClient() {
             >
               <UploadIcon className="h-4 w-4" />
               {photoBusy
-                ? "Uploading…"
+                ? t("Uploading…")
                 : user?.avatarPath
-                  ? "Change photo"
-                  : "Upload photo"}
+                  ? t("Change photo")
+                  : t("Upload photo")}
             </button>
             {user?.avatarPath && (
               <button
@@ -341,13 +363,15 @@ export function SettingsClient() {
         {/* ── Left column: profile + password ──────────────────── */}
         <div className="flex min-w-0 flex-col gap-6">
           <SettingsCard
-            title="Profile"
-            description="Your name is used to greet you and on your exchange listings."
+            title={t("Profile")}
+            description={t(
+              "Your name is used to greet you and on your exchange listings.",
+            )}
             icon={UserIcon}
           >
             <form onSubmit={handleProfileSave} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="First name">
+                <Field label={t("First name")}>
                   <input
                     type="text"
                     name="firstName"
@@ -358,7 +382,7 @@ export function SettingsClient() {
                     className={INPUT_CLASS}
                   />
                 </Field>
-                <Field label="Last name">
+                <Field label={t("Last name")}>
                   <input
                     type="text"
                     name="lastName"
@@ -371,7 +395,7 @@ export function SettingsClient() {
                 </Field>
               </div>
 
-              <Field label="Email">
+              <Field label={t("Email")}>
                 <input
                   type="email"
                   name="email"
@@ -406,15 +430,15 @@ export function SettingsClient() {
                 disabled={savingProfile || !user}
                 className={PRIMARY_BUTTON_CLASS}
               >
-                {savingProfile ? "Saving…" : "Save changes"}
+                {savingProfile ? `${t("Save")}…` : t("Save changes")}
               </button>
             </form>
           </SettingsCard>
 
           {isOAuthAccount ? (
             <SettingsCard
-              title="Password"
-              description="This account signs in with Google."
+              title={t("Password")}
+              description={t("This account signs in with Google.")}
               icon={LockIcon}
             >
               <p className="text-[13.5px] leading-relaxed text-gray-600">
@@ -424,12 +448,14 @@ export function SettingsClient() {
             </SettingsCard>
           ) : (
             <SettingsCard
-              title="Password"
-              description="Changing your password signs you out of every device."
+              title={t("Password")}
+              description={t(
+                "Changing your password signs you out of every device.",
+              )}
               icon={LockIcon}
             >
               <form onSubmit={handlePasswordSave} className="space-y-4">
-                <Field label="Current password">
+                <Field label={t("Current password")}>
                   <input
                     type="password"
                     name="currentPassword"
@@ -441,7 +467,7 @@ export function SettingsClient() {
                   />
                 </Field>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="New password">
+                  <Field label={t("New password")}>
                     <input
                       type="password"
                       name="newPassword"
@@ -453,7 +479,7 @@ export function SettingsClient() {
                       className={INPUT_CLASS}
                     />
                   </Field>
-                  <Field label="Confirm new password">
+                  <Field label={t("Confirm new password")}>
                     <input
                       type="password"
                       name="confirmPassword"
@@ -486,7 +512,9 @@ export function SettingsClient() {
                   disabled={savingPassword}
                   className={PRIMARY_BUTTON_CLASS}
                 >
-                  {savingPassword ? "Updating…" : "Change password"}
+                  {savingPassword
+                    ? `${t("Update password")}…`
+                    : t("Update password")}
                 </button>
               </form>
             </SettingsCard>
@@ -496,19 +524,22 @@ export function SettingsClient() {
         {/* ── Right rail: language + sessions ──────────────────── */}
         <div className="flex min-w-0 flex-col gap-6 xl:sticky xl:top-9 xl:self-start">
           <SettingsCard
-            title="Language"
-            description="AI answers, tips and guides come back in this language."
+            title={t("Language")}
+            description={t(
+              "AI answers, tips and guides come back in this language.",
+            )}
             icon={CompassIcon}
           >
             <div className="space-y-2.5">
-              {LOCALES.map((option) => {
+              {LOCALE_LABELS.map((option) => {
                 const active = locale === option.value;
                 return (
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setLocale(option.value)}
+                    onClick={() => void handleLocalePick(option.value)}
                     aria-pressed={active}
+                    disabled={switchingLocale}
                     className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-colors ${
                       active
                         ? "border-brand-500 bg-pale-green"
@@ -530,14 +561,16 @@ export function SettingsClient() {
                 );
               })}
               <p className="text-[12px] text-gray-500">
-                Pick a language, then press “Save changes” in Profile.
+                {t("The app switches language as soon as you pick one.")}
               </p>
             </div>
           </SettingsCard>
 
           <SettingsCard
-            title="Sessions"
-            description="Sign out here, or end every session if you used a shared device."
+            title={t("Sessions")}
+            description={t(
+              "Sign out here, or end every session if you used a shared device.",
+            )}
             icon={ShieldIcon}
           >
             <div className="space-y-3">
@@ -548,7 +581,7 @@ export function SettingsClient() {
                 className="flex h-[48px] mx-auto w-[min(240px,100%)] items-center justify-center gap-2 rounded-full border border-gray-200 bg-white text-[14px] font-semibold text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
               >
                 <LogoutIcon className="h-[18px] w-[18px]" />
-                {signingOut ? "Signing out…" : "Log out"}
+                {signingOut ? `${t("Sign out")}…` : t("Sign out")}
               </button>
               <button
                 type="button"
@@ -557,7 +590,7 @@ export function SettingsClient() {
                 className="flex h-[48px] mx-auto w-[min(240px,100%)] items-center justify-center gap-2 rounded-full border border-red-200 bg-white text-[14px] font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
               >
                 <ShieldIcon className="h-[18px] w-[18px]" />
-                Log out on all devices
+                {t("Sign out everywhere")}
               </button>
             </div>
           </SettingsCard>

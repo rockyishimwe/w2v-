@@ -18,16 +18,19 @@ import { Avatar } from "./avatar";
 import { Card, ViewAllLink } from "./dashboard-cards";
 import { fetchActivity } from "@/services/activity-service";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useT } from "@/i18n/use-translation";
 
 export function TopBar() {
   // Real greeting from the signed-in user's profile — read from the shared
   // session cache, so the whole page chrome costs a single /api/auth/me.
   const { user } = useCurrentUser();
+  const t = useT();
   const firstName = user?.firstName ?? null;
 
   const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+  const greeting = t(
+    hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening",
+  );
 
   return (
     <div className="flex flex-wrap items-start justify-between gap-5">
@@ -40,19 +43,19 @@ export function TopBar() {
 
       <div className="flex flex-1 items-center justify-end gap-4 pt-1">
         <label className="relative hidden min-w-0 max-w-[584px] flex-1 sm:block">
-          <span className="sr-only">Search</span>
+          <span className="sr-only">{t("Search anything...")}</span>
           <SearchIcon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
           <input
             type="search"
             name="search"
-            placeholder="Search anything..."
+            placeholder={t("Search anything...")}
             className="h-[52px] w-full rounded-full border border-gray-100 bg-white pl-12 pr-5 text-[14.5px] text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           />
         </label>
 
         <button
           type="button"
-          aria-label="Notifications"
+          aria-label={t("Notifications")}
           className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
         >
           <BellIcon className="h-5 w-5" />
@@ -61,7 +64,7 @@ export function TopBar() {
 
         <Link
           href="/settings"
-          aria-label="Account settings"
+          aria-label={t("Account settings")}
           className="flex shrink-0 items-center gap-1.5"
         >
           <Avatar className="h-11 w-11 rounded-full object-cover" />
@@ -72,6 +75,7 @@ export function TopBar() {
   );
 }
 export function ImpactCard() {
+  const t = useT();
   // Real 30-day impact from /api/activity.
   const [goal, setGoal] = useState<{
     percent: number;
@@ -99,9 +103,9 @@ export function ImpactCard() {
     <Card>
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-[16px] font-semibold text-gray-900">
-          Your Impact
+          {t("Your Impact")}
         </h2>
-        <ViewAllLink label="View activity" href="/activity" />
+        <ViewAllLink label={t("View activity")} href="/activity" />
       </div>
 
       <div className="mt-5 flex items-center gap-5">
@@ -134,7 +138,7 @@ export function ImpactCard() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] text-gray-500">Monthly goal</p>
+          <p className="text-[12px] text-gray-500">{t("Monthly goal")}</p>
           <p className="mt-1 text-[15px] font-bold text-gray-900">
             {goal ? goal.current : "—"}
             <span className="font-medium text-gray-500">
@@ -148,7 +152,7 @@ export function ImpactCard() {
             aria-valuenow={percent}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Monthly goal progress"
+            aria-label={t("Monthly goal progress")}
           >
             <div
               className="h-full rounded-full bg-brand-700"
@@ -188,10 +192,12 @@ const QUICK_ACTIONS: {
 ];
 
 export function QuickActionsCard() {
+  const t = useT();
+
   return (
     <Card>
       <h2 className="font-display text-[16px] font-semibold text-gray-900">
-        Quick Actions
+        {t("Quick Actions")}
       </h2>
       <ul className="mt-4 space-y-3">
         {QUICK_ACTIONS.map(({ icon: Icon, title, sub, href }) => (
@@ -205,10 +211,10 @@ export function QuickActionsCard() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[13.5px] font-semibold text-gray-900">
-                  {title}
+                  {t(title)}
                 </span>
                 <span className="mt-0.5 block text-[11.5px] text-gray-500">
-                  {sub}
+                  {t(sub)}
                 </span>
               </span>
               <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-900 transition-transform group-hover:translate-x-0.5" />
@@ -221,6 +227,8 @@ export function QuickActionsCard() {
 }
 
 export function HelpCard() {
+  const t = useT();
+
   return (
     <div className="group flex items-center gap-3.5 rounded-[28px] bg-brand-50 p-5 transition-colors hover:bg-brand-100">
       <span className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
@@ -228,12 +236,12 @@ export function HelpCard() {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[13.5px] font-bold text-gray-900">
-          Need help?
+          {t("Need help?")}
         </span>
         <span className="mt-0.5 block text-[11.5px] leading-snug text-gray-600">
-          Chat with Waste Assistant
+          {t("Chat with Waste Assistant")}
           <br />
-          Ask anything about your waste.
+          {t("Ask anything about your waste.")}
         </span>
       </span>
       <ChevronRightIcon className="h-4 w-4 shrink-0 text-gray-900 transition-transform group-hover:translate-x-0.5" />

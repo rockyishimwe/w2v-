@@ -26,6 +26,7 @@ import {
 import { fetchIdeas } from "@/services/discover-service";
 import { fetchListings } from "@/services/exchange-service";
 import { api } from "@/lib/api-client";
+import { useT, type Translate } from "@/i18n/use-translation";
 import { ActivityArt } from "./activity-art";
 import { IdeaArt } from "./discover-art";
 import { ItemArt } from "./exchange-art";
@@ -88,6 +89,8 @@ export function ViewAllLink({
 }
 
 export function ScanWasteCard() {
+  const t = useT();
+
   return (
     <section className="relative min-h-[181px] overflow-hidden rounded-[28px] bg-[linear-gradient(115deg,#168a3c_0%,#45bf68_100%)] p-6 text-white shadow-[0_18px_36px_rgba(20,92,54,0.24)]">
       <div
@@ -104,15 +107,15 @@ export function ScanWasteCard() {
         </span>
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-[19px] font-semibold leading-tight">
-            Scan Waste
+            {t("Scan Waste")}
           </h2>
           <p className="mt-1 text-[12.5px] leading-snug text-white/85">
-            Identify what you have and discover the best next steps.
+            {t("Identify what you have and discover the best next steps.")}
           </p>
         </div>
         <Link
           href="/scanner"
-          aria-label="Open scanner"
+          aria-label={t("Open scanner")}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-md transition-transform hover:scale-105"
         >
           <ChevronRightIcon className="h-5 w-5" />
@@ -142,23 +145,24 @@ function useStats() {
 
 export function StatsCard() {
   const stats = useStats();
+  const t = useT();
   const tiles = [
     {
       icon: RecycleIcon,
       value: stats ? String(stats.itemsReused) : "—",
-      label: "items reused",
+      label: t("items reused"),
       trend: stats?.trend.itemsReused ?? null,
     },
     {
       icon: LeafIcon,
       value: stats ? stats.wasteDiverted : "—",
-      label: "organic waste diverted",
+      label: t("organic waste diverted"),
       trend: stats?.trend.wasteDiverted ?? null,
     },
     {
       icon: LoopIcon,
       value: stats ? String(stats.exchanges) : "—",
-      label: "exchanges made",
+      label: t("exchanges made"),
       trend: stats?.trend.exchanges ?? null,
     },
   ];
@@ -199,6 +203,7 @@ export function StatsCard() {
 
 export function RecentActivityCard() {
   const [entries, setEntries] = useState<ActivityEntry[] | null>(null);
+  const t = useT();
 
   useEffect(() => {
     let cancelled = false;
@@ -217,9 +222,9 @@ export function RecentActivityCard() {
   return (
     <Card>
       <CardHeader
-        title="Recent Activity"
+        title={t("Recent Activity")}
         icon={ClockIcon}
-        action={{ label: "View all", href: "/activity" }}
+        action={{ label: t("View all"), href: "/activity" }}
       />
       {entries === null ? (
         <ul className="mt-2 divide-y divide-gray-100">
@@ -235,7 +240,7 @@ export function RecentActivityCard() {
         </ul>
       ) : entries.length === 0 ? (
         <p className="py-8 text-center text-[13px] text-gray-500">
-          No activity yet — scan your first item!
+          {t("No activity yet — scan your first item!")}
         </p>
       ) : (
         <ul className="mt-2 divide-y divide-gray-100">
@@ -249,10 +254,10 @@ export function RecentActivityCard() {
                 <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] font-semibold text-gray-900">
                   {entry.title}
                   <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
-                  {entry.tag}
+                  {t(entry.tag)}
                 </p>
                 <p className="mt-0.5 text-[12px] text-gray-500">
-                  {entrySubtitle(entry)}
+                  {entrySubtitle(entry, t)}
                 </p>
               </div>
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
@@ -269,6 +274,7 @@ export function RecentActivityCard() {
 /* ── Recommended — real ideas from /api/ideas ──────────────────── */
 
 export function RecommendedCard() {
+  const t = useT();
   const [ideas, setIdeas] = useState<
     Array<{
       id: string;
@@ -297,13 +303,13 @@ export function RecommendedCard() {
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display flex items-center gap-2.5 text-[16px] font-semibold text-gray-900">
           <SparkleIcon className="h-5 w-5 text-brand-700" />
-          Recommended for you
+          {t("Recommended for you")}
         </h2>
-        <ViewAllLink label="View all" href="/discover" />
+        <ViewAllLink label={t("View all")} href="/discover" />
       </div>
       {ideas.length === 0 ? (
         <p className="py-8 text-center text-[13px] text-gray-500">
-          Ideas you create or ask the assistant about will appear here.
+          {t("Ideas you create or ask the assistant about will appear here.")}
         </p>
       ) : (
         <ul className="mt-2 divide-y divide-gray-100">
@@ -321,10 +327,10 @@ export function RecommendedCard() {
                   <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] font-semibold text-gray-900">
                     {idea.title}
                     <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
-                    {idea.tag}
+                    {t(idea.tag)}
                   </p>
                   <p className="mt-0.5 text-[12px] text-gray-500">
-                    {idea.tag} · {idea.time}
+                    {t(idea.tag)} · {idea.time}
                   </p>
                 </div>
                 <ChevronRightIcon className="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5" />
@@ -340,6 +346,7 @@ export function RecommendedCard() {
 /* ── Nearby exchange — real listings from the API ──────────────── */
 
 export function NearbyExchangeCard() {
+  const t = useT();
   const [listings, setListings] = useState<
     Array<{
       id: string;
@@ -368,23 +375,23 @@ export function NearbyExchangeCard() {
       <div className="flex items-start justify-between gap-3">
         <h2 className="font-display flex items-center gap-2.5 text-[15px] font-semibold leading-snug text-gray-900">
           <MapPinIcon className="h-5 w-5 shrink-0 text-gray-900" />
-          Nearby Exchange
+          {t("Nearby Exchange")}
           <br />
-          Opportunities
+          {t("Opportunities")}
         </h2>
         <Link
           href="/exchange"
           className="flex shrink-0 items-center gap-1.5 text-right text-[12.5px] font-semibold leading-snug text-brand-500 transition-colors hover:text-brand-700"
         >
-          View
+          {t("View")}
           <br />
-          map
+          {t("map")}
           <ArrowRightIcon className="h-3.5 w-3.5" />
         </Link>
       </div>
       {listings.length === 0 ? (
         <p className="py-8 text-center text-[13px] text-gray-500">
-          No listings yet — post one from the Exchange page.
+          {t("No listings yet — post one from the Exchange page.")}
         </p>
       ) : (
         <ul className="mt-4 grid grid-cols-3 gap-3">
@@ -411,7 +418,7 @@ export function NearbyExchangeCard() {
                   {listing.distance} · {listing.district}
                 </p>
                 <span className="mt-2 inline-block rounded-full bg-brand-50 px-2.5 py-1 text-[10.5px] font-semibold text-brand-700">
-                  {listing.tag}
+                  {t(listing.tag)}
                 </span>
               </Link>
             </li>
@@ -432,6 +439,7 @@ interface HistoryMessage {
 }
 
 export function RecentChatCard() {
+  const t = useT();
   const [last, setLast] = useState<HistoryMessage | null>(null);
 
   useEffect(() => {
@@ -452,29 +460,31 @@ export function RecentChatCard() {
   return (
     <Card>
       <CardHeader
-        title="Recent Chat"
+        title={t("Recent Chat")}
         icon={ChatIcon}
-        action={{ label: "View all", href: "/assistant" }}
+        action={{ label: t("View all"), href: "/assistant" }}
       />
       <Link
         href="/assistant"
         className="mt-4 flex items-center gap-3.5"
-        aria-label="Open chat with Waste Assistant"
+        aria-label={t("Waste Assistant chat")}
       >
         <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
           <BotIcon className="h-7 w-7" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-[13.5px] font-semibold text-gray-900">
-            Waste Assistant
+            {t("Waste Assistant")}
             {last && (
               <span className="text-[10.5px] font-normal text-gray-500">
-                {formatRelative(last.timestamp)}
+                {formatRelative(last.timestamp, t)}
               </span>
             )}
           </p>
           <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-gray-500">
-            {last ? last.text : "Ask the assistant what to do with your waste."}
+            {last
+              ? last.text
+              : t("Ask the assistant what to do with your waste.")}
           </p>
         </div>
         <ArrowRightIcon className="h-4 w-4 shrink-0 self-start text-gray-900" />
@@ -487,29 +497,29 @@ export function RecentChatCard() {
  * Activity row subtitle, as in the design: "Today · 2.5 kg" when the
  * user reported a weight, otherwise the place the action happened.
  */
-function entrySubtitle(entry: ActivityEntry): string {
-  const day = formatDay(entry.timestamp);
+function entrySubtitle(entry: ActivityEntry, t: Translate): string {
+  const day = formatDay(entry.timestamp, t);
   const detail =
     entry.wasteKg !== undefined ? `${entry.wasteKg} kg` : entry.location;
   return detail ? `${day} · ${detail}` : day;
 }
 
-function formatDay(iso: string): string {
+function formatDay(iso: string, t: Translate): string {
   const date = new Date(iso);
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const days = Math.floor(
     (startOfToday.getTime() - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000,
   );
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
+  if (days <= 0) return t("Today");
+  if (days === 1) return t("Yesterday");
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function formatRelative(iso: string): string {
+function formatRelative(iso: string, t: Translate): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.round(diff / 60_000);
-  if (minutes < 1) return "just now";
+  if (minutes < 1) return t("just now");
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.round(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
