@@ -231,7 +231,25 @@ const rw: Dictionary = {
   "Almost anything can have a second life!":
     "Hafi ya buri kintu gishobora kongera gukoreshwa!",
   Google: "Google",
+
+  /* Settings feedback */
+  "Your profile has been updated.": "Umwirondoro wawe wavuguruwe.",
+  "Couldn't save your profile.": "Ntibishoboye kubika umwirondoro wawe.",
+  "Couldn't change the language.": "Ntibishoboye guhindura ururimi.",
+  "The two new passwords don't match.":
+    "Amagambo mashya y'ibanga ntabwo ahura.",
+  "Couldn't change your password. Please try again.":
+    "Ntibishoboye guhindura ijambo ry'ibanga. Ongera ugerageze.",
+  "Your photo": "Ifoto yawe",
+  "Uploading…": "Birimo koherezwa…",
+  "The app switches language as soon as you pick one.":
+    "Porogaramu ihindura ururimi ukimara kuruhitamo.",
 };
+
+// Kept only temporarily so source upgrades that still contain this table do
+// not affect the English/French runtime dictionary. It is not exposed by
+// `dictionaries` and cannot be selected by the application.
+void rw;
 
 /* ── French ───────────────────────────────────────────────────── */
 
@@ -452,10 +470,32 @@ const fr: Dictionary = {
   "Almost anything can have a second life!":
     "Presque tout peut avoir une seconde vie !",
   Google: "Google",
+
+  Search: "Rechercher",
+  "Scan something you're about": "Scannez ce que vous êtes sur le point",
+  "Take a photo or upload an image, and our AI will identify the item and suggest the best next steps.":
+    "Prenez une photo ou importez une image : notre IA identifiera l'objet et vous proposera les prochaines étapes.",
+  "Take Photo": "Prendre une photo",
+  "What you can get:": "Ce que vous pouvez obtenir :",
+  "Quick Tip": "Conseil rapide",
+  "Make sure the image is clear and well-lit for better results.":
+    "Assurez-vous que l'image est nette et bien éclairée pour de meilleurs résultats.",
+
+  /* Settings feedback */
+  "Your profile has been updated.": "Votre profil a été mis à jour.",
+  "Couldn't save your profile.": "Impossible d'enregistrer votre profil.",
+  "Couldn't change the language.": "Impossible de changer la langue.",
+  "The two new passwords don't match.":
+    "Les deux nouveaux mots de passe ne correspondent pas.",
+  "Couldn't change your password. Please try again.":
+    "Impossible de changer votre mot de passe. Veuillez réessayer.",
+  "Your photo": "Votre photo",
+  "Uploading…": "Téléversement…",
+  "The app switches language as soon as you pick one.":
+    "L'application change de langue dès que vous en choisissez une.",
 };
 
 export const dictionaries: Record<Locale, Dictionary | undefined> = {
   en: undefined, // identity — keys are already English
-  rw,
   fr,
 };

@@ -15,7 +15,7 @@ import {
  *
  * Keys are the English source strings, so English needs no dictionary and
  * an untranslated key degrades to readable English instead of a blank or a
- * `missing.key` marker. `rw` and `fr` supply the overrides.
+ * `missing.key` marker. French supplies the overrides.
  *
  * The language comes from the signed-in user's profile (`user.locale`),
  * which Settings writes. It is mirrored into localStorage so a reload
@@ -27,20 +27,26 @@ import {
 
 let mirrored: Locale | null = null;
 const listeners = new Set<() => void>();
+const LOCALE_CHANGED_EVENT = "w2v:locale-changed";
 
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   // Another tab switching language writes the same key.
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === LOCALE_STORAGE_KEY) {
+  const onStorage = (event: StorageEvent | Event) => {
+    if (
+      event.type === LOCALE_CHANGED_EVENT ||
+      (event as StorageEvent).key === LOCALE_STORAGE_KEY
+    ) {
       mirrored = null;
       listener();
     }
   };
   window.addEventListener("storage", onStorage);
+  window.addEventListener(LOCALE_CHANGED_EVENT, onStorage);
   return () => {
     listeners.delete(listener);
     window.removeEventListener("storage", onStorage);
+    window.removeEventListener(LOCALE_CHANGED_EVENT, onStorage);
   };
 }
 
@@ -70,6 +76,7 @@ export function rememberLocale(locale: Locale): void {
   }
   mirrored = locale;
   for (const listener of listeners) listener();
+  window.dispatchEvent(new Event(LOCALE_CHANGED_EVENT));
 }
 
 /** The language the UI should render in right now. */

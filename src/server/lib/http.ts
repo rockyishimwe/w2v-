@@ -143,8 +143,8 @@ export async function parseJsonBody<T>(
   return result.data;
 }
 
-export type Locale = "rw" | "en" | "fr";
-const SUPPORTED_LOCALES: Locale[] = ["rw", "en", "fr"];
+export type Locale = "en" | "fr";
+const SUPPORTED_LOCALES: Locale[] = ["en", "fr"];
 
 /**
  * Resolves the user's locale from an explicit query/body param, then the
@@ -163,7 +163,6 @@ export function resolveLocale(
     const tag = part.split(";")[0]?.trim().toLowerCase() ?? "";
     if (SUPPORTED_LOCALES.includes(tag as Locale)) return tag as Locale;
     if (tag.startsWith("fr")) return "fr";
-    if (tag.startsWith("rw") || tag.startsWith("kn")) return "rw";
   }
   return "en";
 }

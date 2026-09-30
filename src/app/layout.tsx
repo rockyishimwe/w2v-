@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Public_Sans } from "next/font/google";
 import "./globals.css";
+import { LocaleTextRenderer } from "@/components/locale-text-renderer";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -33,7 +34,10 @@ export default function RootLayout({
       lang="en"
       className={`${bricolageGrotesque.variable} ${publicSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full font-sans">{children}</body>
+      <body className="min-h-full font-sans">
+        <LocaleTextRenderer />
+        {children}
+      </body>
     </html>
   );
 }

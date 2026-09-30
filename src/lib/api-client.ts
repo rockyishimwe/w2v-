@@ -12,6 +12,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 const ACCESS_KEY = "w2v.access-token";
 const REFRESH_KEY = "w2v.refresh-token";
+const LOCALE_KEY = "w2v.locale";
+const LOCALE_CHANGED_EVENT = "w2v:locale-changed";
 
 /* ── Token storage ──────────────────────────────────────────────── */
 
@@ -44,6 +46,13 @@ export function saveSession(session: AuthSession): void {
   if (!storageAvailable()) return;
   localStorage.setItem(ACCESS_KEY, session.accessToken);
   localStorage.setItem(REFRESH_KEY, session.refreshToken);
+  // Locale belongs to the account, not the browser. Updating this mirror as
+  // part of every login/refresh prevents the previous account's language
+  // flashing while the current profile is being loaded.
+  localStorage.setItem(LOCALE_KEY, session.user.locale);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(LOCALE_CHANGED_EVENT));
+  }
 }
 
 export function clearSession(): void {
@@ -153,7 +162,15 @@ async function request<T>(
   const token = getAccessToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (locale) headers["Accept-Language"] = locale;
+  // Most callers do not need to pass a locale explicitly: it is the signed-in
+  // account preference saved above. An explicit option remains useful for
+  // public endpoints and overrides the account preference when supplied.
+  const preferredLocale =
+    locale ??
+    (storageAvailable()
+      ? (localStorage.getItem(LOCALE_KEY) ?? undefined)
+      : undefined);
+  if (preferredLocale) headers["Accept-Language"] = preferredLocale;
   if (method === "POST") {
     headers["Idempotency-Key"] = idemKey ?? idempotencyKey();
   }

@@ -20,7 +20,7 @@ export interface FallbackScan {
   recommendations: Array<{ category: string; description: string }>;
 }
 
-const SCAN_LABELS: Record<Locale, Record<string, string>> = {
+const SCAN_LABELS: Record<string, Record<string, string>> = {
   en: {
     title: "Household waste item",
     summary: "1 item detected (approx. 500 ml)",
@@ -71,7 +71,7 @@ export function fallbackScan(locale: Locale): FallbackScan {
   };
 }
 
-const TIPS: Record<Locale, string[]> = {
+const TIPS: Record<string, string[]> = {
   en: [
     "Rinse plastic bottles and drop them at a Kigali collection point.",
     "Compost food scraps — Kigali gardens thrive on home compost.",

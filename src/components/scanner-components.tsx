@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   BellIcon,
@@ -21,6 +23,7 @@ import {
 } from "./dashboard-art";
 import { Avatar } from "./avatar";
 import { UploadImageButton } from "./upload-image-button";
+import { useT } from "@/i18n/use-translation";
 
 function ScannerPanel({
   children,
@@ -42,29 +45,30 @@ function ScannerPanel({
 }
 
 export function ScannerHeader() {
+  const t = useT();
   return (
     <header className="flex flex-wrap items-start justify-between gap-5">
       <div>
         <h1 className="font-display text-[30px] font-bold leading-none text-black">
-          Scanner
+          {t("Scanner")}
         </h1>
         <p className="mt-3 text-[14.5px] text-[#607493]">
-          Identify waste and discover what to do with it
+          {t("Identify waste and discover what to do with it")}
         </p>
       </div>
       <div className="flex flex-1 items-center justify-end gap-5 pt-1">
         <label className="relative hidden w-full max-w-[584px] sm:block">
-          <span className="sr-only">Search</span>
+          <span className="sr-only">{t("Search")}</span>
           <SearchIcon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-600" />
           <input
             type="search"
-            placeholder="Search anything..."
+            placeholder={t("Search anything...")}
             className="h-[48px] w-full rounded-full border border-white bg-white pl-12 pr-5 text-[14px] text-gray-900 shadow-[0_6px_16px_rgba(17,24,39,0.04)] outline-none placeholder:text-[#607493]"
           />
         </label>
         <button
           type="button"
-          aria-label="Notifications"
+          aria-label={t("Notifications")}
           className="relative flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-white text-gray-900 shadow-[0_6px_16px_rgba(17,24,39,0.04)]"
         >
           <BellIcon className="h-5 w-5" />
@@ -72,7 +76,7 @@ export function ScannerHeader() {
         </button>
         <button
           type="button"
-          aria-label="Account menu"
+          aria-label={t("Account menu")}
           className="flex items-center gap-2"
         >
           <Avatar className="h-10 w-10 rounded-full" />
@@ -84,6 +88,7 @@ export function ScannerHeader() {
 }
 
 export function UploadPanel() {
+  const t = useT();
   return (
     <ScannerPanel className="p-5">
       <div className="relative flex min-h-[420px] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-dashed border-[#75d99a] bg-[#f5fbf7] px-6 text-center sm:min-h-[488px]">
@@ -95,12 +100,11 @@ export function UploadPanel() {
           </span>
         </span>
         <h2 className="font-display mt-8 max-w-[500px] text-[22px] font-semibold leading-[1.35] text-[#153a2a]">
-          Scan something you&apos;re about
+          {t("Scan something you're about")}
           <br className="hidden xl:block" /> to throw away.
         </h2>
         <p className="mt-6 max-w-[480px] text-[15px] leading-[1.7] text-[#5d786d]">
-          Take a photo or upload an image, and our AI will identify the item and
-          suggest the best next steps.
+          {t("Take a photo or upload an image, and our AI will identify the item and suggest the best next steps.")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-6 sm:mt-7 sm:gap-10">
           <Link
@@ -108,7 +112,7 @@ export function UploadPanel() {
             className="flex h-[56px] min-w-[190px] items-center justify-center gap-3 rounded-2xl bg-brand-700 px-3 text-[14.5px] font-medium text-white shadow-[0_8px_16px_rgba(20,92,54,0.14)]"
           >
             <CameraIcon className="h-6 w-6" />
-            Take Photo
+            {t("Take Photo")}
           </Link>
           <UploadImageButton className="flex h-[56px] min-w-[190px] items-center justify-center gap-3 rounded-2xl border border-brand-500 bg-white px-6 text-[14.5px] font-medium text-brand-500" />
         </div>
@@ -126,13 +130,14 @@ const BENEFITS = [
 ];
 
 export function ScannerBenefits() {
+  const t = useT();
   return (
     <section className="rounded-[25px] bg-[#f2faf5] px-5 py-5">
       <div className="flex items-center gap-3 text-[14px] font-semibold text-[#153a2a]">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d9f2e2] text-brand-700">
           <LightbulbIcon className="h-5 w-5" />
         </span>
-        What you can get:
+        {t("What you can get:")}
       </div>
       <div className="mt-2 hidden grid-cols-3 sm:grid sm:grid-cols-5">
         {BENEFITS.map(({ label, icon: Icon }, index) => (
@@ -142,7 +147,7 @@ export function ScannerBenefits() {
           >
             <Icon className="h-6 w-6 text-brand-500" />
             <span className="mt-2 text-[14px] font-semibold leading-tight text-[#153a2a]">
-              {label}
+              {t(label)}
             </span>
           </div>
         ))}
@@ -153,7 +158,7 @@ export function ScannerBenefits() {
           <div key={label} className="flex flex-col items-center text-center">
             <Icon className="h-6 w-6 text-brand-500" />
             <span className="mt-1 text-[12.5px] font-semibold leading-tight text-[#153a2a]">
-              {label}
+              {t(label)}
             </span>
           </div>
         ))}
@@ -163,6 +168,7 @@ export function ScannerBenefits() {
 }
 
 export function QuickTip() {
+  const t = useT();
   return (
     <section className="flex items-center gap-5 rounded-[28px] bg-[#f2faf5] px-7 py-6">
       <span className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-[#d9f2e2] text-brand-700">
@@ -170,10 +176,10 @@ export function QuickTip() {
       </span>
       <div>
         <h2 className="font-display text-[19px] font-semibold text-[#153a2a]">
-          Quick Tip
+          {t("Quick Tip")}
         </h2>
         <p className="mt-1 text-[15px] leading-snug text-[#5d786d]">
-          Make sure the image is clear and well-lit for better results.
+          {t("Make sure the image is clear and well-lit for better results.")}
         </p>
       </div>
     </section>

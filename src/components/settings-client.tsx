@@ -156,6 +156,10 @@ export function SettingsClient() {
     // Paint in the new language first, then persist it.
     setLocale(next);
     rememberLocale(next);
+    // `useLocale` correctly treats the profile as authoritative. Update that
+    // shared profile optimistically too, otherwise its old locale would win
+    // until the network request below completes.
+    if (user) setCurrentUser({ ...user, locale: next });
     setSwitchingLocale(true);
     setProfileError(null);
     try {
@@ -163,6 +167,7 @@ export function SettingsClient() {
     } catch (error) {
       setLocale(previous);
       rememberLocale(previous);
+      if (user) setCurrentUser({ ...user, locale: previous });
       setProfileError(messageOf(error, t("Couldn't change the language.")));
     } finally {
       setSwitchingLocale(false);

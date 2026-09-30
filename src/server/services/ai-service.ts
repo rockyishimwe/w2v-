@@ -2,7 +2,7 @@
  * AI service — the single module all AI features go through.
  *
  * Built on the Groq SDK (free-tier models) with:
- *  - typed prompt templates + locale directives (rw/en/fr),
+ *  - typed prompt templates + locale directives (en/fr),
  *  - JSON-mode outputs validated by zod (one retry on invalid JSON),
  *  - prompt-injection defense (user text is delimited data, never commands),
  *  - graceful fallbacks when GROQ_API_KEY is absent or the call fails,
@@ -28,7 +28,6 @@ import {
 
 const LOCALE_DIRECTIVE: Record<Locale, string> = {
   en: "Respond in English.",
-  rw: "Respond in Kinyarwanda (Ikinyarwanda). Use simple everyday words.",
   fr: "Respond in French (français).",
 };
 

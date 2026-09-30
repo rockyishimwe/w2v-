@@ -57,19 +57,19 @@ describe("updateProfile", () => {
     db.user.update.mockResolvedValue({
       ...row,
       firstName: "Vanessa M.",
-      locale: "rw",
+      locale: "fr",
     });
 
     const user = await updateProfile("u1", {
       firstName: "Vanessa M.",
-      locale: "rw",
+      locale: "fr",
     });
 
     expect(db.user.update).toHaveBeenCalledWith({
       where: { id: "u1" },
-      data: { firstName: "Vanessa M.", locale: "rw" },
+      data: { firstName: "Vanessa M.", locale: "fr" },
     });
-    expect(user).toMatchObject({ firstName: "Vanessa M.", locale: "rw" });
+    expect(user).toMatchObject({ firstName: "Vanessa M.", locale: "fr" });
   });
 
   it("rejects an unknown account", async () => {

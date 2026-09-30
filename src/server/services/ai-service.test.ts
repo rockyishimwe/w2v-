@@ -113,11 +113,11 @@ describe("assistantReply", () => {
     expect(reply.ideas[0].href).toBe("/scanner/diy");
   });
 
-  it("keeps the fallback deterministic across locales", async () => {
+  it("keeps fallback replies deterministic", async () => {
     mockedChat.mockRejectedValue(new Error("boom"));
     const fr = await assistantReply("hello", [], "fr");
-    const rw = await assistantReply("muraho", [], "rw");
-    expect(fr.text).toBe(rw.text); // canned copy is English by design
+    const en = await assistantReply("hello", [], "en");
+    expect(fr.text).toBe(en.text); // canned copy is English by design
   });
 });
 

@@ -1,8 +1,8 @@
 /**
- * The three languages the product supports (SRS: Kinyarwanda, English,
- * French). The server validates the same set in `localeSchema`.
+ * The two languages the product supports: English and French. The server
+ * validates the same set in `localeSchema`.
  */
-export const LOCALES = ["rw", "en", "fr"] as const;
+export const LOCALES = ["en", "fr"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -10,7 +10,6 @@ export const DEFAULT_LOCALE: Locale = "en";
 
 /** Settings-page labels, each written in its own language. */
 export const LOCALE_LABELS: { value: Locale; label: string; hint: string }[] = [
-  { value: "rw", label: "Kinyarwanda", hint: "Ikinyarwanda" },
   { value: "en", label: "English", hint: "English" },
   { value: "fr", label: "French", hint: "Français" },
 ];

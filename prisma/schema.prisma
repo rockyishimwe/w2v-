@@ -22,7 +22,7 @@ model User {
   passwordHash String? // null for OAuth-only accounts
   firstName    String
   lastName     String
-  locale       String   @default("en") // rw | en | fr
+  locale       String   @default("en") // en | fr
   /** "google" when the account signs in via OAuth. */
   oauthProvider String?
   /** Provider's stable user id (unique per provider). */

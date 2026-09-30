@@ -6,7 +6,7 @@ import { z } from "zod";
 
 /* ── Shared ─────────────────────────────────────────────────────── */
 
-export const localeSchema = z.enum(["rw", "en", "fr"]);
+export const localeSchema = z.enum(["en", "fr"]);
 
 /* ── Auth ───────────────────────────────────────────────────────── */
 
