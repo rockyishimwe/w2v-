@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthGuard } from "@/components/auth-guard";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { ExchangeDetailClient } from "@/components/exchange-detail";
@@ -23,14 +24,16 @@ export default async function ExchangeItemPage({ params }: { params: Params }) {
   const { id } = await params;
 
   return (
-    <div className="flex min-h-dvh bg-page pb-20 md:pb-0">
-      <DashboardSidebar activeItem="Exchange" />
+    <AuthGuard>
+      <div className="flex min-h-dvh bg-page pb-20 md:pb-0">
+        <DashboardSidebar activeItem="Exchange" />
 
-      <main className="min-w-0 flex-1 px-4 py-7 sm:px-5 lg:px-6 lg:py-9">
-        <ExchangeDetailClient listingId={id} />
-      </main>
+        <main className="min-w-0 flex-1 px-4 py-7 sm:px-5 lg:px-6 lg:py-9">
+          <ExchangeDetailClient listingId={id} />
+        </main>
 
-      <MobileTabBar activeItem="Exchange" />
-    </div>
+        <MobileTabBar activeItem="Exchange" />
+      </div>
+    </AuthGuard>
   );
 }

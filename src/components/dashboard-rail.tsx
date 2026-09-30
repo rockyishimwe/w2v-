@@ -16,22 +16,13 @@ import {
 import { AvatarArt, QuoteHillsArt } from "./dashboard-art";
 import { Card } from "./dashboard-cards";
 import { fetchActivity } from "@/services/activity-service";
-import { fetchCurrentUser } from "@/services/auth-service";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function TopBar() {
-  // Real greeting from the signed-in user's profile.
-  const [firstName, setFirstName] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    fetchCurrentUser()
-      .then((user) => {
-        if (!cancelled) setFirstName(user.firstName);
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Real greeting from the signed-in user's profile — read from the shared
+  // session cache, so the whole page chrome costs a single /api/auth/me.
+  const { user } = useCurrentUser();
+  const firstName = user?.firstName ?? null;
 
   const hour = new Date().getHours();
   const greeting =
@@ -67,14 +58,14 @@ export function TopBar() {
           <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
         </button>
 
-        <button
-          type="button"
-          aria-label="Account menu"
+        <Link
+          href="/settings"
+          aria-label="Account settings"
           className="flex shrink-0 items-center gap-1.5"
         >
           <AvatarArt className="h-11 w-11 rounded-full object-cover" />
           <ChevronDownIcon className="h-5 w-5 text-gray-900" />
-        </button>
+        </Link>
       </div>
     </div>
   );

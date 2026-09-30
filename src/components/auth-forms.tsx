@@ -13,7 +13,14 @@ import {
   MailIcon,
   UserIcon,
 } from "./icons";
-import { ApiClientError, login, register } from "@/services/auth-service";
+import {
+  ApiClientError,
+  exchangeOAuthCode,
+  hasSession,
+  login,
+  register,
+  startOAuth,
+} from "@/services/auth-service";
 
 type AuthMode = "login" | "signup" | "forgot";
 type ViewState = "active" | "leaving" | "hidden";
@@ -158,6 +165,7 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
       <div className="mx-auto grid w-[min(420px,100%)] grid-cols-2 gap-5">
         <button
           type="button"
+          onClick={() => startOAuth("google")}
           className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
         >
           <GoogleIcon className="h-4 w-4" />
@@ -165,6 +173,7 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
         </button>
         <button
           type="button"
+          onClick={() => startOAuth("facebook")}
           className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
         >
           <FacebookIcon className="h-4 w-4" />
@@ -220,11 +229,13 @@ function LoginView({
   onForgot,
   onSubmit,
   state,
+  oauthError,
 }: {
   onSwitch: () => void;
   onForgot: () => void;
   onSubmit: (credentials: LoginCredentials) => Promise<void>;
   state: ViewState;
+  oauthError?: string | null;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -242,6 +253,8 @@ function LoginView({
       <p className="mt-[clamp(0.4rem,1.4vh,0.75rem)] max-w-[520px] text-center text-[clamp(0.8rem,1.8vh,1rem)] leading-relaxed text-gray-500">
         Log in to your Waste2Value account and continue making an impact.
       </p>
+
+      <AuthError message={oauthError ?? null} />
 
       <form
         className="mt-[clamp(0.9rem,2.8vh,2.25rem)] flex w-full flex-col gap-[clamp(0.7rem,1.9vh,1.25rem)]"
@@ -532,12 +545,14 @@ function AuthView({
   onSwitch,
   onLogin,
   onRegister,
+  oauthError,
 }: {
   mode: AuthMode;
   state: ViewState;
   onSwitch: (mode: AuthMode) => void;
   onLogin: (credentials: LoginCredentials) => Promise<void>;
   onRegister: (credentials: RegisterCredentials) => Promise<void>;
+  oauthError?: string | null;
 }) {
   if (mode === "signup") {
     return (
@@ -559,6 +574,7 @@ function AuthView({
       onSwitch={() => onSwitch("signup")}
       onForgot={() => onSwitch("forgot")}
       onSubmit={onLogin}
+      oauthError={oauthError}
     />
   );
 }
@@ -571,7 +587,10 @@ export function AuthForms({
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [leavingMode, setLeavingMode] = useState<AuthMode | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
   const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goToDashboard = useCallback(() => router.push("/dashboard"), [router]);
 
   useEffect(() => {
     return () => {
@@ -579,7 +598,68 @@ export function AuthForms({
     };
   }, []);
 
-  const goToDashboard = useCallback(() => router.push("/dashboard"), [router]);
+  // OAuth return: /?oauth-code=<one-time code> → real session.
+  // Also surfaces provider errors passed back via ?oauth=<reason>.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+
+    const oauthCode = params.get("oauth-code");
+    if (oauthCode) {
+      // Clean the URL first so refresh/back can't replay the code.
+      window.history.replaceState(null, "", "/");
+      exchangeOAuthCode(oauthCode)
+        .then(() => goToDashboard())
+        .catch(() => {
+          setOauthError("Your login link expired. Please sign in again.");
+        });
+      return;
+    }
+    const reason = params.get("oauth");
+    if (reason) {
+      window.history.replaceState(null, "", "/");
+      const messages: Record<string, string> = {
+        cancelled: "Sign-in was cancelled. Try again when you're ready.",
+        state_mismatch: "Sign-in couldn't be verified. Please try again.",
+        unavailable: "Social sign-in isn't configured yet. Use email for now.",
+        invalid: "Unknown sign-in provider.",
+        failed: "Social sign-in failed. Please try again.",
+      };
+      // Deferred so the effect body stays synchronous-safe. The timer is
+      // deliberately not cleared on cleanup: React's development double-
+      // invoke would otherwise cancel it, and the second run no longer sees
+      // the query string this one just cleaned away.
+      const message =
+        messages[reason] ?? "Social sign-in failed. Please try again.";
+      setTimeout(() => setOauthError(message), 0);
+      return;
+    }
+
+    // Notices set by the app itself: the guard bounced an unauthenticated
+    // (or expired) visit here, or a password change signed every device out.
+    const notices: Record<string, string> = {
+      "expired=1": "Your session expired. Please sign in again.",
+      "redirected=1": "Please sign in to continue.",
+      "password=changed":
+        "Your password was changed. Please sign in with your new password.",
+    };
+    for (const [key, message] of Object.entries(notices)) {
+      const [name, value] = key.split("=");
+      if (params.get(name) === value) {
+        window.history.replaceState(null, "", "/");
+        setTimeout(() => setOauthError(message), 0);
+        return;
+      }
+    }
+  }, [goToDashboard]);
+
+  // Someone who already has a session has no business on the login screen.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("oauth-code")) return; // still being exchanged above
+    if (hasSession()) goToDashboard();
+  }, [goToDashboard]);
 
   /** Calls the real login endpoint, then navigates on success. */
   const handleLogin = useCallback(
@@ -626,6 +706,7 @@ export function AuthForms({
           onSwitch={switchTo}
           onLogin={handleLogin}
           onRegister={handleRegister}
+          oauthError={oauthError}
         />
       ))}
     </div>

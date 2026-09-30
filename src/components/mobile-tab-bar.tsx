@@ -5,13 +5,15 @@ import {
   ExchangeIcon,
   GridIcon,
   ClockIcon,
+  GearIcon,
   SearchIcon,
 } from "./icons";
 
 /**
  * Mobile primary navigation (replaces the md-hidden sidebar on phones).
- * HIG: bottom tab bars are the standard mobile primary nav pattern; five
- * tabs with ≥44pt touch targets, icons + short labels.
+ * HIG: bottom tab bars are the standard mobile primary nav pattern; six
+ * tabs with ≥44pt touch targets, icons + short labels. Settings sits here
+ * too because the sidebar that carries it is hidden on phones.
  */
 const TABS: {
   label: string;
@@ -23,6 +25,7 @@ const TABS: {
   { label: "Discover", icon: SearchIcon, href: "/discover" },
   { label: "Exchange", icon: ExchangeIcon, href: "/exchange" },
   { label: "Activity", icon: ClockIcon, href: "/activity" },
+  { label: "Settings", icon: GearIcon, href: "/settings" },
 ];
 
 export function MobileTabBar({ activeItem = "Home" }: { activeItem?: string }) {
@@ -31,7 +34,7 @@ export function MobileTabBar({ activeItem = "Home" }: { activeItem?: string }) {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {TABS.map(({ label, icon: Icon, href }) => {
           const active = label === activeItem;
           return (
@@ -39,7 +42,7 @@ export function MobileTabBar({ activeItem = "Home" }: { activeItem?: string }) {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-[60px] min-w-[44px] flex-col items-center justify-center gap-1 text-[10.5px] font-medium transition-colors ${
+                className={`flex h-[60px] flex-col items-center justify-center gap-1 px-0.5 text-[10px] font-medium transition-colors ${
                   active ? "text-brand-700" : "text-gray-500"
                 }`}
               >

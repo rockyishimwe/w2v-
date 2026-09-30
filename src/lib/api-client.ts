@@ -22,6 +22,8 @@ export interface AuthSession {
     firstName: string;
     lastName: string;
     locale: string;
+    /** False for Google/Facebook accounts, which have no password. */
+    hasPassword: boolean;
   };
   accessToken: string;
   refreshToken: string;
@@ -55,7 +57,7 @@ export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_KEY);
 }
 
-function getRefreshToken(): string | null {
+export function getRefreshToken(): string | null {
   if (!storageAvailable()) return null;
   return localStorage.getItem(REFRESH_KEY);
 }

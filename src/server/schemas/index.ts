@@ -34,6 +34,29 @@ export const refreshSchema = z.object({
 
 export const logoutSchema = refreshSchema;
 
+/** POST /api/auth/me — profile edits from the Settings page. */
+export const updateProfileSchema = z
+  .object({
+    firstName: z.string().trim().min(1).max(60).optional(),
+    lastName: z.string().trim().min(1).max(60).optional(),
+    locale: localeSchema.optional(),
+  })
+  .refine(
+    (value) => Object.values(value).some((field) => field !== undefined),
+    "Nothing to update.",
+  );
+
+/** POST /api/auth/password — password change from the Settings page. */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1).max(128),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128)
+    .regex(/[a-zA-Z]/, "Password must contain a letter")
+    .regex(/[0-9]/, "Password must contain a number"),
+});
+
 /* ── AI ─────────────────────────────────────────────────────────── */
 
 const dataUrlImage = z

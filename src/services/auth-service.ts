@@ -8,6 +8,7 @@ import {
   api,
   clearSession,
   getAccessToken,
+  getRefreshToken,
   saveSession,
   type AuthSession,
 } from "@/lib/api-client";
@@ -41,12 +42,29 @@ export async function login(input: LoginInput): Promise<AuthSession> {
   return session;
 }
 
-/** Logs out server-side and clears the stored session. Idempotent. */
+/**
+ * Logs out server-side (revoking the refresh token) and clears the stored
+ * session. Idempotent, and the local session always goes even when the
+ * network call fails — an offline user must still be able to sign out.
+ */
 export async function logout(): Promise<void> {
+  const refreshToken = getRefreshToken();
   try {
-    await api.post("/api/auth/logout", { refreshToken: undefined });
+    if (refreshToken) {
+      await api.post("/api/auth/logout", { refreshToken });
+    }
   } catch {
     // Even if the server call fails, the local session must go.
+  }
+  clearSession();
+}
+
+/** Revokes the session on every device, then clears this one. */
+export async function logoutEverywhere(): Promise<void> {
+  try {
+    await api.post("/api/auth/logout-all");
+  } catch {
+    // Same reasoning as logout(): the local session must still go.
   }
   clearSession();
 }
@@ -62,9 +80,58 @@ export interface CurrentUser {
   firstName: string;
   lastName: string;
   locale: string;
+  /** False for Google/Facebook accounts, which have no password. */
+  hasPassword: boolean;
 }
 
 /** GET /api/auth/me — the signed-in user (throws when unauthenticated). */
-export function fetchCurrentUser(): Promise<CurrentUser> {
-  return api.get<CurrentUser>("/api/auth/me");
+export async function fetchCurrentUser(): Promise<CurrentUser> {
+  const { user } = await api.get<{ user: CurrentUser }>("/api/auth/me");
+  return user;
+}
+
+export interface UpdateProfileInput {
+  firstName?: string;
+  lastName?: string;
+  locale?: string;
+}
+
+/** POST /api/auth/me — saves profile edits from the Settings page. */
+export async function updateProfile(
+  input: UpdateProfileInput,
+): Promise<CurrentUser> {
+  const { user } = await api.post<{ user: CurrentUser }>("/api/auth/me", input);
+  return user;
+}
+
+/**
+ * POST /api/auth/password — changes the password. The server revokes all
+ * refresh tokens, so the caller is signed out locally afterwards.
+ */
+export async function changePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  await api.post("/api/auth/password", input);
+  clearSession();
+}
+
+/* ── OAuth (Continue with Facebook / Google) ─────────────────── */
+
+/**
+ * Starts the OAuth dance: full-page navigation to the backend, which
+ * 302s to the provider. The callback eventually lands back on /login
+ * with a ?oauth-code= that exchangeOAuthCode swaps for a session.
+ */
+export function startOAuth(provider: "facebook" | "google"): void {
+  window.location.href = `/api/auth/oauth/${provider}`;
+}
+
+/** POST /api/auth/oauth/exchange — swaps the one-time code for a session. */
+export async function exchangeOAuthCode(code: string): Promise<AuthSession> {
+  const session = await api.post<AuthSession>("/api/auth/oauth/exchange", {
+    code,
+  });
+  saveSession(session);
+  return session;
 }

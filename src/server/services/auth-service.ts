@@ -4,7 +4,7 @@
  * and rotated on every refresh (replay of an old token revokes the family).
  */
 import { prisma } from "../lib/prisma";
-import { badRequest, conflict, unauthorized } from "../lib/errors";
+import { badRequest, conflict, unauthorized, forbidden } from "../lib/errors";
 import {
   ACCESS_TOKEN_TTL_SECONDS,
   REFRESH_TOKEN_TTL_DAYS,
@@ -14,6 +14,12 @@ import {
   type AccessTokenPayload,
 } from "../lib/tokens";
 import { hashPassword, verifyPassword } from "../lib/password";
+import {
+  hashLoginCode,
+  newLoginCode,
+  type OAuthProvider,
+  type ProviderProfile,
+} from "../lib/oauth";
 
 export interface PublicUser {
   id: string;
@@ -21,6 +27,11 @@ export interface PublicUser {
   firstName: string;
   lastName: string;
   locale: string;
+  /**
+   * False for accounts created through Google/Facebook: they have no
+   * password, so the Settings page hides the password form for them.
+   */
+  hasPassword: boolean;
 }
 
 export interface AuthSession {
@@ -36,6 +47,7 @@ function toPublicUser(user: {
   firstName: string;
   lastName: string;
   locale: string;
+  passwordHash?: string | null;
 }): PublicUser {
   return {
     id: user.id,
@@ -43,6 +55,7 @@ function toPublicUser(user: {
     firstName: user.firstName,
     lastName: user.lastName,
     locale: user.locale,
+    hasPassword: Boolean(user.passwordHash),
   };
 }
 
@@ -52,6 +65,12 @@ export const authService = {
   refresh,
   logout,
   me,
+  updateProfile,
+  changePassword,
+  logoutAll,
+  oauthUpsertUser,
+  oauthCreateLoginCode,
+  oauthExchangeCode,
 };
 
 async function issueSession(user: {
@@ -123,6 +142,14 @@ export async function login(input: {
     throw unauthorized("Invalid email or password.");
   }
 
+  // OAuth-only accounts have no password — point them at their provider.
+  if (!user.passwordHash) {
+    const provider = user.oauthProvider === "google" ? "Google" : "Facebook";
+    throw unauthorized(
+      `This email is registered with ${provider}. Continue with ${provider} to sign in.`,
+    );
+  }
+
   const valid = await verifyPassword(input.password, user.passwordHash);
   if (!valid) {
     throw unauthorized("Invalid email or password.");
@@ -178,4 +205,147 @@ export async function me(userId: string): Promise<PublicUser> {
     throw badRequest("Account no longer exists.");
   }
   return toPublicUser(user);
+}
+
+/** Updates the editable parts of a profile (Settings page). */
+export async function updateProfile(
+  userId: string,
+  input: { firstName?: string; lastName?: string; locale?: string },
+): Promise<PublicUser> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw badRequest("Account no longer exists.");
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(input.firstName !== undefined ? { firstName: input.firstName } : {}),
+      ...(input.lastName !== undefined ? { lastName: input.lastName } : {}),
+      ...(input.locale !== undefined ? { locale: input.locale } : {}),
+    },
+  });
+  return toPublicUser(updated);
+}
+
+/**
+ * Changes the password after re-verifying the current one, then revokes
+ * every refresh token so other devices must sign in again.
+ */
+export async function changePassword(
+  userId: string,
+  input: { currentPassword: string; newPassword: string },
+): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw badRequest("Account no longer exists.");
+  }
+  if (!user.passwordHash) {
+    throw badRequest(
+      "This account signs in with Google or Facebook, so it has no password to change.",
+    );
+  }
+
+  const valid = await verifyPassword(input.currentPassword, user.passwordHash);
+  if (!valid) {
+    throw unauthorized("Your current password is incorrect.");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: await hashPassword(input.newPassword) },
+  });
+  await logoutAll(userId);
+}
+
+/** Revokes every active refresh token of a user ("sign out everywhere"). */
+export async function logoutAll(userId: string): Promise<void> {
+  await prisma.refreshToken.updateMany({
+    where: { userId, revoked: false },
+    data: { revoked: true },
+  });
+}
+
+/* ── OAuth (Facebook / Google) ─────────────────────────────────── */
+
+/**
+ * Finds or creates the user for an OAuth profile. When an email account
+ * already exists (registered with password), the OAuth identity is
+ * linked to it — Facebook/Google-verified emails are trusted.
+ */
+export async function oauthUpsertUser(
+  provider: OAuthProvider,
+  profile: ProviderProfile,
+): Promise<PublicUser> {
+  // 1. Existing OAuth identity → straight in.
+  const linked = await prisma.user.findFirst({
+    where: { oauthProvider: provider, oauthId: profile.oauthId },
+  });
+  if (linked) return toPublicUser(linked);
+
+  // 2. Existing email account → link the OAuth identity to it.
+  const byEmail = await prisma.user.findUnique({
+    where: { email: profile.email },
+  });
+  if (byEmail) {
+    const updated = await prisma.user.update({
+      where: { id: byEmail.id },
+      data: { oauthProvider: provider, oauthId: profile.oauthId },
+    });
+    return toPublicUser(updated);
+  }
+
+  // 3. New user — passwordless (passwordHash stays null).
+  const created = await prisma.user.create({
+    data: {
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      oauthProvider: provider,
+      oauthId: profile.oauthId,
+    },
+  });
+  return toPublicUser(created);
+}
+
+/** Creates a short-lived one-time login code for a just-authenticated user. */
+export async function oauthCreateLoginCode(userId: string): Promise<string> {
+  const { code, hash } = newLoginCode();
+  await prisma.oAuthLoginCode.create({
+    data: {
+      code: hash,
+      userId,
+      expiresAt: new Date(Date.now() + 120_000), // 2 minutes
+    },
+  });
+  return code;
+}
+
+/**
+ * Consumes a one-time login code and issues the real JWT session.
+ * Codes are single-use: replay is rejected.
+ */
+export async function oauthExchangeCode(code: string): Promise<AuthSession> {
+  const hash = hashLoginCode(code);
+  const stored = await prisma.oAuthLoginCode.findUnique({
+    where: { code: hash },
+    include: { user: true },
+  });
+
+  if (!stored || stored.usedAt || stored.expiresAt < new Date()) {
+    throw forbidden("This login link has expired. Please try again.");
+  }
+
+  await prisma.oAuthLoginCode.update({
+    where: { code: hash },
+    data: { usedAt: new Date() },
+  });
+
+  return issueSession({
+    id: stored.user.id,
+    email: stored.user.email,
+    firstName: stored.user.firstName,
+    lastName: stored.user.lastName,
+    locale: stored.user.locale,
+  });
 }

@@ -19,10 +19,14 @@ datasource db {
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
-  passwordHash String
+  passwordHash String? // null for OAuth-only accounts
   firstName    String
   lastName     String
   locale       String   @default("en") // rw | en | fr
+  /** "facebook" | "google" when the account signs in via OAuth. */
+  oauthProvider String?
+  /** Provider's stable user id (unique per provider). */
+  oauthId      String?
   createdAt    DateTime @default(now())
 
   refreshTokens   RefreshToken[]
@@ -30,6 +34,9 @@ model User {
   activityEntries ActivityEntry[]
   listings        ExchangeListing[]
   assistantMessages AssistantMessage[]
+  oauthLoginCodes OAuthLoginCode[]
+
+  @@unique([oauthProvider, oauthId])
 }
 model RefreshToken {
   id        String   @id @default(cuid())
@@ -152,4 +159,18 @@ model IdempotencyRecord {
   createdAt   DateTime @default(now())
 
   @@index([userId, endpoint])
+}
+
+/**
+ * Short-lived one-time codes handed to the frontend after a successful
+ * OAuth callback. Exchanged (POST /api/auth/oauth/exchange) for the real
+ * JWT session — keeps provider tokens out of the browser entirely.
+ */
+model OAuthLoginCode {
+  code      String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
 }

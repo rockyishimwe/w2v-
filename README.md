@@ -136,9 +136,28 @@ curl -X POST http://localhost:3000/api/auth/refresh \
 
 # Me
 curl http://localhost:3000/api/auth/me -H "Authorization: Bearer <accessToken>"
+# → { user: { id, email, firstName, lastName, locale, hasPassword } }
+
+# Update the profile (Settings page: name + preferred language)
+curl -X POST http://localhost:3000/api/auth/me   -H "Authorization: Bearer <accessToken>"   -H "Content-Type: application/json"   -d '{"firstName":"Vanessa","lastName":"Uwase","locale":"rw"}'
+
+# Change the password (revokes every refresh token — log in again)
+curl -X POST http://localhost:3000/api/auth/password   -H "Authorization: Bearer <accessToken>"   -H "Content-Type: application/json"   -d '{"currentPassword":"Password123","newPassword":"NewPassword123"}'
+
+# Log out (revokes one refresh token)
+curl -X POST http://localhost:3000/api/auth/logout   -H "Content-Type: application/json" -d '{"refreshToken":"<refreshToken>"}'
+
+# Log out on all devices
+curl -X POST http://localhost:3000/api/auth/logout-all   -H "Authorization: Bearer <accessToken>"
 ```
 
 Session shape: `{ user, accessToken, refreshToken, expiresIn }`.
+`user.hasPassword` is `false` for Google/Facebook accounts, which is how the
+Settings page knows to hide the password form.
+
+Every signed-in page is wrapped in `AuthGuard`, which needs a stored token to
+render and verifies it against `GET /api/auth/me`; a missing token sends the
+visitor to `/?redirected=1`, a rejected one to `/?expired=1`.
 
 ### AI (Groq)
 

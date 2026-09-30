@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
@@ -12,6 +16,8 @@ import {
   SearchIcon,
 } from "./icons";
 import { AvatarArt } from "./dashboard-art";
+import { logout } from "@/services/auth-service";
+import { clearCurrentUser, useCurrentUser } from "@/hooks/use-current-user";
 
 const NAV_ITEMS: {
   label: string;
@@ -57,6 +63,19 @@ export function DashboardSidebar({
 }: {
   activeItem?: string;
 }) {
+  const router = useRouter();
+  const { user } = useCurrentUser();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await logout();
+    clearCurrentUser();
+    router.replace("/");
+  }
+
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "Your account";
+
   return (
     <aside className="sticky top-0 hidden h-dvh w-[234px] shrink-0 self-start flex-col rounded-r-[42px] bg-white shadow-[5px_0_22px_rgba(17,24,39,0.025)] md:flex">
       <div className="flex flex-col items-center px-6 pb-6 pt-9">
@@ -86,20 +105,20 @@ export function DashboardSidebar({
       <div className="mx-8 my-5 h-px bg-gray-200" />
 
       <nav aria-label="Secondary" className="space-y-1.5 px-[18px]">
-        {/* No settings/logout pages yet — render as inert buttons, not fake links. */}
+        <NavItem
+          label="Settings"
+          icon={GearIcon}
+          href="/settings"
+          active={activeItem === "Settings"}
+        />
         <button
           type="button"
-          className="flex h-[46px] w-full items-center gap-3.5 rounded-full px-4 text-left text-[14px] font-medium text-gray-900 transition-colors hover:bg-brand-50"
-        >
-          <GearIcon className="h-[22px] w-[22px]" />
-          Settings
-        </button>
-        <button
-          type="button"
-          className="flex h-[46px] w-full items-center gap-3.5 rounded-full px-4 text-left text-[14px] font-medium text-gray-900 transition-colors hover:bg-brand-50"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="flex h-[46px] w-full items-center gap-3.5 rounded-full px-4 text-left text-[14px] font-medium text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
         >
           <LogoutIcon className="h-[22px] w-[22px]" />
-          Logout
+          {loggingOut ? "Logging out…" : "Logout"}
         </button>
       </nav>
 
@@ -110,18 +129,18 @@ export function DashboardSidebar({
             <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-brand-500" />
           </span>
           <p className="mt-3 text-[13.5px] font-semibold text-gray-900">
-            Vanessa Mwiza
+            {fullName}
           </p>
-          <p className="mt-0.5 text-[11.5px] text-gray-500">
-            vanessa@gmail.com
+          <p className="mt-0.5 max-w-full truncate text-[11.5px] text-gray-500">
+            {user?.email ?? " "}
           </p>
-          <button
-            type="button"
-            aria-label="Account menu"
+          <Link
+            href="/settings"
+            aria-label="Account settings"
             className="mt-2 text-gray-700 transition-colors hover:text-gray-900"
           >
             <ChevronDownIcon className="h-5 w-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </aside>
