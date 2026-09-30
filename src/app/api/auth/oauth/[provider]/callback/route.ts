@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   const base = appUrl();
 
   try {
-    if (provider !== "facebook" && provider !== "google") {
+    if (provider !== "google") {
       return NextResponse.redirect(`${base}/?oauth=invalid`);
     }
 

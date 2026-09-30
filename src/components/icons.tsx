@@ -203,18 +203,6 @@ export function GoogleIcon({ className }: IconProps) {
   );
 }
 
-export function FacebookIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="#1877F2" />
-      <path
-        fill="#fff"
-        d="M15.5 12.5h-2.25V19h-2.75v-6.5H8.75v-2.5h1.75V8.4c0-1.9 1.13-2.9 2.86-2.9.82 0 1.64.14 1.64.14v2.05h-.92c-.91 0-1.2.57-1.2 1.15v1.66h2.12l-.5 2.5Z"
-      />
-    </svg>
-  );
-}
-
 export function GridIcon({ className }: IconProps) {
   return (
     <svg

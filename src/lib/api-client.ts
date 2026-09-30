@@ -22,7 +22,7 @@ export interface AuthSession {
     firstName: string;
     lastName: string;
     locale: string;
-    /** False for Google/Facebook accounts, which have no password. */
+    /** False for Google accounts, which have no password. */
     hasPassword: boolean;
   };
   accessToken: string;

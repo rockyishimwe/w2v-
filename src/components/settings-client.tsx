@@ -175,7 +175,7 @@ export function SettingsClient() {
     router.replace("/");
   }
 
-  // Google/Facebook accounts have no password to change.
+  // Google accounts have no password to change.
   const isOAuthAccount = user !== null && !user.hasPassword;
 
   return (
@@ -198,7 +198,7 @@ export function SettingsClient() {
           <button
             type="button"
             aria-label="Notifications"
-            className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
+            className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
           >
             <BellIcon className="h-5 w-5" />
             <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
@@ -305,7 +305,7 @@ export function SettingsClient() {
           {isOAuthAccount ? (
             <SettingsCard
               title="Password"
-              description="This account signs in with Google or Facebook."
+              description="This account signs in with Google."
               icon={LockIcon}
             >
               <p className="text-[13.5px] leading-relaxed text-gray-600">
@@ -436,7 +436,7 @@ export function SettingsClient() {
                 type="button"
                 onClick={() => handleSignOut(false)}
                 disabled={signingOut}
-                className="flex h-[48px] w-full items-center justify-center gap-2 rounded-full border border-gray-200 bg-white text-[14px] font-semibold text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
+                className="flex h-[48px] mx-auto w-[min(240px,100%)] items-center justify-center gap-2 rounded-full border border-gray-200 bg-white text-[14px] font-semibold text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
               >
                 <LogoutIcon className="h-[18px] w-[18px]" />
                 {signingOut ? "Signing out…" : "Log out"}
@@ -445,7 +445,7 @@ export function SettingsClient() {
                 type="button"
                 onClick={() => handleSignOut(true)}
                 disabled={signingOut}
-                className="flex h-[48px] w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-white text-[14px] font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
+                className="flex h-[48px] mx-auto w-[min(240px,100%)] items-center justify-center gap-2 rounded-full border border-red-200 bg-white text-[14px] font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
               >
                 <ShieldIcon className="h-[18px] w-[18px]" />
                 Log out on all devices

@@ -46,7 +46,7 @@ export function CameraHeader() {
         <button
           type="button"
           aria-label="Notifications"
-          className="relative flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-white text-gray-900 shadow-[0_6px_16px_rgba(17,24,39,0.04)]"
+          className="relative flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-white text-gray-900 shadow-[0_6px_16px_rgba(17,24,39,0.04)]"
         >
           <BellIcon className="h-5 w-5" />
           <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
@@ -159,7 +159,7 @@ export function CameraChatButton() {
   return (
     <Link
       href="/assistant"
-      className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-5 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
+      className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-3 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
     >
       <BotIcon className="h-6 w-6" />
       Chat

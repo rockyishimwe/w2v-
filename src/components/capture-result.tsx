@@ -45,7 +45,7 @@ export function CaptureResult() {
             </p>
             <Link
               href="/scanner/take-photo"
-              className="mt-2 flex h-11 items-center justify-center rounded-xl bg-brand-700 px-6 text-[14px] font-semibold text-white transition-colors hover:bg-brand-800"
+              className="mt-2 flex h-11 items-center justify-center rounded-xl bg-brand-700 px-3 text-[14px] font-semibold text-white transition-colors hover:bg-brand-800"
             >
               Take a photo
             </Link>
@@ -56,13 +56,13 @@ export function CaptureResult() {
       <div className="mt-7 flex flex-wrap justify-end gap-3">
         <Link
           href="/scanner/take-photo"
-          className="flex h-12 items-center justify-center rounded-xl border border-brand-500 px-6 text-[14px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+          className="flex h-12 items-center justify-center rounded-xl border border-brand-500 px-3 text-[14px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
         >
           Retake photo
         </Link>
         <Link
           href="/scanner/result"
-          className="flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-700 px-6 text-[14px] font-semibold text-white transition-colors hover:bg-brand-800"
+          className="flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-700 px-3 text-[14px] font-semibold text-white transition-colors hover:bg-brand-800"
         >
           <LightbulbIcon className="h-5 w-5" />
           Use this photo

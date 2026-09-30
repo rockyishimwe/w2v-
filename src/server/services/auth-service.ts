@@ -28,7 +28,7 @@ export interface PublicUser {
   lastName: string;
   locale: string;
   /**
-   * False for accounts created through Google/Facebook: they have no
+   * False for accounts created through Google: they have no
    * password, so the Settings page hides the password form for them.
    */
   hasPassword: boolean;
@@ -144,9 +144,8 @@ export async function login(input: {
 
   // OAuth-only accounts have no password — point them at their provider.
   if (!user.passwordHash) {
-    const provider = user.oauthProvider === "google" ? "Google" : "Facebook";
     throw unauthorized(
-      `This email is registered with ${provider}. Continue with ${provider} to sign in.`,
+      "This email is registered with Google. Continue with Google to sign in.",
     );
   }
 
@@ -242,7 +241,7 @@ export async function changePassword(
   }
   if (!user.passwordHash) {
     throw badRequest(
-      "This account signs in with Google or Facebook, so it has no password to change.",
+      "This account signs in with Google, so it has no password to change.",
     );
   }
 
@@ -266,12 +265,12 @@ export async function logoutAll(userId: string): Promise<void> {
   });
 }
 
-/* ── OAuth (Facebook / Google) ─────────────────────────────────── */
+/* ── OAuth (Google) ────────────────────────────────────────────── */
 
 /**
  * Finds or creates the user for an OAuth profile. When an email account
  * already exists (registered with password), the OAuth identity is
- * linked to it — Facebook/Google-verified emails are trusted.
+ * linked to it — Google-verified emails are trusted.
  */
 export async function oauthUpsertUser(
   provider: OAuthProvider,

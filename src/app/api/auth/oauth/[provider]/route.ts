@@ -17,28 +17,26 @@ export async function OPTIONS(request: NextRequest) {
 
 /**
  * GET /api/auth/oauth/[provider] — starts the OAuth dance: redirects to
- * Facebook/Google with a CSRF state value also stored in an httpOnly
+ * Google with a CSRF state value also stored in an httpOnly
  * cookie (compared on callback). Unknown provider → 404-ish error page.
  */
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { provider } = await params;
-    if (provider !== "facebook" && provider !== "google") {
+    if (provider !== "google") {
       return NextResponse.redirect(`${appUrl()}/?oauth=invalid`);
     }
 
     const state = createState();
-    const config = providerConfig(provider);
+    const config = providerConfig();
 
     const authorizeUrl = new URL(config.authorizeUrl);
     authorizeUrl.searchParams.set("client_id", config.clientId);
     authorizeUrl.searchParams.set("redirect_uri", redirectUri(provider));
     authorizeUrl.searchParams.set("state", state);
-    if (provider === "google") {
-      authorizeUrl.searchParams.set("response_type", "code");
-      authorizeUrl.searchParams.set("access_type", "offline");
-      authorizeUrl.searchParams.set("prompt", "select_account");
-    }
+    authorizeUrl.searchParams.set("response_type", "code");
+    authorizeUrl.searchParams.set("access_type", "offline");
+    authorizeUrl.searchParams.set("prompt", "select_account");
     authorizeUrl.searchParams.set("scope", config.scope);
 
     const response = NextResponse.redirect(authorizeUrl.toString());

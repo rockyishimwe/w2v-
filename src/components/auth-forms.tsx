@@ -6,7 +6,6 @@ import {
   ArrowRightIcon,
   EyeIcon,
   EyeOffIcon,
-  FacebookIcon,
   GoogleIcon,
   LeafMark,
   LockIcon,
@@ -162,22 +161,14 @@ function SocialButtons({ dividerText }: { dividerText: string }) {
         <span className="h-px flex-1 bg-gray-200" />
       </div>
 
-      <div className="mx-auto grid w-[min(420px,100%)] grid-cols-2 gap-5">
+      <div className="mx-auto w-[min(240px,100%)]">
         <button
           type="button"
           onClick={() => startOAuth("google")}
-          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
+          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
         >
           <GoogleIcon className="h-4 w-4" />
           Google
-        </button>
-        <button
-          type="button"
-          onClick={() => startOAuth("facebook")}
-          className="flex h-[clamp(2.1rem,4.4vh,2.5rem)] items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-[clamp(0.72rem,1.6vh,0.8125rem)] font-medium text-gray-900 transition-colors hover:border-brand-400"
-        >
-          <FacebookIcon className="h-4 w-4" />
-          Facebook
         </button>
       </div>
     </>
@@ -198,7 +189,7 @@ function AuthButton({
       type="submit"
       onClick={onClick}
       disabled={busy}
-      className="mx-auto flex h-[clamp(2.75rem,6.2vh,3.5rem)] w-[min(420px,100%)] items-center justify-center gap-2 rounded-full bg-brand-700 text-[clamp(0.8rem,1.8vh,0.9rem)] font-medium text-white shadow-[0_14px_28px_rgba(20,92,54,0.35)] transition-colors hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-70"
+      className="mx-auto flex h-[clamp(2.75rem,6.2vh,3.5rem)] w-[min(240px,100%)] items-center justify-center gap-2 rounded-full bg-brand-700 text-[clamp(0.8rem,1.8vh,0.9rem)] font-medium text-white shadow-[0_14px_28px_rgba(20,92,54,0.35)] transition-colors hover:bg-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-70"
     >
       {children}
       {busy ? (

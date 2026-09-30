@@ -46,13 +46,13 @@ function NavItem({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex h-[46px] items-center gap-3.5 rounded-full px-4 text-[14px] font-medium transition-colors ${
+      className={`flex h-[40px] items-center gap-3 rounded-full px-3 text-[13.5px] font-medium transition-colors ${
         active
           ? "bg-[#237f22] text-white shadow-[0_10px_18px_rgba(20,92,54,0.28)]"
           : "text-gray-900 hover:bg-brand-50"
       }`}
     >
-      <Icon className="h-[22px] w-[22px]" />
+      <Icon className="h-5 w-5" />
       {label}
     </Link>
   );
@@ -115,9 +115,9 @@ export function DashboardSidebar({
           type="button"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="flex h-[46px] w-full items-center gap-3.5 rounded-full px-4 text-left text-[14px] font-medium text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
+          className="flex h-[40px] w-full items-center gap-3 rounded-full px-3 text-left text-[13.5px] font-medium text-gray-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
         >
-          <LogoutIcon className="h-[22px] w-[22px]" />
+          <LogoutIcon className="h-5 w-5" />
           {loggingOut ? "Logging out…" : "Logout"}
         </button>
       </nav>

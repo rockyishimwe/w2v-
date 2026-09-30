@@ -160,7 +160,7 @@ export function DiyGuideClient({ ideaId }: { ideaId?: string }) {
         </p>
         <Link
           href="/discover"
-          className="flex h-11 items-center rounded-xl bg-brand-700 px-6 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
+          className="flex h-11 items-center rounded-xl bg-brand-700 px-3 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
         >
           Browse ideas
         </Link>
@@ -246,14 +246,14 @@ function DiyHeroCard({ guide }: { guide: DiyGuidePayload }) {
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
-              className="flex h-[52px] items-center gap-2.5 rounded-2xl bg-brand-700 px-7 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
+              className="flex h-[52px] items-center gap-2.5 rounded-2xl bg-brand-700 px-3 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
             >
               <PlayIcon className="h-6 w-6" />
               Start DIY
             </button>
             <button
               type="button"
-              className="flex h-[52px] items-center gap-2.5 rounded-2xl border border-brand-500 bg-white px-7 text-[14.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+              className="flex h-[52px] items-center gap-2.5 rounded-2xl border border-brand-500 bg-white px-3 text-[14.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
             >
               <BookmarkIcon className="h-5 w-5" />
               Save Idea

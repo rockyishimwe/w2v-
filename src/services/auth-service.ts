@@ -80,7 +80,7 @@ export interface CurrentUser {
   firstName: string;
   lastName: string;
   locale: string;
-  /** False for Google/Facebook accounts, which have no password. */
+  /** False for Google accounts, which have no password. */
   hasPassword: boolean;
 }
 
@@ -116,14 +116,14 @@ export async function changePassword(input: {
   clearSession();
 }
 
-/* ── OAuth (Continue with Facebook / Google) ─────────────────── */
+/* ── OAuth (Continue with Google) ────────────────────────────── */
 
 /**
  * Starts the OAuth dance: full-page navigation to the backend, which
  * 302s to the provider. The callback eventually lands back on /login
  * with a ?oauth-code= that exchangeOAuthCode swaps for a session.
  */
-export function startOAuth(provider: "facebook" | "google"): void {
+export function startOAuth(provider: "google"): void {
   window.location.href = `/api/auth/oauth/${provider}`;
 }
 

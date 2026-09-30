@@ -141,7 +141,7 @@ export function DiyShareCard() {
           </p>
           <button
             type="button"
-            className="mt-3 flex h-10 items-center gap-2 rounded-xl border border-brand-500 bg-white px-4 text-[13px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+            className="mt-3 flex h-10 items-center gap-2 rounded-xl border border-brand-500 bg-white px-3 text-[13px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
             <ShareIcon className="h-4 w-4" />
             Share

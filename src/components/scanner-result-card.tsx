@@ -124,7 +124,7 @@ export function ScannerResultCard() {
         <p className="text-[14.5px] font-semibold text-gray-900">{error}</p>
         <a
           href="/scanner"
-          className="flex h-11 items-center rounded-xl bg-brand-700 px-6 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
+          className="flex h-11 items-center rounded-xl bg-brand-700 px-3 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-800"
         >
           Back to scanner
         </a>

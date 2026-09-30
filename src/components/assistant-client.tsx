@@ -100,7 +100,7 @@ export function AssistantClient() {
           <button
             type="button"
             aria-label="Notifications"
-            className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
+            className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
           >
             <BellIcon className="h-5 w-5" />
             <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
@@ -151,7 +151,7 @@ export function AssistantClient() {
             type="submit"
             aria-label="Send message"
             disabled={!draft.trim()}
-            className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <SendIcon className="h-5 w-5" />
           </button>
@@ -189,7 +189,7 @@ function MessageList({
                 key={chip.label}
                 type="button"
                 onClick={() => onChip(chip)}
-                className="flex h-[54px] items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 text-[13.5px] font-semibold text-gray-900 shadow-[0_6px_14px_rgba(17,24,39,0.04)] transition-colors hover:border-brand-300 hover:bg-brand-50"
+                className="flex h-[54px] items-center gap-3 rounded-2xl border border-gray-100 bg-white px-3 text-[13.5px] font-semibold text-gray-900 shadow-[0_6px_14px_rgba(17,24,39,0.04)] transition-colors hover:border-brand-300 hover:bg-brand-50"
               >
                 <ChipIcon className="h-4.5 w-4.5 shrink-0 text-gray-800" />
                 <span className="truncate">{chip.label}</span>

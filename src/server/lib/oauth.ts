@@ -1,8 +1,8 @@
 /**
- * OAuth helpers for "Continue with Facebook / Google".
+ * OAuth helpers for "Continue with Google".
  *
  * Flow (authorization-code with CSRF state cookie):
- *   1. GET  /api/auth/oauth/facebook|google → 302 to the provider with a
+ *   1. GET  /api/auth/oauth/google → 302 to the provider with a
  *      random `state` also stored in an httpOnly cookie
  *   2. provider redirects back to /api/auth/oauth/<provider>/callback
  *   3. callback verifies the state cookie, exchanges the code for tokens,
@@ -20,7 +20,7 @@ import { logger } from "./logger";
 
 /* ── Provider configuration ─────────────────────────────────────── */
 
-export type OAuthProvider = "facebook" | "google";
+export type OAuthProvider = "google";
 
 export interface ProviderProfile {
   /** Stable id at the provider. */
@@ -28,32 +28,17 @@ export interface ProviderProfile {
   email: string;
   firstName: string;
   lastName: string;
-  /** Verified email at the provider (Google) or via app review (FB). */
+  /** Verified email at the provider. */
   emailVerified: boolean;
 }
 
-export function providerConfig(provider: OAuthProvider): {
+export function providerConfig(): {
   clientId: string;
   clientSecret: string;
   authorizeUrl: string;
   tokenUrl: string;
   scope: string;
 } {
-  if (provider === "facebook") {
-    const clientId = process.env.FACEBOOK_APP_ID;
-    const clientSecret = process.env.FACEBOOK_APP_SECRET;
-    if (!clientId || !clientSecret) {
-      throw unauthorized("Facebook login is not configured on this server.");
-    }
-    return {
-      clientId,
-      clientSecret,
-      authorizeUrl: "https://www.facebook.com/v21.0/dialog/oauth",
-      tokenUrl: "https://graph.facebook.com/v21.0/oauth/access_token",
-      scope: "email public_profile",
-    };
-  }
-
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
@@ -68,12 +53,7 @@ export function providerConfig(provider: OAuthProvider): {
   };
 }
 
-export function isProviderEnabled(provider: OAuthProvider): boolean {
-  if (provider === "facebook") {
-    return Boolean(
-      process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET,
-    );
-  }
+export function isProviderEnabled(): boolean {
   return Boolean(
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
   );
@@ -127,7 +107,7 @@ export async function exchangeCodeForToken(
   provider: OAuthProvider,
   code: string,
 ): Promise<string> {
-  const config = providerConfig(provider);
+  const config = providerConfig();
   const body = new URLSearchParams({
     code,
     client_id: config.clientId,
@@ -153,32 +133,6 @@ export async function fetchProviderProfile(
   provider: OAuthProvider,
   accessToken: string,
 ): Promise<ProviderProfile> {
-  if (provider === "facebook") {
-    const profile = (await fetchJson(
-      `https://graph.facebook.com/me?fields=id,first_name,last_name,email&access_token=${encodeURIComponent(accessToken)}`,
-    )) as {
-      id: string;
-      first_name?: string;
-      last_name?: string;
-      email?: string;
-    };
-
-    if (!profile.email) {
-      throw unauthorized(
-        "Your Facebook account has no email we can use. Please sign up with email instead.",
-      );
-    }
-    return {
-      oauthId: profile.id,
-      email: profile.email.toLowerCase(),
-      firstName: profile.first_name?.trim() || "Facebook",
-      lastName: profile.last_name?.trim() || "User",
-      // Facebook only shares a verified email after app review; treat as
-      // verified only when the app is out of dev mode.
-      emailVerified: false,
-    };
-  }
-
   const profile = (await fetchJson(
     `https://openidconnect.googleapis.com/v1/userinfo?access_token=${encodeURIComponent(accessToken)}`,
   )) as {

@@ -169,7 +169,7 @@ export function DiscoverClient() {
           <button
             type="button"
             aria-label="Notifications"
-            className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
+            className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
           >
             <BellIcon className="h-5 w-5" />
             <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
@@ -206,7 +206,7 @@ export function DiscoverClient() {
                 </p>
                 <Link
                   href="/scanner"
-                  className="mt-6 flex h-[48px] items-center gap-2.5 rounded-full bg-brand-700 px-6 text-[14px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
+                  className="mt-6 flex h-[48px] items-center gap-2.5 rounded-full bg-brand-700 px-3 text-[14px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
                 >
                   {DISCOVER_HERO.cta}
                   <ChevronRightIcon className="h-4 w-4" />
@@ -336,7 +336,7 @@ export function DiscoverClient() {
                   <Link
                     key={term}
                     href="/scanner"
-                    className="flex h-[38px] items-center gap-2 rounded-full bg-pale-green px-4 text-[12.5px] font-semibold text-gray-700 transition-colors hover:bg-brand-100 hover:text-brand-700"
+                    className="flex h-[38px] items-center gap-2 rounded-full bg-pale-green px-3 text-[12.5px] font-semibold text-gray-700 transition-colors hover:bg-brand-100 hover:text-brand-700"
                   >
                     <SearchIcon className="h-3.5 w-3.5 text-brand-700" />
                     {term}
@@ -366,7 +366,7 @@ export function DiscoverClient() {
                   </p>{" "}
                   <Link
                     href="/assistant"
-                    className="mt-3 flex h-[44px] items-center gap-2.5 rounded-full bg-brand-700 px-5 text-[13.5px] font-semibold text-white shadow-[0_8px_18px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
+                    className="mt-3 flex h-[44px] items-center gap-2.5 rounded-full bg-brand-700 px-3 text-[13.5px] font-semibold text-white shadow-[0_8px_18px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
                   >
                     <ChatSolidIcon className="h-4.5 w-4.5" />
                     {ASSISTANT_CARD.cta}
@@ -382,7 +382,7 @@ export function DiscoverClient() {
       {/* Chat FAB */}
       <Link
         href="/assistant"
-        className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-5 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
+        className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-3 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
       >
         <ChatSolidIcon className="h-5 w-5" />
         Chat
@@ -438,7 +438,7 @@ function RecyclingTipsCard({ onToast }: { onToast: (m: string) => void }) {
             type="button"
             onClick={() => loadTips(option)}
             aria-pressed={material === option}
-            className={`flex h-[38px] items-center rounded-full px-4 text-[12.5px] font-semibold transition-colors ${
+            className={`flex h-[38px] items-center rounded-full px-3 text-[12.5px] font-semibold transition-colors ${
               material === option
                 ? "bg-brand-700 text-white shadow-[0_6px_14px_rgba(20,92,54,0.25)]"
                 : "bg-pale-green text-gray-700 hover:bg-brand-100 hover:text-brand-700"
@@ -526,7 +526,7 @@ function IdeaRailCard({
               type="button"
               onClick={onEmptyAction}
               disabled={emptyActionBusy}
-              className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
+              className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
             >
               {emptyActionLabel ?? "Generate idea"}
             </button>
@@ -534,7 +534,7 @@ function IdeaRailCard({
             <button
               type="button"
               onClick={onReset}
-              className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
+              className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
             >
               Show all categories
             </button>

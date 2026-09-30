@@ -234,7 +234,7 @@ export function ExchangeClient() {
           <button
             type="button"
             aria-label="Notifications"
-            className="relative flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
+            className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
           >
             <BellIcon className="h-5 w-5" />
             <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
@@ -397,7 +397,7 @@ export function ExchangeClient() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
+                  className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
                 >
                   Retry
                 </button>
@@ -414,7 +414,7 @@ export function ExchangeClient() {
                 <button
                   type="button"
                   onClick={() => setShowCreate(true)}
-                  className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
+                  className="mt-1 flex h-10 items-center rounded-xl bg-brand-700 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
                 >
                   Create the first listing
                 </button>
@@ -495,7 +495,7 @@ export function ExchangeClient() {
       {/* Chat FAB */}
       <Link
         href="/assistant"
-        className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-5 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
+        className="fixed bottom-24 right-4 z-10 flex h-[48px] items-center gap-3 rounded-full bg-brand-700 px-3 text-[14.5px] font-semibold text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 md:bottom-6 md:right-9"
       >
         <svg
           viewBox="0 0 24 24"
@@ -754,7 +754,7 @@ function PostMaterialCard({ onCreate }: { onCreate: () => void }) {
       <button
         type="button"
         onClick={onCreate}
-        className="mt-4 flex h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl bg-brand-700 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
+        className="mt-4 flex h-[52px] mx-auto w-[min(240px,100%)] items-center justify-center gap-2.5 rounded-2xl bg-brand-700 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800"
       >
         <PlusIcon className="h-5 w-5" />
         Create Listing
@@ -1004,7 +1004,7 @@ function CreateListingForm({
           <button
             type="submit"
             disabled={busy}
-            className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl bg-brand-700 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800 disabled:opacity-60"
+            className="flex h-[52px] mx-auto w-[min(240px,100%)] items-center justify-center gap-2.5 rounded-2xl bg-brand-700 text-[14.5px] font-semibold text-white shadow-[0_10px_22px_rgba(20,92,54,0.28)] transition-colors hover:bg-brand-800 disabled:opacity-60"
           >
             {busy ? "Posting…" : "Post listing"}
           </button>
@@ -1030,7 +1030,7 @@ function FilterPill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex h-[38px] items-center rounded-full px-4 text-[12.5px] font-semibold transition-colors ${
+      className={`flex h-[38px] items-center rounded-full px-3 text-[12.5px] font-semibold transition-colors ${
         active
           ? "bg-brand-700 text-white shadow-[0_6px_14px_rgba(20,92,54,0.25)]"
           : "border border-gray-100 bg-white text-gray-700 hover:border-brand-300"

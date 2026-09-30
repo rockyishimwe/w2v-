@@ -62,7 +62,7 @@ describe("oauthUpsertUser", () => {
       locale: "en",
     });
 
-    const user = await oauthUpsertUser("facebook", profile);
+    const user = await oauthUpsertUser("google", profile);
 
     expect(user.id).toBe("u1");
     expect(db.user.create).not.toHaveBeenCalled();
@@ -87,13 +87,13 @@ describe("oauthUpsertUser", () => {
       locale: "en",
     });
 
-    const user = await oauthUpsertUser("facebook", profile);
+    const user = await oauthUpsertUser("google", profile);
 
     expect(user.id).toBe("u2");
     expect(db.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: "u2" },
-        data: { oauthProvider: "facebook", oauthId: "fb-123" },
+        data: { oauthProvider: "google", oauthId: "fb-123" },
       }),
     );
     expect(db.user.create).not.toHaveBeenCalled();

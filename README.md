@@ -152,7 +152,7 @@ curl -X POST http://localhost:3000/api/auth/logout-all   -H "Authorization: Bear
 ```
 
 Session shape: `{ user, accessToken, refreshToken, expiresIn }`.
-`user.hasPassword` is `false` for Google/Facebook accounts, which is how the
+`user.hasPassword` is `false` for Google accounts, which is how the
 Settings page knows to hide the password form.
 
 Every signed-in page is wrapped in `AuthGuard`, which needs a stored token to
