@@ -87,33 +87,68 @@ export async function listEntries(
 }
 
 export async function computeStats(userId: string, days = 30) {
-  const since = new Date(Date.now() - days * 86_400_000);
-  const entries = await prisma.activityEntry.findMany({
-    where: { userId, occurredAt: { gte: since } },
-    select: { type: true, wasteKg: true },
-  });
+  const now = Date.now();
+  const since = new Date(now - days * 86_400_000);
+  // Previous window of the same length, for the trend badges.
+  const previousSince = new Date(now - 2 * days * 86_400_000);
 
-  const itemsReused = entries.filter(
-    (entry) => entry.type === "Reuse" || entry.type === "Exchange",
-  ).length;
-  const exchanges = entries.filter((entry) => entry.type === "Exchange").length;
-  const scans = entries.filter((entry) => entry.type === "Scan").length;
+  const [entries, previousEntries] = await Promise.all([
+    prisma.activityEntry.findMany({
+      where: { userId, occurredAt: { gte: since } },
+      select: { type: true, wasteKg: true },
+    }),
+    prisma.activityEntry.findMany({
+      where: { userId, occurredAt: { gte: previousSince, lt: since } },
+      select: { type: true, wasteKg: true },
+    }),
+  ]);
 
-  // Real diverted mass: the sum of kg the user actually reported on their
-  // diversion actions (no estimates). Unknown weights contribute nothing.
-  const wasteDivertedKg = round1(
-    entries
-      .filter((entry) => isDiversionType(entry.type))
-      .reduce((sum, entry) => sum + (entry.wasteKg ?? 0), 0),
-  );
+  const totals = totalsFor(entries);
+  const previousTotals = totalsFor(previousEntries);
 
   return {
-    itemsReused,
-    exchanges,
-    scans,
-    wasteDivertedKg,
-    wasteDiverted: `${wasteDivertedKg.toFixed(1)} kg`,
+    ...totals,
+    wasteDiverted: `${totals.wasteDivertedKg.toFixed(1)} kg`,
+    /**
+     * Percent change against the previous window of the same length.
+     * null when there is no earlier data to compare against.
+     */
+    trend: {
+      itemsReused: percentChange(
+        previousTotals.itemsReused,
+        totals.itemsReused,
+      ),
+      wasteDiverted: percentChange(
+        previousTotals.wasteDivertedKg,
+        totals.wasteDivertedKg,
+      ),
+      exchanges: percentChange(previousTotals.exchanges, totals.exchanges),
+    },
   };
+}
+
+/** Counts the dashboard metrics over one set of entries. */
+function totalsFor(entries: { type: string; wasteKg: number | null }[]) {
+  return {
+    itemsReused: entries.filter(
+      (entry) => entry.type === "Reuse" || entry.type === "Exchange",
+    ).length,
+    exchanges: entries.filter((entry) => entry.type === "Exchange").length,
+    scans: entries.filter((entry) => entry.type === "Scan").length,
+    // Real diverted mass: the sum of kg the user actually reported on their
+    // diversion actions (no estimates). Unknown weights contribute nothing.
+    wasteDivertedKg: round1(
+      entries
+        .filter((entry) => isDiversionType(entry.type))
+        .reduce((sum, entry) => sum + (entry.wasteKg ?? 0), 0),
+    ),
+  };
+}
+
+/** Rounded percent change, or null when the baseline is empty. */
+function percentChange(before: number, after: number): number | null {
+  if (before <= 0) return null;
+  return Math.round(((after - before) / before) * 100);
 }
 
 export async function computeImpact(userId: string, days = 30) {

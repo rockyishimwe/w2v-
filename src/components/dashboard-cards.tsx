@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { useEffect, useState } from "react";
 import {
   ArrowRightIcon,
+  ArrowUpIcon,
   BotIcon,
   CameraIcon,
   ChatIcon,
@@ -16,7 +18,11 @@ import {
   RecycleIcon,
   SparkleIcon,
 } from "./icons";
-import { fetchActivity, type ActivityEntry } from "@/services/activity-service";
+import {
+  fetchActivity,
+  type ActivityEntry,
+  type ActivityStats,
+} from "@/services/activity-service";
 import { fetchIdeas } from "@/services/discover-service";
 import { fetchListings } from "@/services/exchange-service";
 import { api } from "@/lib/api-client";
@@ -43,9 +49,11 @@ export function Card({
 export function CardHeader({
   title,
   icon: Icon,
+  action,
 }: {
   title: string;
   icon: (props: { className?: string }) => React.ReactNode;
+  action?: { label: string; href: Route };
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -53,7 +61,29 @@ export function CardHeader({
         <Icon className="h-5 w-5 text-gray-900" />
         {title}
       </h2>
+      {action && <ViewAllLink {...action} />}
     </div>
+  );
+}
+
+/** The green "View all →" affordance repeated on every dashboard card. */
+export function ViewAllLink({
+  label,
+  href,
+  className = "",
+}: {
+  label: string;
+  href: Route;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex shrink-0 items-center gap-1.5 text-[12.5px] font-semibold text-brand-500 transition-colors hover:text-brand-700 ${className}`}
+    >
+      {label}
+      <ArrowRightIcon className="h-3.5 w-3.5" />
+    </Link>
   );
 }
 
@@ -95,11 +125,7 @@ export function ScanWasteCard() {
 /* ── Stats — real 30-day numbers from /api/activity ───────────── */
 
 function useStats() {
-  const [stats, setStats] = useState<{
-    itemsReused: number;
-    exchanges: number;
-    wasteDiverted: string;
-  } | null>(null);
+  const [stats, setStats] = useState<ActivityStats | null>(null);
   useEffect(() => {
     let cancelled = false;
     fetchActivity()
@@ -121,38 +147,47 @@ export function StatsCard() {
       icon: RecycleIcon,
       value: stats ? String(stats.itemsReused) : "—",
       label: "items reused",
-      delta: null,
+      trend: stats?.trend.itemsReused ?? null,
     },
     {
       icon: LeafIcon,
       value: stats ? stats.wasteDiverted : "—",
-      label: "waste diverted",
-      delta: null,
+      label: "organic waste diverted",
+      trend: stats?.trend.wasteDiverted ?? null,
     },
     {
       icon: LoopIcon,
       value: stats ? String(stats.exchanges) : "—",
       label: "exchanges made",
-      delta: null,
+      trend: stats?.trend.exchanges ?? null,
     },
   ];
 
   return (
-    <Card className="mt-[13px] self-start p-3.5">
-      <div className="grid grid-cols-3 gap-3">
-        {tiles.map(({ icon: Icon, value, label }) => (
-          <div
-            key={label}
-            className="rounded-xl border border-gray-100 px-2.5 py-3"
-          >
+    <Card className="self-start p-4">
+      <div className="grid grid-cols-3 divide-x divide-gray-100">
+        {tiles.map(({ icon: Icon, value, label, trend }) => (
+          <div key={label} className="px-3.5 first:pl-0 last:pr-0">
             <Icon className="h-6 w-6 text-brand-500" />
-            <p className="mt-1.5 text-[16px] font-bold leading-none text-gray-900">
+            <p className="mt-2.5 text-[17px] font-bold leading-none text-gray-900">
               {value}
               {!stats && <span className="sr-only"> (loading)</span>}
             </p>
             <p className="mt-1 text-[10.5px] leading-tight text-gray-500">
               {label}
             </p>
+            {trend !== null && (
+              <p
+                className={`mt-2 flex items-center gap-1 text-[10.5px] font-semibold ${
+                  trend >= 0 ? "text-brand-500" : "text-red-500"
+                }`}
+              >
+                <ArrowUpIcon
+                  className={`h-3 w-3 ${trend >= 0 ? "" : "rotate-180"}`}
+                />
+                {Math.abs(trend)}%
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -181,7 +216,11 @@ export function RecentActivityCard() {
 
   return (
     <Card>
-      <CardHeader title="Recent Activity" icon={ClockIcon} />
+      <CardHeader
+        title="Recent Activity"
+        icon={ClockIcon}
+        action={{ label: "View all", href: "/activity" }}
+      />
       {entries === null ? (
         <ul className="mt-2 divide-y divide-gray-100">
           {[0, 1, 2].map((index) => (
@@ -213,7 +252,7 @@ export function RecentActivityCard() {
                   {entry.tag}
                 </p>
                 <p className="mt-0.5 text-[12px] text-gray-500">
-                  {entry.location}
+                  {entrySubtitle(entry)}
                 </p>
               </div>
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
@@ -257,9 +296,10 @@ export function RecommendedCard() {
     <Card>
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display flex items-center gap-2.5 text-[16px] font-semibold text-gray-900">
-          <SparkleIcon className="h-5 w-5 text-gray-900" />
+          <SparkleIcon className="h-5 w-5 text-brand-700" />
           Recommended for you
         </h2>
+        <ViewAllLink label="View all" href="/discover" />
       </div>
       {ideas.length === 0 ? (
         <p className="py-8 text-center text-[13px] text-gray-500">
@@ -268,21 +308,27 @@ export function RecommendedCard() {
       ) : (
         <ul className="mt-2 divide-y divide-gray-100">
           {ideas.map((idea) => (
-            <li key={idea.id} className="flex items-center gap-4 py-4">
-              <IdeaArt
-                artKey={idea.artKey}
-                className="h-[72px] w-[72px] shrink-0 rounded-2xl object-cover"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] font-semibold text-gray-900">
-                  {idea.title}
-                  <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
-                  {idea.tag}
-                </p>
-                <p className="mt-0.5 text-[12px] text-gray-500">
-                  {idea.tag} · {idea.time}
-                </p>
-              </div>
+            <li key={idea.id}>
+              <Link
+                href={`/scanner/diy?idea=${encodeURIComponent(idea.id)}`}
+                className="group flex items-center gap-4 py-4"
+              >
+                <IdeaArt
+                  artKey={idea.artKey}
+                  className="h-[72px] w-[72px] shrink-0 rounded-2xl object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] font-semibold text-gray-900">
+                    {idea.title}
+                    <ArrowRightIcon className="h-3.5 w-3.5 text-gray-900" />
+                    {idea.tag}
+                  </p>
+                  <p className="mt-0.5 text-[12px] text-gray-500">
+                    {idea.tag} · {idea.time}
+                  </p>
+                </div>
+                <ChevronRightIcon className="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             </li>
           ))}
         </ul>
@@ -332,7 +378,7 @@ export function NearbyExchangeCard() {
         >
           View
           <br />
-          all
+          map
           <ArrowRightIcon className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -405,7 +451,11 @@ export function RecentChatCard() {
 
   return (
     <Card>
-      <CardHeader title="Recent Chat" icon={ChatIcon} />
+      <CardHeader
+        title="Recent Chat"
+        icon={ChatIcon}
+        action={{ label: "View all", href: "/assistant" }}
+      />
       <Link
         href="/assistant"
         className="mt-4 flex items-center gap-3.5"
@@ -423,14 +473,37 @@ export function RecentChatCard() {
               </span>
             )}
           </p>
-          <p className="mt-0.5 truncate text-[12px] text-gray-500">
+          <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-gray-500">
             {last ? last.text : "Ask the assistant what to do with your waste."}
           </p>
         </div>
-        <ArrowRightIcon className="h-4 w-4 shrink-0 text-gray-900" />
+        <ArrowRightIcon className="h-4 w-4 shrink-0 self-start text-gray-900" />
       </Link>
     </Card>
   );
+}
+
+/**
+ * Activity row subtitle, as in the design: "Today · 2.5 kg" when the
+ * user reported a weight, otherwise the place the action happened.
+ */
+function entrySubtitle(entry: ActivityEntry): string {
+  const day = formatDay(entry.timestamp);
+  const detail =
+    entry.wasteKg !== undefined ? `${entry.wasteKg} kg` : entry.location;
+  return detail ? `${day} · ${detail}` : day;
+}
+
+function formatDay(iso: string): string {
+  const date = new Date(iso);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const days = Math.floor(
+    (startOfToday.getTime() - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000,
+  );
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function formatRelative(iso: string): string {

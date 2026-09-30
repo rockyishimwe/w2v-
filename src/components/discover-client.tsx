@@ -23,7 +23,7 @@ import {
   ShirtIcon,
   SparkleIcon,
 } from "./icons";
-import { AvatarArt } from "./dashboard-art";
+import { Avatar } from "./avatar";
 import {
   ASSISTANT_CARD,
   DID_YOU_KNOW,
@@ -180,7 +180,7 @@ export function DiscoverClient() {
             aria-label="Account menu"
             className="flex shrink-0 items-center gap-1.5"
           >
-            <AvatarArt className="h-11 w-11 rounded-full object-cover" />
+            <Avatar className="h-11 w-11 rounded-full object-cover" />
             <ChevronDownIcon className="h-5 w-5 text-gray-900" />
           </button>
         </div>

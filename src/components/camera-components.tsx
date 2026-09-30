@@ -11,7 +11,7 @@ import {
   SparkleIcon,
   UploadIcon,
 } from "./icons";
-import { AvatarArt } from "./dashboard-art";
+import { Avatar } from "./avatar";
 import { CameraViewfinder } from "./camera-viewfinder";
 import { UploadImageButton } from "./upload-image-button";
 
@@ -56,7 +56,7 @@ export function CameraHeader() {
           aria-label="Account menu"
           className="flex items-center gap-2"
         >
-          <AvatarArt className="h-10 w-10 rounded-full" />
+          <Avatar className="h-10 w-10 rounded-full" />
           <ChevronDownIcon className="h-5 w-5" />
         </button>
       </div>

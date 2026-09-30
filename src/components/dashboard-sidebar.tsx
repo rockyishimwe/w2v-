@@ -15,7 +15,7 @@ import {
   LogoutIcon,
   SearchIcon,
 } from "./icons";
-import { AvatarArt } from "./dashboard-art";
+import { Avatar } from "./avatar";
 import { logout } from "@/services/auth-service";
 import { clearCurrentUser, useCurrentUser } from "@/hooks/use-current-user";
 
@@ -125,7 +125,7 @@ export function DashboardSidebar({
       <div className="mt-auto px-[18px] pb-5">
         <div className="flex flex-col items-center rounded-3xl bg-pale-green px-4 py-5 text-center">
           <span className="relative">
-            <AvatarArt className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-500 ring-offset-2 ring-offset-pale-green" />
+            <Avatar className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-500 ring-offset-2 ring-offset-pale-green" />
             <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-brand-500" />
           </span>
           <p className="mt-3 text-[13.5px] font-semibold text-gray-900">

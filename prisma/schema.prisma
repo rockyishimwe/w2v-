@@ -23,10 +23,12 @@ model User {
   firstName    String
   lastName     String
   locale       String   @default("en") // rw | en | fr
-  /** "facebook" | "google" when the account signs in via OAuth. */
+  /** "google" when the account signs in via OAuth. */
   oauthProvider String?
   /** Provider's stable user id (unique per provider). */
   oauthId      String?
+  /** Uploaded profile photo served from /api/uploads (null = generated art). */
+  avatarPath   String?
   createdAt    DateTime @default(now())
 
   refreshTokens   RefreshToken[]

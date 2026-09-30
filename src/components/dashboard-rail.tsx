@@ -13,8 +13,9 @@ import {
   LightbulbIcon,
   SearchIcon,
 } from "./icons";
-import { AvatarArt, QuoteHillsArt } from "./dashboard-art";
-import { Card } from "./dashboard-cards";
+import { QuoteHillsArt } from "./dashboard-art";
+import { Avatar } from "./avatar";
+import { Card, ViewAllLink } from "./dashboard-cards";
 import { fetchActivity } from "@/services/activity-service";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
@@ -30,9 +31,9 @@ export function TopBar() {
 
   return (
     <div className="flex flex-wrap items-start justify-between gap-5">
-      <h1 className="font-display text-[26px] font-bold leading-[1.1] text-gray-900 sm:text-[34px]">
+      <h1 className="font-display text-[30px] font-bold leading-[1.08] text-gray-900 sm:text-[40px]">
         {greeting}
-        <span className="block text-[34px] text-brand-500">
+        <span className="block text-brand-500">
           {firstName ? `${firstName}!` : "!"}
         </span>
       </h1>
@@ -63,7 +64,7 @@ export function TopBar() {
           aria-label="Account settings"
           className="flex shrink-0 items-center gap-1.5"
         >
-          <AvatarArt className="h-11 w-11 rounded-full object-cover" />
+          <Avatar className="h-11 w-11 rounded-full object-cover" />
           <ChevronDownIcon className="h-5 w-5 text-gray-900" />
         </Link>
       </div>
@@ -100,6 +101,7 @@ export function ImpactCard() {
         <h2 className="font-display text-[16px] font-semibold text-gray-900">
           Your Impact
         </h2>
+        <ViewAllLink label="View activity" href="/activity" />
       </div>
 
       <div className="mt-5 flex items-center gap-5">
@@ -113,16 +115,18 @@ export function ImpactCard() {
               stroke="#e4ede6"
               strokeWidth="13"
             />
-            <circle
-              cx="60"
-              cy="60"
-              r={radius}
-              fill="none"
-              stroke="#145c36"
-              strokeWidth="13"
-              strokeLinecap="round"
-              strokeDasharray={`${filled} ${circumference - filled}`}
-            />
+            {percent > 0 && (
+              <circle
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke="#145c36"
+                strokeWidth="13"
+                strokeLinecap="round"
+                strokeDasharray={`${filled} ${circumference - filled}`}
+              />
+            )}
           </svg>
           <p className="absolute inset-0 flex items-center justify-center text-[19px] font-bold text-gray-900">
             {percent}%

@@ -28,6 +28,15 @@ export interface ActivityStats {
   scans: number;
   wasteDivertedKg: number;
   wasteDiverted: string;
+  /**
+   * Percent change against the previous window of the same length;
+   * null for a metric with no earlier data to compare against.
+   */
+  trend: {
+    itemsReused: number | null;
+    wasteDiverted: number | null;
+    exchanges: number | null;
+  };
 }
 
 export interface ActivityImpact {

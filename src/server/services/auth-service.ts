@@ -14,6 +14,7 @@ import {
   type AccessTokenPayload,
 } from "../lib/tokens";
 import { hashPassword, verifyPassword } from "../lib/password";
+import { deleteUpload } from "../lib/uploads";
 import {
   hashLoginCode,
   newLoginCode,
@@ -32,6 +33,8 @@ export interface PublicUser {
    * password, so the Settings page hides the password form for them.
    */
   hasPassword: boolean;
+  /** Uploaded profile photo path, or null when none has been set. */
+  avatarPath: string | null;
 }
 
 export interface AuthSession {
@@ -48,6 +51,7 @@ function toPublicUser(user: {
   lastName: string;
   locale: string;
   passwordHash?: string | null;
+  avatarPath?: string | null;
 }): PublicUser {
   return {
     id: user.id,
@@ -56,7 +60,33 @@ function toPublicUser(user: {
     lastName: user.lastName,
     locale: user.locale,
     hasPassword: Boolean(user.passwordHash),
+    avatarPath: user.avatarPath ?? null,
   };
+}
+
+/**
+ * Stores a freshly uploaded profile photo and drops the previous file,
+ * so the uploads directory does not grow with every replacement.
+ * Passing null removes the photo and falls back to the generated art.
+ */
+export async function setAvatar(
+  userId: string,
+  avatarPath: string | null,
+): Promise<PublicUser> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw badRequest("Account no longer exists.");
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { avatarPath },
+  });
+
+  if (user.avatarPath && user.avatarPath !== avatarPath) {
+    await deleteUpload(user.avatarPath);
+  }
+  return toPublicUser(updated);
 }
 
 export const authService = {
@@ -66,6 +96,7 @@ export const authService = {
   logout,
   me,
   updateProfile,
+  setAvatar,
   changePassword,
   logoutAll,
   oauthUpsertUser,
@@ -79,6 +110,8 @@ async function issueSession(user: {
   firstName: string;
   lastName: string;
   locale: string;
+  passwordHash?: string | null;
+  avatarPath?: string | null;
 }): Promise<AuthSession> {
   const payload: AccessTokenPayload = {
     sub: user.id,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BellIcon,
@@ -11,15 +11,19 @@ import {
   LogoutIcon,
   MailIcon,
   ShieldIcon,
+  UploadIcon,
   UserIcon,
 } from "./icons";
-import { AvatarArt } from "./dashboard-art";
+import { Avatar } from "./avatar";
 import {
   ApiClientError,
+  AVATAR_ACCEPT,
   changePassword,
   logout,
   logoutEverywhere,
+  removeAvatar,
   updateProfile,
+  uploadAvatar,
 } from "@/services/auth-service";
 import {
   clearCurrentUser,
@@ -90,6 +94,14 @@ const PRIMARY_BUTTON_CLASS =
 /** Turns any thrown error into a message safe to show the user. */
 function messageOf(error: unknown, fallback: string): string {
   return error instanceof ApiClientError ? error.message : fallback;
+}
+
+/**
+ * The photo helpers throw plain Errors carrying either our own local
+ * validation text or the message from our API, so both are worth showing.
+ */
+function photoMessageOf(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 export function SettingsClient() {
@@ -165,6 +177,51 @@ export function SettingsClient() {
     }
   }
 
+  /* ── Profile photo ─────────────────────────────────────────── */
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoSaved, setPhotoSaved] = useState(false);
+  // Local object URL shown while the upload is in flight, so the new
+  // photo appears immediately instead of after the round trip.
+  const [preview, setPreview] = useState<string | null>(null);
+
+  async function handlePhotoPicked(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Let the same file be picked again after an error.
+    event.target.value = "";
+    if (!file) return;
+
+    setPhotoError(null);
+    setPhotoSaved(false);
+    const localUrl = URL.createObjectURL(file);
+    setPreview(localUrl);
+    setPhotoBusy(true);
+    try {
+      setCurrentUser(await uploadAvatar(file));
+      setPhotoSaved(true);
+    } catch (error) {
+      setPhotoError(photoMessageOf(error, "Couldn't upload that photo."));
+    } finally {
+      setPhotoBusy(false);
+      setPreview(null);
+      URL.revokeObjectURL(localUrl);
+    }
+  }
+
+  async function handlePhotoRemove() {
+    setPhotoError(null);
+    setPhotoSaved(false);
+    setPhotoBusy(true);
+    try {
+      setCurrentUser(await removeAvatar());
+    } catch (error) {
+      setPhotoError(photoMessageOf(error, "Couldn't remove that photo."));
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
   /* ── Sign out ──────────────────────────────────────────────── */
   const [signingOut, setSigningOut] = useState(false);
 
@@ -203,17 +260,21 @@ export function SettingsClient() {
             <BellIcon className="h-5 w-5" />
             <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
           </button>
-          <AvatarArt className="h-11 w-11 shrink-0 rounded-full object-cover" />
+          <Avatar className="h-11 w-11 shrink-0 rounded-full object-cover" />
         </div>
       </header>
 
       {/* ── Account summary ────────────────────────────────────── */}
       <section className="mt-6 flex flex-wrap items-center gap-4 rounded-[28px] border border-gray-100 bg-white p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] sm:gap-6 sm:p-6">
         <span className="relative shrink-0">
-          <AvatarArt className="h-16 w-16 rounded-full object-cover ring-2 ring-brand-500 ring-offset-2 ring-offset-white" />
+          <Avatar
+            src={preview ?? undefined}
+            alt={user ? `${user.firstName} ${user.lastName}` : "Your photo"}
+            className="h-16 w-16 rounded-full object-cover ring-2 ring-brand-500 ring-offset-2 ring-offset-white"
+          />
           <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white bg-brand-500" />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-display text-[19px] font-bold text-gray-900">
             {user
               ? `${user.firstName} ${user.lastName}`
@@ -225,6 +286,54 @@ export function SettingsClient() {
             <MailIcon className="h-4 w-4 text-gray-500" />
             <span className="truncate">{user?.email ?? "—"}</span>
           </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2.5">
+            <input
+              ref={fileInput}
+              type="file"
+              accept={AVATAR_ACCEPT}
+              className="sr-only"
+              onChange={handlePhotoPicked}
+            />
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              disabled={photoBusy}
+              className="flex h-9 items-center gap-2 rounded-full bg-brand-700 px-3.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
+            >
+              <UploadIcon className="h-4 w-4" />
+              {photoBusy
+                ? "Uploading…"
+                : user?.avatarPath
+                  ? "Change photo"
+                  : "Upload photo"}
+            </button>
+            {user?.avatarPath && (
+              <button
+                type="button"
+                onClick={handlePhotoRemove}
+                disabled={photoBusy}
+                className="flex h-9 items-center rounded-full border border-gray-200 px-3.5 text-[12.5px] font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+              >
+                Remove
+              </button>
+            )}
+            <p className="text-[11.5px] text-gray-500">
+              JPG, PNG or GIF · 1 MB
+            </p>
+          </div>
+
+          {photoError && (
+            <p role="alert" className="mt-2 text-[12px] text-red-600">
+              {photoError}
+            </p>
+          )}
+          {photoSaved && !photoError && (
+            <p className="mt-2 flex items-center gap-1.5 text-[12px] text-brand-700">
+              <CheckIcon className="h-3.5 w-3.5" />
+              Photo updated.
+            </p>
+          )}
         </div>
       </section>
 

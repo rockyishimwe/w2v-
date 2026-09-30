@@ -14,12 +14,12 @@ import {
   UploadIcon,
 } from "./icons";
 import {
-  AvatarArt,
   BottlesPlantersArt,
   CardboardArt,
   FoodScrapArt,
   GlassJarsArt,
 } from "./dashboard-art";
+import { Avatar } from "./avatar";
 import { UploadImageButton } from "./upload-image-button";
 
 function ScannerPanel({
@@ -75,7 +75,7 @@ export function ScannerHeader() {
           aria-label="Account menu"
           className="flex items-center gap-2"
         >
-          <AvatarArt className="h-10 w-10 rounded-full" />
+          <Avatar className="h-10 w-10 rounded-full" />
           <ChevronDownIcon className="h-5 w-5" />
         </button>
       </div>

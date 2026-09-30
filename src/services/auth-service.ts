@@ -82,6 +82,8 @@ export interface CurrentUser {
   locale: string;
   /** False for Google accounts, which have no password. */
   hasPassword: boolean;
+  /** Uploaded profile photo path, or null when none has been set. */
+  avatarPath: string | null;
 }
 
 /** GET /api/auth/me — the signed-in user (throws when unauthenticated). */
@@ -101,6 +103,66 @@ export async function updateProfile(
   input: UpdateProfileInput,
 ): Promise<CurrentUser> {
   const { user } = await api.post<{ user: CurrentUser }>("/api/auth/me", input);
+  return user;
+}
+
+/* ── Profile photo ───────────────────────────────────────────── */
+
+/** Formats the profile photo upload accepts, for the file picker. */
+export const AVATAR_ACCEPT = "image/jpeg,image/png,image/gif";
+export const AVATAR_MAX_BYTES = 1_000_000;
+
+/**
+ * Checks a picked file before it leaves the browser, so an obviously
+ * wrong pick is reported instantly instead of after the upload.
+ * Returns an error message, or null when the file is fine.
+ */
+export function validateAvatarFile(file: File): string | null {
+  const allowed = ["image/jpeg", "image/png", "image/gif"];
+  if (!allowed.includes(file.type)) {
+    return "Choose a JPG, PNG or GIF image.";
+  }
+  if (file.size > AVATAR_MAX_BYTES) {
+    return "That image is larger than 1 MB — pick a smaller one.";
+  }
+  return null;
+}
+
+/** POST /api/auth/avatar — uploads a new profile photo. */
+export async function uploadAvatar(file: File): Promise<CurrentUser> {
+  const invalid = validateAvatarFile(file);
+  if (invalid) throw new Error(invalid);
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const token = getAccessToken();
+  const response = await fetch("/api/auth/avatar", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    throw new Error(payload?.error?.message ?? "Photo upload failed.");
+  }
+  const { user } = (await response.json()) as { user: CurrentUser };
+  return user;
+}
+
+/** DELETE /api/auth/avatar — removes the photo. */
+export async function removeAvatar(): Promise<CurrentUser> {
+  const token = getAccessToken();
+  const response = await fetch("/api/auth/avatar", {
+    method: "DELETE",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) {
+    throw new Error("Could not remove the photo.");
+  }
+  const { user } = (await response.json()) as { user: CurrentUser };
   return user;
 }
 

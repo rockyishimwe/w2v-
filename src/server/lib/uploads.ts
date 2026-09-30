@@ -42,7 +42,24 @@ const SIGNATURES: Array<{
       b.subarray(0, 4).toString("ascii") === "RIFF" &&
       b.subarray(8, 12).toString("ascii") === "WEBP",
   },
+  {
+    ext: "gif",
+    mime: "image/gif",
+    // "GIF87a" or "GIF89a"
+    test: (b) =>
+      b.subarray(0, 4).toString("ascii") === "GIF8" &&
+      (b[4] === 0x37 || b[4] === 0x39) &&
+      b[5] === 0x61,
+  },
 ];
+
+/** Every extension the store can serve. */
+export type UploadExt = "jpg" | "png" | "webp" | "gif";
+
+/** Formats accepted for profile photos (per product spec). */
+export const AVATAR_FORMATS: UploadExt[] = ["jpg", "png", "gif"];
+
+const NAME_PATTERN = /^img-[a-z0-9-]+\.(jpg|png|webp|gif)$/;
 
 /** Detects the real image type from magic bytes; null if not an image. */
 function detectType(buffer: Buffer) {
@@ -56,13 +73,27 @@ function detectType(buffer: Buffer) {
 export async function saveUpload(
   data: Buffer,
   declaredMime: string,
+  options: {
+    /** Restricts the accepted formats (default: everything supported). */
+    allow?: UploadExt[];
+    /** Overrides the size cap, in bytes. */
+    maxBytes?: number;
+  } = {},
 ): Promise<{ path: string; mime: string; bytes: number }> {
+  const allow = options.allow ?? ["jpg", "png", "webp", "gif"];
+  const maxBytes = options.maxBytes ?? MAX_BYTES;
+  const limitLabel = `${(maxBytes / 1_000_000).toFixed(1)} MB`;
+  const allowLabel = allow
+    .map((ext) => (ext === "jpg" ? "JPG" : ext.toUpperCase()))
+    .join(", ");
+
   if (data.length === 0) throw badRequest("Empty file.");
-  if (data.length > MAX_BYTES) throw badRequest("Image exceeds 1.4 MB.");
+  if (data.length > maxBytes) throw badRequest(`Image exceeds ${limitLabel}.`);
 
   const type = detectType(data);
-  if (!type) {
-    throw badRequest("Only JPEG, PNG or WebP images are accepted.");
+  // Magic bytes decide, so renaming a .webp to .png cannot slip through.
+  if (!type || !allow.includes(type.ext as UploadExt)) {
+    throw badRequest(`Only ${allowLabel} images are accepted.`);
   }
   // Sanity cross-check: browsers send honest MIME types; mismatched ones
   // are still saved by content (magic bytes win), but junk is rejected.
@@ -88,7 +119,7 @@ export async function readUpload(
   name: string,
 ): Promise<{ data: Buffer; mime: string }> {
   // Names are always server-generated: img-<base36>-<base36>.<ext>
-  if (!/^img-[a-z0-9-]+\.(jpg|png|webp)$/.test(name)) {
+  if (!NAME_PATTERN.test(name)) {
     throw notFound("Image not found.");
   }
   const resolved = path.join(UPLOAD_DIR, name);
@@ -108,6 +139,6 @@ export async function readUpload(
 /** Removes a stored image by public path ("/api/uploads/img-x.jpg"). */
 export async function deleteUpload(publicPath: string): Promise<void> {
   const name = publicPath.replace("/api/uploads/", "");
-  if (!/^img-[a-z0-9-]+\.(jpg|png|webp)$/.test(name)) return;
+  if (!NAME_PATTERN.test(name)) return;
   await unlink(path.join(UPLOAD_DIR, name)).catch(() => undefined);
 }
