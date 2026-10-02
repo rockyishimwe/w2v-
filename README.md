@@ -30,6 +30,39 @@ and AI generation.
 assistant, DIY guides, idea generation). Some scan/assistant fallbacks
 still exist for offline resilience.
 
+## Docker
+
+The included Compose setup runs the production build, applies checked-in
+Prisma migrations on startup, and keeps the SQLite database and uploaded
+images in named Docker volumes.
+
+```bash
+docker compose up --build
+```
+
+The `.env` file is **optional**: Compose starts without it, and you can add
+secrets later:
+
+```bash
+cp .env.docker.example .env
+# Set JWT_SECRET to a unique value (at least 16 characters) before use;
+# GROQ_API_KEY and the Google OAuth values enable those integrations.
+docker compose up --build
+```
+
+Without `JWT_SECRET`, the app boots and serves pages, but sign-up/sign-in
+returns an error until the secret is set (`APP_URL` defaults to
+`http://localhost:3000`).
+
+Open http://localhost:3000. Stop the app with `docker compose down`; its data
+remains in the `sqlite-data` and `uploads-data` volumes. To remove the app and
+all local Docker data deliberately, run `docker compose down --volumes`.
+
+For a public deployment, set `APP_URL` to the external HTTPS URL and use that
+same URL in the Google OAuth redirect configuration. The Compose configuration
+uses SQLite; use a managed PostgreSQL database for multi-replica production
+deployments as described below.
+
 ## Environment Variables
 
 Copy `.env.example` → `.env.local`. Only `NEXT_PUBLIC_*` vars reach the

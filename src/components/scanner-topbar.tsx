@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeftIcon, BellIcon, ChevronDownIcon, SearchIcon } from "./icons";
+import { ArrowLeftIcon, ChevronDownIcon, SearchIcon } from "./icons";
+import { NotificationBell } from "./notification-bell";
 import { Avatar } from "./avatar";
 
 export function ScannerTopBar() {
@@ -35,14 +36,7 @@ export function ScannerTopBar() {
           />
         </label>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-900 shadow-[0_8px_20px_rgba(17,24,39,0.05)] transition-colors hover:text-brand-700"
-        >
-          <BellIcon className="h-5 w-5" />
-          <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
-        </button>
+        <NotificationBell />
 
         <button
           type="button"

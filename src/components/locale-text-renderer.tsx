@@ -18,7 +18,8 @@ export function LocaleTextRenderer() {
 
   useEffect(() => {
     const french = dictionaries.fr ?? {};
-    const translate = (value: string) => (locale === "fr" ? (french[value] ?? value) : value);
+    const translate = (value: string) =>
+      locale === "fr" ? (french[value] ?? value) : value;
 
     const apply = (root: ParentNode) => {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -27,16 +28,19 @@ export function LocaleTextRenderer() {
       for (const node of textNodes) {
         const parent = node.parentElement;
         if (!parent || ["SCRIPT", "STYLE"].includes(parent.tagName)) continue;
-        const original = parent.getAttribute(ORIGINAL_TEXT) ?? node.nodeValue ?? "";
+        const original =
+          parent.getAttribute(ORIGINAL_TEXT) ?? node.nodeValue ?? "";
         if (!original.trim()) continue;
-        if (!parent.hasAttribute(ORIGINAL_TEXT)) parent.setAttribute(ORIGINAL_TEXT, original);
+        if (!parent.hasAttribute(ORIGINAL_TEXT))
+          parent.setAttribute(ORIGINAL_TEXT, original);
         node.nodeValue = translate(original);
       }
 
       for (const element of root.querySelectorAll<HTMLElement>("*")) {
         for (const attribute of TRANSLATABLE_ATTRIBUTES) {
           const key = `${ORIGINAL_ATTRIBUTE}${attribute}`;
-          const original = element.getAttribute(key) ?? element.getAttribute(attribute);
+          const original =
+            element.getAttribute(key) ?? element.getAttribute(attribute);
           if (!original) continue;
           if (!element.hasAttribute(key)) element.setAttribute(key, original);
           element.setAttribute(attribute, translate(original));

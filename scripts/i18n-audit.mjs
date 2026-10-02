@@ -15,7 +15,10 @@ function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) walk(full, out);
-    else if (/\.tsx?$/.test(full) && !full.includes(`${path.sep}i18n${path.sep}`))
+    else if (
+      /\.tsx?$/.test(full) &&
+      !full.includes(`${path.sep}i18n${path.sep}`)
+    )
       out.push(full);
   }
   return out;
@@ -41,7 +44,9 @@ function keysOf(name) {
   const end = dictSource.indexOf("\n};", start);
   const body = dictSource.slice(start, end);
   const keys = new Set();
-  for (const match of body.matchAll(/^\s{2}(?:"((?:[^"\\]|\\.)*)"|([A-Za-z_$][\w$]*)):/gm)) {
+  for (const match of body.matchAll(
+    /^\s{2}(?:"((?:[^"\\]|\\.)*)"|([A-Za-z_$][\w$]*)):/gm,
+  )) {
     keys.add((match[1] ?? match[2]).replace(/\\"/g, '"'));
   }
   return keys;

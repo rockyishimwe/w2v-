@@ -21,6 +21,7 @@ import {
   type OAuthProvider,
   type ProviderProfile,
 } from "../lib/oauth";
+import { createNotification } from "../repositories/notification-repository";
 
 export interface PublicUser {
   id: string;
@@ -161,6 +162,14 @@ export async function register(input: {
       lastName: input.lastName,
       locale: input.locale ?? "en",
     },
+  });
+
+  await createNotification({
+    userId: user.id,
+    type: "welcome",
+    title: `Welcome to Waste2Value, ${user.firstName}!`,
+    body: "Scan waste, track your impact and exchange reusable items with your community.",
+    href: "/dashboard",
   });
 
   return issueSession(user);
@@ -337,6 +346,15 @@ export async function oauthUpsertUser(
       oauthId: profile.oauthId,
     },
   });
+
+  await createNotification({
+    userId: created.id,
+    type: "welcome",
+    title: `Welcome to Waste2Value, ${created.firstName}!`,
+    body: "Scan waste, track your impact and exchange reusable items with your community.",
+    href: "/dashboard",
+  });
+
   return toPublicUser(created);
 }
 

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { NotificationBell } from "./notification-bell";
 import {
-  BellIcon,
   BotIcon,
   BrainIcon,
   CameraIcon,
@@ -66,14 +66,7 @@ export function ScannerHeader() {
             className="h-[48px] w-full rounded-full border border-white bg-white pl-12 pr-5 text-[14px] text-gray-900 shadow-[0_6px_16px_rgba(17,24,39,0.04)] outline-none placeholder:text-[#607493]"
           />
         </label>
-        <button
-          type="button"
-          aria-label={t("Notifications")}
-          className="relative flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-white text-gray-900 shadow-[0_6px_16px_rgba(17,24,39,0.04)]"
-        >
-          <BellIcon className="h-5 w-5" />
-          <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-brand-500" />
-        </button>
+        <NotificationBell size={40} ariaLabel={t("Notifications")} />
         <button
           type="button"
           aria-label={t("Account menu")}
@@ -104,7 +97,9 @@ export function UploadPanel() {
           <br className="hidden xl:block" /> to throw away.
         </h2>
         <p className="mt-6 max-w-[480px] text-[15px] leading-[1.7] text-[#5d786d]">
-          {t("Take a photo or upload an image, and our AI will identify the item and suggest the best next steps.")}
+          {t(
+            "Take a photo or upload an image, and our AI will identify the item and suggest the best next steps.",
+          )}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-6 sm:mt-7 sm:gap-10">
           <Link

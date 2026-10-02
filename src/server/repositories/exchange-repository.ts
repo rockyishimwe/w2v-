@@ -8,6 +8,7 @@
  */
 import { prisma } from "../lib/prisma";
 import { notFound } from "../lib/errors";
+import { createNotification } from "./notification-repository";
 
 export interface ListingQuery {
   query?: string;
@@ -234,6 +235,10 @@ export async function createInterest(
   });
   if (!listing) throw notFound("Listing not found.");
 
+  const existing = await prisma.exchangeInterest.findUnique({
+    where: { listingId_userId: { listingId: listing.id, userId } },
+  });
+
   await prisma.exchangeInterest.upsert({
     where: {
       listingId_userId: { listingId: listing.id, userId },
@@ -241,6 +246,18 @@ export async function createInterest(
     update: { ...(message ? { message } : {}) },
     create: { listingId: listing.id, userId, message },
   });
+
+  // Notify the poster on a *new* interest only — re-sending a message on
+  // an existing interest must not spam the poster with duplicate bells.
+  if (existing === null && listing.postedById !== userId) {
+    await createNotification({
+      userId: listing.postedById,
+      type: "interest",
+      title: "Someone is interested in your item",
+      body: `${listing.title} received a new interest${message ? `: "${message.slice(0, 120)}"` : ""}.`,
+      href: `/exchange/${listing.seedId}`,
+    });
+  }
 
   return { ok: true };
 }
@@ -280,5 +297,30 @@ export async function createListing(
       postedByName,
     },
   });
+
+  // Real-time-ish nudge: users with listings in the same district learn
+  // about the new item so they can exchange. The poster is skipped.
+  const neighbors = await prisma.exchangeListing.findMany({
+    where: {
+      district: input.district,
+      status: "available",
+      postedById: { not: userId },
+    },
+    select: { postedById: true },
+    distinct: ["postedById"],
+    take: 50,
+  });
+  await Promise.all(
+    neighbors.map((neighbor) =>
+      createNotification({
+        userId: neighbor.postedById,
+        type: "welcome",
+        title: "New item in your district",
+        body: `${postedByName} listed "${input.title}" in ${input.district}. Check it out!`,
+        href: `/exchange/${seedId}`,
+      }),
+    ),
+  );
+
   return toCard(listing);
 }
