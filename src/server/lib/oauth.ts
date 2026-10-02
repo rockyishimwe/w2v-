@@ -32,6 +32,15 @@ export interface ProviderProfile {
   emailVerified: boolean;
 }
 
+/**
+ * Reads an env var, tolerating the stray whitespace and quotes that creep
+ * into hand-edited `.env` files (a padded secret would otherwise be sent
+ * to Google verbatim and rejected).
+ */
+function env(name: string): string {
+  return (process.env[name] ?? "").trim().replace(/^["']|["']$/g, "");
+}
+
 export function providerConfig(): {
   clientId: string;
   clientSecret: string;
@@ -39,8 +48,8 @@ export function providerConfig(): {
   tokenUrl: string;
   scope: string;
 } {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const clientId = env("GOOGLE_CLIENT_ID");
+  const clientSecret = env("GOOGLE_CLIENT_SECRET");
   if (!clientId || !clientSecret) {
     throw unauthorized("Google login is not configured on this server.");
   }
@@ -54,18 +63,13 @@ export function providerConfig(): {
 }
 
 export function isProviderEnabled(): boolean {
-  return Boolean(
-    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
-  );
+  return Boolean(env("GOOGLE_CLIENT_ID") && env("GOOGLE_CLIENT_SECRET"));
 }
 
 /** Public base URL used for OAuth redirect URIs (must match the provider app settings). */
 export function appUrl(): string {
-  return (
-    process.env.APP_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000"
-  );
+  const configured = env("APP_URL") || env("NEXT_PUBLIC_APP_URL");
+  return (configured || "http://localhost:3000").replace(/\/+$/, "");
 }
 
 export function redirectUri(provider: OAuthProvider): string {

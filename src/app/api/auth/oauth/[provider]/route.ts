@@ -5,9 +5,11 @@ import {
   OAUTH_STATE_MAX_AGE,
   appUrl,
   createState,
+  isProviderEnabled,
   providerConfig,
   redirectUri,
 } from "@/server/lib/oauth";
+import { logger } from "@/server/lib/logger";
 
 type Params = { params: Promise<{ provider: string }> };
 
@@ -25,6 +27,11 @@ export async function GET(request: NextRequest, { params }: Params) {
     const { provider } = await params;
     if (provider !== "google") {
       return NextResponse.redirect(`${appUrl()}/?oauth=invalid`);
+    }
+
+    if (!isProviderEnabled()) {
+      logger.warn("oauth start: provider not configured", { provider });
+      return NextResponse.redirect(`${appUrl()}/?oauth=unavailable`);
     }
 
     const state = createState();
@@ -49,9 +56,13 @@ export async function GET(request: NextRequest, { params }: Params) {
     });
     return response;
   } catch (error) {
-    // Provider not configured → bounce back to the login page with a flag.
+    // Configuration is checked above, so anything here is a genuine failure:
+    // report it as such instead of mislabelling it "not configured".
+    logger.warn("oauth start failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
     if (error instanceof Error) {
-      return NextResponse.redirect(`${appUrl()}/?oauth=unavailable`);
+      return NextResponse.redirect(`${appUrl()}/?oauth=failed`);
     }
     return errorResponse(request, error);
   }
