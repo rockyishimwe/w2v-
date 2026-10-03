@@ -49,14 +49,27 @@ const INITIAL_TIMEOUT_MS = 30_000;
 const MAX_ATTEMPTS = 3;
 
 /**
- * Total wall-clock budget for one groqChat call, retries and backoff
- * included. Serverless platforms kill a function at a fixed duration
- * (see `maxDuration` on the AI routes), and a request killed mid-flight
- * returns a gateway error instead of this module's fallback content — so
- * the budget has to be the smaller number. Two sequential calls (a vision
- * pass plus a JSON-repair pass) must still fit inside it.
+ * Wall-clock budgets for one groqChat call, retries and backoff included.
+ *
+ * Serverless platforms kill a function at a fixed duration (`maxDuration`
+ * on the AI routes, 60s), and a request killed mid-flight returns a
+ * gateway error instead of this module's fallback content — so a budget
+ * has to be the smaller number. A route may make two calls in sequence (a
+ * model pass plus a JSON-repair pass), so `vision + repair` and
+ * `text + repair` must each fit inside that ceiling.
+ *
+ * Vision gets far more room than text: the request carries a photo of up
+ * to ~1.4 MB as base64 and the model reads it before emitting anything,
+ * which routinely passes 20s on a slow uplink.
  */
-const BUDGET_MS = 20_000;
+export const BUDGETS = {
+  text: 20_000,
+  vision: 40_000,
+  /** Second-chance pass that only has to re-emit valid JSON. */
+  repair: 12_000,
+} as const;
+
+const BUDGET_MS = BUDGETS.text;
 
 /**
  * Runs a chat completion with timeout, exponential backoff on

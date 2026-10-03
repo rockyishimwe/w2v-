@@ -79,6 +79,8 @@ export const assistantRoleSchema = z.enum(["user", "assistant"]);
 
 export const aiAssistantSchema = z.object({
   message: z.string().trim().min(1).max(2_000),
+  /** Optional photo of the item, so the assistant can see what it is. */
+  image: dataUrlImage.optional(),
   history: z
     .array(
       z.object({

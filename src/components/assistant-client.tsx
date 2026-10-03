@@ -9,6 +9,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
+  CloseIcon,
   JarIcon,
   LeafIcon,
   LightbulbIcon,
@@ -31,6 +32,10 @@ import {
   type AssistantChatMessage,
 } from "@/services/assistant-service";
 import { AssistantIdeaArt } from "./assistant-art";
+import { readImageFile } from "@/lib/photo";
+
+/** Sent when a photo is attached without any typed question. */
+const PHOTO_ONLY_PROMPT = "What can I do with this?";
 
 /** Icons per quick-reply chip label (design row order). */
 const CHIP_ICONS: Record<
@@ -58,7 +63,12 @@ export function AssistantClient() {
     getWelcomeMessage(),
   ]);
   const [draft, setDraft] = useState("");
+  /** Downscaled JPEG dataURL staged for the next message, if any. */
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to the newest bubble (welcome or after sending).
   useEffect(() => {
@@ -69,18 +79,45 @@ export function AssistantClient() {
   }, [messages]);
 
   function send(text: string) {
-    const trimmed = text.trim();
+    const attached = photo;
+    // A photo on its own is a valid message; the prompt supplies the words.
+    const trimmed = text.trim() || (attached ? PHOTO_ONLY_PROMPT : "");
     if (!trimmed) return;
+
     setDraft("");
+    setPhoto(null);
+    setAttachError(null);
+    setPending(true);
+
     // API-backed reply: append the user bubble immediately, then the
     // assistant's response when it arrives.
-    void getAssistantResponse(trimmed).then((reply) => {
-      setMessages((prev) => [...prev, toUserMessage(trimmed), ...reply]);
-    });
+    void getAssistantResponse(trimmed, attached ?? undefined)
+      .then((reply) => {
+        setMessages((prev) => [
+          ...prev,
+          toUserMessage(trimmed, attached ?? undefined),
+          ...reply,
+        ]);
+      })
+      .finally(() => setPending(false));
   }
 
   function sendChip(chip: AssistantChip) {
     send(chip.message);
+  }
+
+  /** Reads, downscales and stages the chosen image for the next send. */
+  async function attachPhoto(file: File | undefined) {
+    if (!file) return;
+    setAttachError(null);
+    try {
+      setPhoto(await readImageFile(file));
+    } catch (error) {
+      setPhoto(null);
+      setAttachError(
+        error instanceof Error ? error.message : "Could not attach that image.",
+      );
+    }
   }
 
   return (
@@ -123,9 +160,56 @@ export function AssistantClient() {
           send(draft);
         }}
       >
+        {/* Staged photo / attach error sit above the input row */}
+        {(photo || attachError) && (
+          <div className="mb-2.5 flex items-center gap-3 rounded-2xl border border-gray-100 bg-white px-3 py-2.5 shadow-[0_6px_14px_rgba(17,24,39,0.05)]">
+            {photo && (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo}
+                  alt="Photo to send"
+                  className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                />
+                <p className="min-w-0 flex-1 text-[13px] text-gray-600">
+                  Photo attached — the assistant will look at it and suggest
+                  what to do.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setPhoto(null)}
+                  aria-label="Remove attached photo"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                >
+                  <CloseIcon className="h-4 w-4" />
+                </button>
+              </>
+            )}
+            {!photo && attachError && (
+              <p role="alert" className="text-[13px] text-red-600">
+                {attachError}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="flex items-center gap-3 rounded-full border border-gray-100 bg-white py-2.5 pl-6 pr-2.5 shadow-[0_8px_20px_rgba(17,24,39,0.05)]">
+          {/* Hidden control the paperclip drives — `capture` lets a phone
+              offer its camera alongside the gallery. */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(event) => {
+              void attachPhoto(event.target.files?.[0]);
+              // Allow re-picking the same file after removing it.
+              event.target.value = "";
+            }}
+          />
           <button
             type="button"
+            onClick={() => fileInputRef.current?.click()}
             aria-label="Attach a photo"
             className="shrink-0 text-gray-500 transition-colors hover:text-brand-700"
           >
@@ -136,19 +220,26 @@ export function AssistantClient() {
             name="message"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Type your message..."
+            placeholder={
+              photo ? "Add a question (optional)..." : "Type your message..."
+            }
             aria-label="Type your message"
             className="h-11 min-w-0 flex-1 bg-transparent text-[14.5px] text-gray-900 placeholder:text-gray-400 focus:outline-none"
           />
           <button
             type="submit"
             aria-label="Send message"
-            disabled={!draft.trim()}
+            disabled={pending || (!draft.trim() && !photo)}
             className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-white shadow-[0_8px_16px_rgba(20,92,54,0.2)] transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <SendIcon className="h-5 w-5" />
           </button>
         </div>
+        {pending && (
+          <p className="mt-2 pl-6 text-[12.5px] text-gray-500">
+            {photo ? "Looking at your photo..." : "Thinking..."}
+          </p>
+        )}
       </form>
     </div>
   );
@@ -201,6 +292,14 @@ function MessageBubble({ message }: { message: AssistantChatMessage }) {
   if (message.role === "user") {
     return (
       <div className="flex flex-col items-end">
+        {message.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={message.image}
+            alt="Photo you sent"
+            className="mb-2 max-h-56 max-w-[85%] rounded-[20px] rounded-br-lg object-cover sm:max-w-[60%]"
+          />
+        )}
         <div className="max-w-[85%] rounded-[24px] rounded-br-lg bg-brand-700 px-5 py-3.5 text-[14px] leading-relaxed text-white sm:max-w-[70%]">
           {message.text}
         </div>

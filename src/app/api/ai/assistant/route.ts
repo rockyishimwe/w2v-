@@ -42,12 +42,20 @@ export async function POST(request: NextRequest) {
       body.message,
       body.history ?? [],
       locale,
+      body.image,
     );
 
-    // Persist both sides of the exchange for the Recent Chat card.
+    // Persist both sides of the exchange for the Recent Chat card. The
+    // photo itself is never stored (same rule as scans — keep rows small);
+    // the transcript just records that one was attached.
     await prisma.assistantMessage.createMany({
       data: [
-        { userId: auth.id, role: "user", text: body.message, locale },
+        {
+          userId: auth.id,
+          role: "user",
+          text: body.image ? `${body.message} (photo attached)` : body.message,
+          locale,
+        },
         {
           userId: auth.id,
           role: "assistant",
@@ -61,7 +69,11 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    logger.info("assistant replied", { userId: auth.id, source: reply.source });
+    logger.info("assistant replied", {
+      userId: auth.id,
+      source: reply.source,
+      withPhoto: Boolean(body.image),
+    });
     return jsonResponse(request, {
       text: reply.text,
       ideas: reply.ideas,

@@ -155,11 +155,21 @@ or invalidate existing rows (old files do need copying across).
 6. Deploy. The default build command (`npm run build`) already runs
    `prisma generate`.
 
-The AI routes export `maxDuration = 60`, and `groqChat` keeps a 20s
-wall-clock budget per call (retries and backoff included) so a slow Groq
-response degrades to the deterministic fallback content instead of being
-killed mid-request. Raise both together if you move to a plan with a
-higher function-duration ceiling.
+The assistant composer accepts a photo (paperclip in the chat input): the
+browser downscales it to a JPEG dataURL (`src/lib/photo.ts`) and posts it
+with the message, so `assistantReply` routes the turn to the vision model
+and answers about the item it can see. The photo goes straight to the model
+and is never written to storage — so this works regardless of how blob
+storage is configured. Vision replies are capped at 900 output tokens
+because Groq's free tier enforces output-tokens-per-minute and rejects a
+request whose expected output exceeds it.
+
+The AI routes export `maxDuration = 60`, and `groqChat` keeps a wall-clock
+budget per call (retries and backoff included) so a slow Groq response
+degrades to the deterministic fallback content instead of being killed
+mid-request: 20s for text, 40s for vision (a photo takes longer to upload
+and read), 12s for a JSON-repair pass. Any pair of those fits inside the
+60s ceiling — raise them together if you move to a plan with a higher one.
 
 Idempotency records (`src/server/lib/idempotency.ts`) persist in the
 `IdempotencyRecord` table, so an offline-queued request retried against a

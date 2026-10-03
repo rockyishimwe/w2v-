@@ -22,6 +22,8 @@ export interface AssistantChatMessage {
   /** ISO timestamp the bubble was created. */
   at: string;
   text?: string;
+  /** Downscaled JPEG dataURL the user attached to this bubble. */
+  image?: string;
   /** Idea cards attached to an assistant bubble. */
   ideas?: AssistantReply["ideas"];
 }
@@ -63,23 +65,29 @@ export function findReply(message: string): AssistantReply {
   return FALLBACK_REPLY;
 }
 
-/** Wraps a user message in a chat message record. */
-export function toUserMessage(text: string): AssistantChatMessage {
+/** Wraps a user message (and any attached photo) in a chat record. */
+export function toUserMessage(
+  text: string,
+  image?: string,
+): AssistantChatMessage {
   return {
     id: nextMessageId(),
     role: "user",
     at: new Date().toISOString(),
     text,
+    ...(image ? { image } : {}),
   };
 }
 
 /**
- * Builds the assistant's response to one user message.
+ * Builds the assistant's response to one user message, optionally with a
+ * photo of the item (dataURL) for the backend's vision model.
  * Calls the real AI backend; falls back to the canned replies when the
  * request fails so the chat keeps working offline.
  */
 export async function getAssistantResponse(
   userMessage: string,
+  image?: string,
 ): Promise<AssistantChatMessage[]> {
   let text: string;
   let ideas: AssistantReply["ideas"];
@@ -87,6 +95,7 @@ export async function getAssistantResponse(
   try {
     const reply = await api.post<ServerReply>("/api/ai/assistant", {
       message: userMessage,
+      ...(image ? { image } : {}),
     });
     text = reply.text;
     ideas = reply.ideas.map((idea, index) => ({
