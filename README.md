@@ -7,7 +7,7 @@ Route Handlers under `src/app/api/**` + Prisma + Groq AI (free-tier models).
 ## Tech Stack
 
 - [Next.js](https://nextjs.org) 16 (App Router) + TypeScript strict
-- [Prisma ORM v7](https://www.prisma.io) — SQLite for zero-config dev, PostgreSQL for production (driver adapters)
+- [Prisma ORM v7](https://www.prisma.io) — PostgreSQL via the `pg` driver adapter
 - Auth: short-lived JWTs ([jose](https://github.com/panva/jose)) + rotating refresh tokens (bcrypt password hashing)
 - Validation: [zod](https://zod.dev) on every input
 - AI: [Groq SDK](https://groq.com) with JSON-mode structured outputs
@@ -17,9 +17,14 @@ Route Handlers under `src/app/api/**` + Prisma + Groq AI (free-tier models).
 
 ```bash
 npm install
-npx prisma migrate dev       # creates prisma/dev.db (SQLite) + applies migrations
+cp .env.example .env.local   # set DATABASE_URL to a PostgreSQL url
+npx prisma migrate dev       # applies migrations
 npm run dev
 ```
+
+The app needs PostgreSQL (see "Database"). The quickest local database is
+`docker compose up -d db`, then
+`DATABASE_URL=postgresql://waste2value:waste2value@localhost:5432/waste2value`.
 
 Open http://localhost:3000 and create your account — all data in the app
 is real user data. There is **no seeding**: the marketplace starts empty
@@ -33,8 +38,8 @@ still exist for offline resilience.
 ## Docker
 
 The included Compose setup runs the production build, applies checked-in
-Prisma migrations on startup, and keeps the SQLite database and uploaded
-images in named Docker volumes.
+Prisma migrations on startup, and runs its own PostgreSQL service — the
+database and uploaded images live in named Docker volumes.
 
 ```bash
 docker compose up --build
@@ -55,13 +60,14 @@ returns an error until the secret is set (`APP_URL` defaults to
 `http://localhost:3000`).
 
 Open http://localhost:3000. Stop the app with `docker compose down`; its data
-remains in the `sqlite-data` and `uploads-data` volumes. To remove the app and
+remains in the `postgres-data` and `uploads-data` volumes. To remove the app and
 all local Docker data deliberately, run `docker compose down --volumes`.
 
 For a public deployment, set `APP_URL` to the external HTTPS URL and use that
-same URL in the Google OAuth redirect configuration. The Compose configuration
-uses SQLite; use a managed PostgreSQL database for multi-replica production
-deployments as described below.
+same URL in the Google OAuth redirect configuration. Compose runs its own
+`postgres` service and keeps uploads on a named volume; for multi-replica
+production use a managed PostgreSQL database and blob storage (see
+"Deploying to Vercel").
 
 ## Environment Variables
 
@@ -70,7 +76,12 @@ browser, and none of them are secrets.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | no | PostgreSQL URL. Unset → local SQLite `prisma/dev.db`. |
+| `DATABASE_URL` | **yes** | PostgreSQL URL (pooled in production). |
+| `DIRECT_DATABASE_URL` | no | Non-pooled URL used by `prisma migrate` only. |
+| `DATABASE_POOL_MAX` | no | Max pool size per instance (default 5). |
+| `BLOB_READ_WRITE_TOKEN` | yes on Vercel | Vercel Blob token. Unset → uploads on local disk. |
+| `APP_URL` | yes (OAuth) | Public base URL used to build OAuth redirect URIs. |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | no | Google sign-in. |
 | `JWT_SECRET` | yes (auth) | HMAC secret for access JWTs (≥16 chars). |
 | `JWT_REFRESH_SECRET` | reserved | Extra secret slot for refresh-token pepper. |
 | `GROQ_API_KEY` | recommended | Enables live AI features. |
@@ -87,23 +98,61 @@ browser, and none of them are secrets.
 
 ## Database
 
-Prisma 7 uses `prisma.config.ts` + driver adapters:
+PostgreSQL everywhere, via Prisma 7 `prisma.config.ts` + the `pg` driver
+adapter (`src/server/lib/prisma.ts`). `DATABASE_URL` is required — the app
+throws a clear error at startup without it.
 
 ```bash
-npx prisma migrate dev      # apply migrations locally (SQLite)
+npx prisma migrate dev      # apply migrations
+npx prisma migrate deploy   # production / CI
 npx prisma studio           # browse data
 ```
 
-Uploaded listing photos are stored under `uploads/` (gitignored) and
-served via `GET /api/uploads/[name]`. For production, swap
-`src/server/lib/uploads.ts` for blob storage (S3/R2) behind the same
-routes.
+The Prisma client is generated into `src/server/generated/prisma`, which is
+gitignored — `npm run build` runs `prisma generate` first, so hosted builds
+with a warm `node_modules` cache still have it.
 
-**PostgreSQL**: set `DATABASE_URL`, switch `provider = "postgresql"` in
-`prisma/schema.prisma`, run `npx prisma migrate dev`, and add
-`@prisma/adapter-pg` (`npm i @prisma/adapter-pg pg`) — `src/server/lib/prisma.ts`
-already auto-selects the Postgres adapter when `DATABASE_URL` is a
-`postgres://` URL.
+Use the **pooled** connection string for `DATABASE_URL` in production;
+migrations need a session connection, so set `DIRECT_DATABASE_URL` to the
+non-pooled URL when your provider distinguishes them (Neon, Supabase).
+
+The pre-Postgres SQLite migrations are kept, unused, under
+`prisma/legacy-sqlite-migrations/` for reference.
+
+### Image storage
+
+Uploaded photos (listings, avatars) always surface as
+`/api/uploads/<name>`, backed by one of two stores:
+
+- **Vercel Blob** when `BLOB_READ_WRITE_TOKEN` is set — required on
+  serverless, where the filesystem is read-only and per-invocation.
+  `GET /api/uploads/[name]` 308-redirects to the blob CDN URL.
+- **Local disk** under `uploads/` (gitignored) otherwise — dev and Docker.
+
+Because the stored path never changes, switching stores does not migrate
+or invalidate existing rows (old files do need copying across).
+
+## Deploying to Vercel
+
+1. **Database** — create Postgres (Vercel Postgres, Neon, Supabase) and set
+   `DATABASE_URL` (pooled) plus `DIRECT_DATABASE_URL` (direct) in the
+   project's environment variables.
+2. **Blob store** — create a Vercel Blob store and link it to the project;
+   that sets `BLOB_READ_WRITE_TOKEN` automatically.
+3. **Secrets** — set `JWT_SECRET`, `JWT_REFRESH_SECRET`, `GROQ_API_KEY`,
+   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_ORIGINS`, and
+   `APP_URL` (the production domain, e.g. `https://waste2value.vercel.app`).
+4. **Google OAuth** — register `{APP_URL}/api/auth/oauth/google/callback`
+   as an authorized redirect URI in Google Cloud Console.
+5. **Migrate** — run `npx prisma migrate deploy` against the production
+   database (locally with `DATABASE_URL` pointed at it, or as a Vercel
+   build-command prefix).
+6. Deploy. The default build command (`npm run build`) already runs
+   `prisma generate`.
+
+Known limitation: rate limiting (`src/server/lib/rate-limit.ts`) is
+in-process, so limits are per instance and reset on cold start. Move it to
+a shared store (Vercel KV / Upstash) if abuse becomes a concern.
 
 ## Scripts
 

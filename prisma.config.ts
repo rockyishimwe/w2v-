@@ -6,9 +6,9 @@ import { defineConfig } from "prisma/config";
  * datasource URL from here, while the runtime client uses driver adapters
  * (see src/server/lib/prisma.ts). No seed step — all data is real user data.
  *
- * Defaults to a local SQLite file when DATABASE_URL is not provided so the
- * project runs out of the box; PostgreSQL in production (set DATABASE_URL
- * and switch the schema provider to "postgresql" — see README).
+ * PostgreSQL only — DATABASE_URL is required (see README "Database").
+ * For migrations prefer a direct (non-pooled) URL: pgbouncer-style poolers
+ * reject the session-level statements `prisma migrate` issues.
  */
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -16,6 +16,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
+    url: process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL ?? "",
   },
 });

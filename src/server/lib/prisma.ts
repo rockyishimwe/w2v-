@@ -1,59 +1,63 @@
 /**
  * Singleton Prisma Client wired for Prisma ORM v7 driver adapters.
  *
- * - SQLite (better-sqlite3) when DATABASE_URL is unset — zero-config dev.
- * - PostgreSQL (pg) when DATABASE_URL starts with postgres://.
+ * PostgreSQL only — the app runs on serverless (Vercel), where a SQLite
+ * file has nowhere to live between invocations. DATABASE_URL is required;
+ * use a pooled connection string in production (Neon pooler, Supabase
+ * pgbouncer, Vercel Postgres) because every instance opens its own pool.
  *
  * Next.js hot-reloads modules in dev, so we stash the instance on
- * globalThis to avoid exhausting database connections.
+ * globalThis to avoid exhausting database connections. The client is
+ * created lazily (on first property access) so that importing a module
+ * that touches the database — a unit test, a build-time analysis pass —
+ * does not require DATABASE_URL to be set.
  */
-import { createRequire } from "node:module";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/server/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 type Cache = {
   __w2vPrisma?: PrismaClient;
 };
 const globalForPrisma = globalThis as unknown as Cache;
 
-/**
- * Runtime require, so the bundler does not try to resolve optional
- * adapters at build time. @prisma/adapter-pg is only needed when
- * DATABASE_URL points at Postgres (npm i @prisma/adapter-pg pg).
- */
-const runtimeRequire = createRequire(import.meta.url);
-
 function createClient(): PrismaClient {
-  const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
-  const isPostgres =
-    url.startsWith("postgres://") || url.startsWith("postgresql://");
-
-  if (isPostgres) {
-    let PrismaPg: new (config: { connectionString: string }) => unknown;
-    try {
-      // turbopackIgnore keeps the bundler from resolving this optional
-      // adapter at build time (it's installed only for Postgres deploys).
-      ({ PrismaPg } = runtimeRequire(
-        /* turbopackIgnore: true */ "@prisma/adapter-pg",
-      ));
-    } catch {
-      throw new Error(
-        "DATABASE_URL points at PostgreSQL but @prisma/adapter-pg is not installed. Run: npm i @prisma/adapter-pg pg",
-      );
-    }
-    return new PrismaClient({
-      adapter: new PrismaPg({ connectionString: url }) as never,
-    });
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL is not set. Point it at a PostgreSQL database (see README “Database”).",
+    );
+  }
+  if (!url.startsWith("postgres://") && !url.startsWith("postgresql://")) {
+    throw new Error(
+      "DATABASE_URL must be a PostgreSQL connection string (postgres:// or postgresql://).",
+    );
   }
 
   return new PrismaClient({
-    adapter: new PrismaBetterSqlite3({ url }),
+    adapter: new PrismaPg({
+      connectionString: url,
+      // Serverless instances are short-lived and handle few concurrent
+      // requests each; a small pool keeps the database's connection
+      // budget from being eaten by idle lambdas.
+      max: Number(process.env.DATABASE_POOL_MAX ?? 5),
+    }),
   });
 }
 
-export const prisma: PrismaClient =
-  globalForPrisma.__w2vPrisma ?? createClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.__w2vPrisma = prisma;
+function client(): PrismaClient {
+  globalForPrisma.__w2vPrisma ??= createClient();
+  return globalForPrisma.__w2vPrisma;
 }
+
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, property) {
+    const value = Reflect.get(client(), property) as unknown;
+    // Methods must keep the real client as `this` (`$transaction`, the
+    // model delegates' internals), so bind instead of handing back a
+    // detached function.
+    return typeof value === "function" ? value.bind(client()) : value;
+  },
+  has(_target, property) {
+    return property in client();
+  },
+});

@@ -5,9 +5,9 @@
 FROM node:24-alpine AS dependencies
 WORKDIR /app
 
-# better-sqlite3 has no musl prebuild, so it compiles from source here.
 # libc6-compat covers prebuilt glibc binaries; openssl provides libssl for
-# Prisma's linux-musl engine target.
+# Prisma's linux-musl engine target. python3/make/g++ stay for any
+# dependency without a musl prebuild.
 RUN apk add --no-cache python3 make g++ libc6-compat openssl
 
 # Keep the lockfile as the single source of dependency versions.
@@ -32,9 +32,8 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
-# The Prisma CLI is retained to apply checked-in migrations at startup. The
-# SQLite adapter is currently a devDependency, so pruning here would remove a
-# required runtime dependency.
+# The Prisma CLI is retained to apply checked-in migrations at startup
+# (docker-entrypoint.sh), so node_modules is copied unpruned.
 COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
@@ -48,8 +47,8 @@ COPY docker-entrypoint.sh /usr/local/bin/w2v-entrypoint
 # ownership on first mount, and so Next.js can write its runtime image /
 # fetch caches under .next/cache.
 RUN chmod +x /usr/local/bin/w2v-entrypoint \
-    && mkdir -p /data /app/uploads /app/.next/cache \
-    && chown -R node:node /data /app/uploads /app/.next
+    && mkdir -p /app/uploads /app/.next/cache \
+    && chown -R node:node /app/uploads /app/.next
 
 USER node
 EXPOSE 3000

@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: waste2value
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-waste2value}
+      POSTGRES_DB: waste2value
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U waste2value -d waste2value"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   app:
     build:
       context: .
@@ -12,14 +28,17 @@ services:
       - path: .env
         required: false
     environment:
-      # SQLite data is kept outside the image and survives container rebuilds.
-      DATABASE_URL: file:/data/waste2value.db
+      # Postgres lives in its own service; data survives container rebuilds.
+      DATABASE_URL: postgresql://waste2value:${POSTGRES_PASSWORD:-waste2value}@db:5432/waste2value
       NODE_ENV: production
       # Absolute links and OAuth callbacks. Override for a public deployment.
       APP_URL: ${APP_URL:-http://localhost:3000}
     volumes:
-      - sqlite-data:/data
+      # Uploads stay on local disk here (no BLOB_READ_WRITE_TOKEN set).
       - uploads-data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test:
@@ -33,5 +52,5 @@ services:
       start_period: 20s
 
 volumes:
-  sqlite-data:
+  postgres-data:
   uploads-data:

@@ -5,10 +5,9 @@ const nextConfig: NextConfig = {
   // the real route tree (generated into .next/types by `next typegen`).
   typedRoutes: true,
 
-  // The Postgres driver adapter is optional (SQLite dev doesn't need it,
-  // production installs it) — keep it out of the bundle so the build
-  // doesn't warn about a module that isn't a dependency.
-  serverExternalPackages: ["@prisma/adapter-pg"],
+  // pg ships native bindings and the Prisma adapter wraps them — bundling
+  // either breaks the serverless build, so load them from node_modules.
+  serverExternalPackages: ["@prisma/adapter-pg", "pg"],
 
   // Prefer modern image formats for the photo pipeline (listings, scan
   // captures) — smaller payloads on low-bandwidth connections.

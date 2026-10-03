@@ -1,13 +1,18 @@
 /**
- * Image upload storage (local disk).
+ * Image upload storage.
  *
- * MVP scope: uploaded listing photos are written to ./uploads (gitignored)
- * and served back through GET /api/uploads/[name]. Production would swap
- * this module for blob storage (S3/R2) behind the same routes.
+ * Two backends behind one API, picked by whether a blob token is present:
+ *  - Vercel Blob (BLOB_READ_WRITE_TOKEN set) — used on Vercel, where the
+ *    filesystem is read-only and per-invocation,
+ *  - local disk under ./uploads (gitignored) — zero-config dev, Docker.
+ *
+ * Either way the public path stays `/api/uploads/<name>`, so stored rows
+ * (listing photos, avatars) and the client are backend-agnostic. The GET
+ * route redirects to the blob CDN URL when blob storage is active.
  *
  * Security properties:
  *  - filenames are server-generated (random) — user input never touches
- *    the filesystem path,
+ *    the filesystem path or blob pathname,
  *  - content is validated by magic bytes, not just MIME header,
  *  - reads re-validate the name format and resolve inside ./uploads.
  */
@@ -17,6 +22,14 @@ import { badRequest, notFound } from "./errors";
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 const MAX_BYTES = 1_400_000; // ~1.4 MB — same cap as scan data URLs
+
+/** Blob pathname prefix (keeps the store tidy if it is shared). */
+const BLOB_PREFIX = "uploads";
+
+/** True when uploads should go to Vercel Blob instead of local disk. */
+function usingBlobStore(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
 
 /** Allowed image types with their magic-byte signatures. */
 const SIGNATURES: Array<{
@@ -105,13 +118,43 @@ export async function saveUpload(
     throw badRequest("Only image uploads are accepted.");
   }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
   const name = `img-${Date.now().toString(36)}-${Math.random()
     .toString(36)
     .slice(2, 10)}.${type.ext}`;
-  await writeFile(path.join(UPLOAD_DIR, name), data);
+
+  if (usingBlobStore()) {
+    const { put } = await import("@vercel/blob");
+    await put(`${BLOB_PREFIX}/${name}`, data, {
+      access: "public",
+      contentType: type.mime,
+      // Names are already random and unique; a suffix would break the
+      // name → pathname mapping that reads rely on.
+      addRandomSuffix: false,
+      cacheControlMaxAge: 31_536_000,
+    });
+  } else {
+    await mkdir(UPLOAD_DIR, { recursive: true });
+    await writeFile(path.join(UPLOAD_DIR, name), data);
+  }
 
   return { path: `/api/uploads/${name}`, mime: type.mime, bytes: data.length };
+}
+
+/**
+ * Resolves a stored name to its blob CDN URL, or null when blob storage
+ * is not in use. The GET route redirects there instead of proxying bytes.
+ */
+export async function uploadUrl(name: string): Promise<string | null> {
+  if (!NAME_PATTERN.test(name)) throw notFound("Image not found.");
+  if (!usingBlobStore()) return null;
+
+  const { head } = await import("@vercel/blob");
+  try {
+    const blob = await head(`${BLOB_PREFIX}/${name}`);
+    return blob.url;
+  } catch {
+    throw notFound("Image not found.");
+  }
 }
 
 /** Reads a stored image by public name; throws 404 when unknown. */
@@ -122,6 +165,17 @@ export async function readUpload(
   if (!NAME_PATTERN.test(name)) {
     throw notFound("Image not found.");
   }
+
+  if (usingBlobStore()) {
+    const url = await uploadUrl(name);
+    const response = await fetch(url!).catch(() => null);
+    if (!response?.ok) throw notFound("Image not found.");
+    const data = Buffer.from(await response.arrayBuffer());
+    const type = detectType(data);
+    if (!type) throw notFound("Image not found.");
+    return { data, mime: type.mime };
+  }
+
   const resolved = path.join(UPLOAD_DIR, name);
   if (path.dirname(resolved) !== UPLOAD_DIR) {
     throw notFound("Image not found.");
@@ -140,5 +194,11 @@ export async function readUpload(
 export async function deleteUpload(publicPath: string): Promise<void> {
   const name = publicPath.replace("/api/uploads/", "");
   if (!NAME_PATTERN.test(name)) return;
+
+  if (usingBlobStore()) {
+    const { del } = await import("@vercel/blob");
+    await del(`${BLOB_PREFIX}/${name}`).catch(() => undefined);
+    return;
+  }
   await unlink(path.join(UPLOAD_DIR, name)).catch(() => undefined);
 }
