@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     const body = await parseJsonBody(request, createListingSchema);
     const idempotencyKey = request.headers.get("idempotency-key");
-    const replay = findReplay(
+    const replay = await findReplay(
       idempotencyKey,
       "POST /api/exchange/listings",
       body,
@@ -79,12 +79,13 @@ export async function POST(request: NextRequest) {
     const postedByName = `${auth.firstName} ${auth.lastName}`.trim();
     const listing = await createListing(auth.id, postedByName, body);
 
-    recordResponse(
+    await recordResponse(
       idempotencyKey,
       "POST /api/exchange/listings",
       body,
       listing,
       201,
+      auth.id,
     );
     return jsonResponse(request, listing, { status: 201 });
   } catch (error) {

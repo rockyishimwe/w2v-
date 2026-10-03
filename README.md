@@ -161,9 +161,16 @@ response degrades to the deterministic fallback content instead of being
 killed mid-request. Raise both together if you move to a plan with a
 higher function-duration ceiling.
 
+Idempotency records (`src/server/lib/idempotency.ts`) persist in the
+`IdempotencyRecord` table, so an offline-queued request retried against a
+different instance replays instead of duplicating the work. Records expire
+after 24h; instances sweep at most hourly.
+
 Known limitation: rate limiting (`src/server/lib/rate-limit.ts`) is
-in-process, so limits are per instance and reset on cold start. Move it to
-a shared store (Vercel KV / Upstash) if abuse becomes a concern.
+in-process, so limits are per instance and reset on cold start — the
+effective limit is the configured one times the number of warm instances.
+It degrades protection rather than corrupting data; move it to a shared
+store (Vercel KV / Upstash) if abuse becomes a concern.
 
 ## Scripts
 

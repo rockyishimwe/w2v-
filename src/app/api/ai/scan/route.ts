@@ -41,7 +41,11 @@ export async function POST(request: NextRequest) {
 
     // Idempotency for offline-queued scans.
     const idempotencyKey = request.headers.get("idempotency-key");
-    const replay = findReplay(idempotencyKey, "POST /api/ai/scan", body.image);
+    const replay = await findReplay(
+      idempotencyKey,
+      "POST /api/ai/scan",
+      body.image,
+    );
     if (replay) {
       return jsonResponse(request, replay.body, { status: replay.status });
     }
@@ -90,12 +94,13 @@ export async function POST(request: NextRequest) {
       recommendations: result.recommendations,
     };
 
-    recordResponse(
+    await recordResponse(
       idempotencyKey,
       "POST /api/ai/scan",
       body.image,
       payload,
       201,
+      auth.id,
     );
     logger.info("scan analyzed", { userId: auth.id, source: result.source });
 

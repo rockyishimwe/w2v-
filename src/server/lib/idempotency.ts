@@ -6,21 +6,28 @@
  * original result instead of creating duplicates. Reusing a key with a
  * different payload is a client bug and yields 409 CONFLICT.
  *
- * Keys are held in memory with a TTL for the MVP; a production deployment
- * can persist the same records in the IdempotencyRecord table.
+ * Records live in the IdempotencyRecord table rather than in memory: on a
+ * serverless host each instance has its own memory and loses it on cold
+ * start, so a retry landing elsewhere would duplicate the work the key
+ * exists to deduplicate.
+ *
+ * Narrow remaining race: two *concurrent* requests with the same key can
+ * both miss the lookup and do the work, since the record is written after
+ * the fact. The unique key means only one record survives, so the second
+ * caller still gets a consistent answer on any later replay. Closing that
+ * window entirely needs a claim-before-work protocol, which the offline
+ * queue (sequential retries, seconds to hours apart) does not require.
  */
 import { createHash } from "node:crypto";
 import { conflict } from "./errors";
-
-interface StoredEntry {
-  bodyHash: string;
-  responseBody: unknown;
-  status: number;
-  createdAt: number;
-}
+import { prisma } from "./prisma";
+import { logger } from "./logger";
 
 const TTL_MS = 24 * 60 * 60 * 1000;
-const store = new Map<string, StoredEntry>(); // `${endpoint}:${key}` → entry
+
+/** Instances sweep at most this often, so expiry costs ~no extra writes. */
+const SWEEP_INTERVAL_MS = 60 * 60 * 1000;
+let lastSweep = 0;
 
 function bodyHash(body: unknown): string {
   return createHash("sha256")
@@ -28,14 +35,26 @@ function bodyHash(body: unknown): string {
     .digest("hex");
 }
 
-function entryKey(endpoint: string, key: string): string {
+/** The table's primary key: one namespace per endpoint. */
+function recordKey(endpoint: string, key: string): string {
   return `${endpoint}:${key}`;
 }
 
-function sweep(): void {
+/** Drops expired records, at most once per SWEEP_INTERVAL_MS per instance. */
+async function sweep(): Promise<void> {
   const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now - entry.createdAt > TTL_MS) store.delete(key);
+  if (now - lastSweep < SWEEP_INTERVAL_MS) return;
+  lastSweep = now;
+
+  try {
+    await prisma.idempotencyRecord.deleteMany({
+      where: { createdAt: { lt: new Date(now - TTL_MS) } },
+    });
+  } catch (error) {
+    // Housekeeping only — never fail the request it rode along with.
+    logger.warn("idempotency sweep failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
   }
 }
 
@@ -45,43 +64,75 @@ function sweep(): void {
  * - other body → 409 CONFLICT (client bug)
  * - no entry   → null (first time through; caller proceeds normally)
  */
-export function findReplay(
+export async function findReplay(
   key: string | null,
   endpoint: string,
   body: unknown,
-): { body: unknown; status: number } | null {
+): Promise<{ body: unknown; status: number } | null> {
   if (!key) return null;
-  sweep();
+  await sweep();
 
-  const entry = store.get(entryKey(endpoint, key));
-  if (!entry) return null;
+  const record = await prisma.idempotencyRecord.findUnique({
+    where: { key: recordKey(endpoint, key) },
+  });
+  if (!record) return null;
 
-  if (entry.bodyHash !== bodyHash(body)) {
+  // An expired record is a miss: the caller redoes the work and the write
+  // below overwrites it.
+  if (Date.now() - record.createdAt.getTime() > TTL_MS) return null;
+
+  if (record.requestBody !== bodyHash(body)) {
     throw conflict(
       "Idempotency-Key was already used with a different request body.",
     );
   }
-  return { body: entry.responseBody, status: entry.status };
+
+  return {
+    body: JSON.parse(record.responseBody) as unknown,
+    status: record.status,
+  };
 }
 
 /** Records the response produced for an (endpoint, key) pair. */
-export function recordResponse(
+export async function recordResponse(
   key: string | null,
   endpoint: string,
   body: unknown,
   response: unknown,
   status: number,
-): void {
+  userId?: string,
+): Promise<void> {
   if (!key) return;
-  store.set(entryKey(endpoint, key), {
-    bodyHash: bodyHash(body),
-    responseBody: response,
+
+  // Only the hash is kept: request bodies carry photo data URLs, and all
+  // this needs to answer is "same payload as last time?".
+  const data = {
+    userId: userId ?? null,
+    endpoint,
+    requestBody: bodyHash(body),
     status,
-    createdAt: Date.now(),
-  });
+    responseBody: JSON.stringify(response ?? null),
+    createdAt: new Date(),
+  };
+
+  try {
+    await prisma.idempotencyRecord.upsert({
+      where: { key: recordKey(endpoint, key) },
+      create: { key: recordKey(endpoint, key), ...data },
+      update: data,
+    });
+  } catch (error) {
+    // The work itself succeeded; a bookkeeping failure must not turn that
+    // into an error response. The retry simply redoes the work.
+    logger.warn("idempotency record failed", {
+      endpoint,
+      message: error instanceof Error ? error.message : "unknown",
+    });
+  }
 }
 
-/** Clears the idempotency store (used by tests). */
-export function resetIdempotency(): void {
-  store.clear();
+/** Clears the idempotency records (used by tests). */
+export async function resetIdempotency(): Promise<void> {
+  await prisma.idempotencyRecord.deleteMany({});
+  lastSweep = 0;
 }

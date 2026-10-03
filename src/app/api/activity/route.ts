@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     const body = await parseJsonBody(request, createActivitySchema);
     const idempotencyKey = request.headers.get("idempotency-key");
-    const replay = findReplay(idempotencyKey, "POST /api/activity", body);
+    const replay = await findReplay(idempotencyKey, "POST /api/activity", body);
     if (replay) {
       return jsonResponse(request, replay.body, { status: replay.status });
     }
@@ -88,7 +88,14 @@ export async function POST(request: NextRequest) {
       occurredAt: body.occurredAt ? new Date(body.occurredAt) : undefined,
     });
 
-    recordResponse(idempotencyKey, "POST /api/activity", body, entry, 201);
+    await recordResponse(
+      idempotencyKey,
+      "POST /api/activity",
+      body,
+      entry,
+      201,
+      auth.id,
+    );
     return jsonResponse(request, entry, { status: 201 });
   } catch (error) {
     return errorResponse(request, error);
