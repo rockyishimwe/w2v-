@@ -79,7 +79,8 @@ browser, and none of them are secrets.
 | `DATABASE_URL` | **yes** | PostgreSQL URL (pooled in production). |
 | `DIRECT_DATABASE_URL` | no | Non-pooled URL used by `prisma migrate` only. |
 | `DATABASE_POOL_MAX` | no | Max pool size per instance (default 5). |
-| `BLOB_READ_WRITE_TOKEN` | yes on Vercel | Vercel Blob token. Unset → uploads on local disk. |
+| `BLOB_STORE_ID` | yes on Vercel | Vercel Blob store (OIDC auth). Injected by connecting the store. |
+| `BLOB_READ_WRITE_TOKEN` | alternative | Static Blob credential, used by older stores instead of the above. |
 | `APP_URL` | yes (OAuth) | Public base URL used to build OAuth redirect URIs. |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | no | Google sign-in. |
 | `JWT_SECRET` | yes (auth) | HMAC secret for access JWTs (≥16 chars). |
@@ -124,9 +125,12 @@ The pre-Postgres SQLite migrations are kept, unused, under
 Uploaded photos (listings, avatars) always surface as
 `/api/uploads/<name>`, backed by one of two stores:
 
-- **Vercel Blob** when `BLOB_READ_WRITE_TOKEN` is set — required on
-  serverless, where the filesystem is read-only and per-invocation.
-  `GET /api/uploads/[name]` 308-redirects to the blob CDN URL.
+- **Vercel Blob** when `BLOB_STORE_ID` or `BLOB_READ_WRITE_TOKEN` is set —
+  required on serverless, where the filesystem is read-only and
+  per-invocation. `GET /api/uploads/[name]` 308-redirects to the blob CDN
+  URL. Connecting a store injects one shape or the other: newer stores use
+  `BLOB_STORE_ID` plus the runtime's OIDC token, older ones a static
+  read/write token.
 - **Local disk** under `uploads/` (gitignored) otherwise — dev and Docker.
 
 Because the stored path never changes, switching stores does not migrate
@@ -137,8 +141,9 @@ or invalidate existing rows (old files do need copying across).
 1. **Database** — create Postgres (Vercel Postgres, Neon, Supabase) and set
    `DATABASE_URL` (pooled) plus `DIRECT_DATABASE_URL` (direct) in the
    project's environment variables.
-2. **Blob store** — create a Vercel Blob store and link it to the project;
-   that sets `BLOB_READ_WRITE_TOKEN` automatically.
+2. **Blob store** — create a Vercel Blob store and connect it to the
+   project; that injects `BLOB_STORE_ID` (or, for older stores,
+   `BLOB_READ_WRITE_TOKEN`) automatically.
 3. **Secrets** — set `JWT_SECRET`, `JWT_REFRESH_SECRET`, `GROQ_API_KEY`,
    `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_ORIGINS`, and
    `APP_URL` (the production domain, e.g. `https://waste2value.vercel.app`).

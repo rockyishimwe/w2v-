@@ -1,9 +1,10 @@
 /**
  * Image upload storage.
  *
- * Two backends behind one API, picked by whether a blob token is present:
- *  - Vercel Blob (BLOB_READ_WRITE_TOKEN set) — used on Vercel, where the
- *    filesystem is read-only and per-invocation,
+ * Two backends behind one API, picked by whether the environment carries
+ * Vercel Blob credentials:
+ *  - Vercel Blob — used on Vercel, where the filesystem is read-only and
+ *    per-invocation,
  *  - local disk under ./uploads (gitignored) — zero-config dev, Docker.
  *
  * Either way the public path stays `/api/uploads/<name>`, so stored rows
@@ -26,9 +27,19 @@ const MAX_BYTES = 1_400_000; // ~1.4 MB — same cap as scan data URLs
 /** Blob pathname prefix (keeps the store tidy if it is shared). */
 const BLOB_PREFIX = "uploads";
 
-/** True when uploads should go to Vercel Blob instead of local disk. */
+/**
+ * True when uploads should go to Vercel Blob instead of local disk.
+ *
+ * The SDK accepts either credential shape, and a connected Blob store
+ * supplies exactly one of them: newer stores inject BLOB_STORE_ID and
+ * authenticate per-request with the runtime's OIDC token, while older
+ * ones inject a static BLOB_READ_WRITE_TOKEN. Checking only the token
+ * would silently route uploads to a read-only filesystem.
+ */
 function usingBlobStore(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(
+    process.env.BLOB_STORE_ID ?? process.env.BLOB_READ_WRITE_TOKEN,
+  );
 }
 
 /** Allowed image types with their magic-byte signatures. */
