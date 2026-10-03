@@ -150,6 +150,12 @@ or invalidate existing rows (old files do need copying across).
 6. Deploy. The default build command (`npm run build`) already runs
    `prisma generate`.
 
+The AI routes export `maxDuration = 60`, and `groqChat` keeps a 20s
+wall-clock budget per call (retries and backoff included) so a slow Groq
+response degrades to the deterministic fallback content instead of being
+killed mid-request. Raise both together if you move to a plan with a
+higher function-duration ceiling.
+
 Known limitation: rate limiting (`src/server/lib/rate-limit.ts`) is
 in-process, so limits are per instance and reset on cold start. Move it to
 a shared store (Vercel KV / Upstash) if abuse becomes a concern.

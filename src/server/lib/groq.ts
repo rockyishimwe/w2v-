@@ -49,6 +49,16 @@ const INITIAL_TIMEOUT_MS = 30_000;
 const MAX_ATTEMPTS = 3;
 
 /**
+ * Total wall-clock budget for one groqChat call, retries and backoff
+ * included. Serverless platforms kill a function at a fixed duration
+ * (see `maxDuration` on the AI routes), and a request killed mid-flight
+ * returns a gateway error instead of this module's fallback content — so
+ * the budget has to be the smaller number. Two sequential calls (a vision
+ * pass plus a JSON-repair pass) must still fit inside it.
+ */
+const BUDGET_MS = 20_000;
+
+/**
  * Runs a chat completion with timeout, exponential backoff on
  * 429/5xx/network errors (matching the SDK's own retryable classification),
  * and small max_tokens to keep responses light for low-bandwidth users.
@@ -61,6 +71,8 @@ export async function groqChat(
     maxTokens?: number;
     temperature?: number;
     timeoutMs?: number;
+    /** Total budget across retries (default 20s). */
+    budgetMs?: number;
   } = {},
 ): Promise<string> {
   const groq = getGroqClient();
@@ -70,11 +82,17 @@ export async function groqChat(
     maxTokens = 700,
     temperature = 0.4,
     timeoutMs = INITIAL_TIMEOUT_MS,
+    budgetMs = BUDGET_MS,
   } = options;
 
+  const deadline = Date.now() + budgetMs;
   let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    // Never start an attempt that cannot plausibly finish in time.
+    const remainingMs = deadline - Date.now();
+    if (remainingMs < 2_000) break;
+
     try {
       const completion = await groq.chat.completions.create(
         {
@@ -89,7 +107,7 @@ export async function groqChat(
             : {}),
           ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
         },
-        { timeout: timeoutMs },
+        { timeout: Math.min(timeoutMs, remainingMs) },
       );
       const content = completion.choices[0]?.message?.content ?? "";
       if (!content.trim()) {
@@ -114,6 +132,9 @@ export async function groqChat(
       if (attempt === MAX_ATTEMPTS) break;
 
       const backoffMs = 2 ** attempt * 500; // 1s, 2s
+      // Spending the remaining budget on a sleep would leave nothing for
+      // the retry itself; fail now so the caller can serve its fallback.
+      if (deadline - Date.now() < backoffMs + 2_000) break;
       logger.warn("groq retry", { attempt, backoffMs, status });
       await new Promise((resolve) => setTimeout(resolve, backoffMs));
     }
@@ -121,5 +142,5 @@ export async function groqChat(
 
   throw lastError instanceof Error
     ? lastError
-    : new Error("Groq request failed");
+    : new Error(`Groq request failed (budget ${budgetMs}ms exhausted)`);
 }

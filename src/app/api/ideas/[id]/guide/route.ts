@@ -18,6 +18,13 @@ import { generateGuide } from "@/server/services/ai-service";
 
 type Params = { params: Promise<{ id: string }> };
 
+/**
+ * Groq calls are bounded by a 20s budget per call (src/server/lib/groq.ts)
+ * and this route may make two in sequence, so give the function room to
+ * finish and serve the fallback instead of being killed mid-request.
+ */
+export const maxDuration = 60;
+
 export async function OPTIONS(request: NextRequest) {
   return optionsResponse(request);
 }

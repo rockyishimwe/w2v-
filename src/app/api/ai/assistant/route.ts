@@ -14,6 +14,13 @@ import { assistantReply } from "@/server/services/ai-service";
 import { prisma } from "@/server/lib/prisma";
 import { logger } from "@/server/lib/logger";
 
+/**
+ * Groq calls are bounded by a 20s budget per call (src/server/lib/groq.ts)
+ * and this route may make two in sequence, so give the function room to
+ * finish and serve the fallback instead of being killed mid-request.
+ */
+export const maxDuration = 60;
+
 export async function OPTIONS(request: NextRequest) {
   return optionsResponse(request);
 }

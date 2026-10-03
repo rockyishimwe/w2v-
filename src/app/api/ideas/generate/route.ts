@@ -12,6 +12,13 @@ import { requireAuth } from "@/server/lib/auth";
 import { aiGenerateIdeaSchema } from "@/server/schemas";
 import { generateIdea } from "@/server/services/ai-service";
 
+/**
+ * Groq calls are bounded by a 20s budget per call (src/server/lib/groq.ts)
+ * and this route may make two in sequence, so give the function room to
+ * finish and serve the fallback instead of being killed mid-request.
+ */
+export const maxDuration = 60;
+
 export async function OPTIONS(request: NextRequest) {
   return optionsResponse(request);
 }
