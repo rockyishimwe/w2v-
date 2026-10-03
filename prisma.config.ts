@@ -1,5 +1,10 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { defineConfig } from "prisma/config";
+
+// Next.js reads .env.local; plain `dotenv/config` would only load .env, so
+// the CLI would not see the connection string the app runs with. Earlier
+// files win, matching Next's own precedence.
+config({ path: [".env.local", ".env"] });
 
 /**
  * Prisma ORM v7 config. The CLI (migrate / db push) reads the
